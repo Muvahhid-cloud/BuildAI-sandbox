@@ -31,6 +31,10 @@ Third-party image assets used by the 3D viewer. Only **CC0** assets from
 
 ## HDRI (environment lighting)
 
+Used for image-based lighting and reflections only (the visible sky is a neutral gradient). The
+`park` HDRI (Poly Haven "Rooitou Park") from the same package was tried first and rejected: its
+average colour is strongly blue (mean linear RGB ≈ 0.20 / 0.26 / 0.74) and tinted every surface.
+
 | File | Asset | Source URL | Licence | Status |
 |---|---|---|---|---|
-| `hdri/` | — | — | CC0 | TODO |
+| `hdri/potsdamer_platz_512.exr` | Poly Haven "Potsdamer Platz" (urban daylight, near-neutral colour), 512×256 EXR (DWAB) as redistributed in the npm package `@pmndrs/assets@1.7.0` (`hdri/city.exr`, licence CC0-1.0; the drei preset `city` maps to `potsdamer_platz_1k.hdr`); sha256 `82847b3f3e2073d16647be2eb5712dc0f7e37ddc9480a1d45f2270fe8cd048f6` | https://polyhaven.com/a/potsdamer_platz (via https://www.npmjs.com/package/@pmndrs/assets) | CC0 | Fallback in use — polyhaven.com was blocked by the build environment's network policy on 2026-10-31. TODO: replace with the 1K `.hdr` from Poly Haven directly and update `RENDER.hdriUrl` in `apps/web/src/viewer/render-settings.ts` |

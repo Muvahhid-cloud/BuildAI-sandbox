@@ -24,6 +24,10 @@ interface ViewerState {
   viewMode: ViewMode;
   /** Level shown in the plan view (null = the first level). */
   planLevelId: string | null;
+  /** Ambient occlusion + SMAA post-processing (render quality; off = plain renderer). */
+  effects: boolean;
+  /** Reference grid over the site ground. */
+  showGrid: boolean;
 
   /** Floor navigation: isolates a level and frames it; "all" keeps the current camera. */
   selectFloor: (filter: LevelFilter) => void;
@@ -35,7 +39,9 @@ interface ViewerState {
   setSection: (section: Partial<ViewerState["section"]>) => void;
   setViewMode: (viewMode: ViewMode) => void;
   setPlanLevel: (levelId: string | null) => void;
-  /** Back to defaults for a newly loaded model; the 3D / plan choice is kept. */
+  setEffects: (effects: boolean) => void;
+  setShowGrid: (showGrid: boolean) => void;
+  /** Back to defaults for a newly loaded model; the 3D / plan choice and render options are kept. */
   reset: () => void;
 }
 
@@ -54,6 +60,8 @@ let nonce = 0;
 export const useViewerStore = create<ViewerState>()((set) => ({
   ...INITIAL,
   viewMode: "3d",
+  effects: true,
+  showGrid: false,
   selectFloor: (filter) =>
     set(
       filter === "all"
@@ -68,6 +76,8 @@ export const useViewerStore = create<ViewerState>()((set) => ({
   setSection: (section) => set((s) => ({ section: { ...s.section, ...section } })),
   setViewMode: (viewMode) => set({ viewMode }),
   setPlanLevel: (planLevelId) => set({ planLevelId }),
+  setEffects: (effects) => set({ effects }),
+  setShowGrid: (showGrid) => set({ showGrid }),
   reset: () => set({ ...INITIAL, cameraRequest: request("exterior", false) }),
 }));
 

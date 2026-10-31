@@ -10,6 +10,8 @@ import { elementUserData, resolveElementId } from "@/engine/scene/selection";
 import type { VisibilityMode } from "@/engine/scene/visibility";
 import { useSelectionStore } from "@/stores/selection-store";
 
+import "./textures";
+
 // Hidden and ghosted meshes must not be pickable.
 const NO_RAYCAST = () => undefined;
 

@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "building_type": "single_family_house",
+  "name": "Large bungalow",
+  "description": "Single-storey 220 m² bungalow with four bedrooms, a study, a three-car garage and a terrace.",
+  "targets": { "gross_floor_area_m2": 220, "storeys": 1, "floor_to_floor_height_m": 3.2 },
+  "style": { "architectural_style": "mediterranean", "roof": { "type": "hip", "pitch_deg": 20 }, "window_style": "large", "facade_material": "render" },
+  "rooms": [
+    { "key": "kitchen_living", "type": "open_kitchen_living", "target_area_m2": 48 },
+    { "key": "study", "type": "study", "target_area_m2": 11 },
+    { "key": "master_bedroom", "type": "bedroom", "name": "Master bedroom", "target_area_m2": 18, "features": ["en_suite"] },
+    { "key": "bedroom", "type": "bedroom", "count": 3, "target_area_m2": 13 },
+    { "key": "bathroom", "type": "bathroom" },
+    { "key": "wc", "type": "wc" },
+    { "key": "laundry", "type": "laundry" }
+  ],
+  "features": { "garage": { "cars": 3 }, "terrace": { "attached_to": "kitchen_living", "depth_m": 4 } },
+  "budget": { "amount": "95000000", "currency": "KZT" }
+}

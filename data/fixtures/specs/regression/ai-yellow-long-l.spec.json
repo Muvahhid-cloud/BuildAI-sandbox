@@ -1,0 +1,169 @@
+{
+  "name": "Yellow L-shaped family house",
+  "site": null,
+  "rooms": [
+    {
+      "key": "open_kitchen_living",
+      "name": "Open kitchen and living room",
+      "type": "open_kitchen_living",
+      "count": 1,
+      "faces": null,
+      "level": 0,
+      "open_to": [],
+      "features": [],
+      "adjacent_to": [],
+      "max_area_m2": null,
+      "min_area_m2": null,
+      "separate_from": [],
+      "target_area_m2": null
+    },
+    {
+      "key": "bedroom",
+      "name": "Bedroom",
+      "type": "bedroom",
+      "count": 3,
+      "faces": null,
+      "level": 0,
+      "open_to": [],
+      "features": [],
+      "adjacent_to": [],
+      "max_area_m2": null,
+      "min_area_m2": null,
+      "separate_from": [
+        "open_kitchen_living"
+      ],
+      "target_area_m2": null
+    },
+    {
+      "key": "bathroom",
+      "name": "Bathroom",
+      "type": "bathroom",
+      "count": 1,
+      "faces": null,
+      "level": 0,
+      "open_to": [],
+      "features": [],
+      "adjacent_to": [],
+      "max_area_m2": null,
+      "min_area_m2": null,
+      "separate_from": [],
+      "target_area_m2": null
+    },
+    {
+      "key": "wc",
+      "name": "Guest WC",
+      "type": "wc",
+      "count": 1,
+      "faces": null,
+      "level": 0,
+      "open_to": [],
+      "features": [],
+      "adjacent_to": [],
+      "max_area_m2": null,
+      "min_area_m2": null,
+      "separate_from": [],
+      "target_area_m2": null
+    }
+  ],
+  "style": {
+    "roof": {
+      "type": "hip",
+      "pitch_deg": null
+    },
+    "window_style": "standard",
+    "design_system": null,
+    "interior_style": null,
+    "facade_material": "render",
+    "architectural_style": "modern",
+    "interior_finish_level": "standard"
+  },
+  "budget": null,
+  "design": {
+    "windows": null,
+    "priorities": [],
+    "facade_color": "yellow",
+    "footprint_shape": "l_shape"
+  },
+  "targets": {
+    "storeys": 1,
+    "gross_floor_area_m2": null,
+    "max_footprint_depth_m": null,
+    "max_footprint_width_m": null,
+    "floor_to_floor_height_m": 3.0
+  },
+  "features": {
+    "garage": null,
+    "terrace": null,
+    "balconies": []
+  },
+  "assumptions": [
+    {
+      "path": "/targets/storeys",
+      "value": 1,
+      "reason": "L-shaped footprints are generated for single-storey houses only, and no storey count was given."
+    },
+    {
+      "path": "/targets/gross_floor_area_m2",
+      "value": null,
+      "reason": "No size was given, so the engine derives the floor area from the rooms."
+    },
+    {
+      "path": "/rooms/0/type",
+      "value": "open_kitchen_living",
+      "reason": "Default living space for a family house: an open kitchen and living area."
+    },
+    {
+      "path": "/rooms/1/count",
+      "value": 3,
+      "reason": "No bedroom count was given, so a typical family default of three bedrooms is used."
+    },
+    {
+      "path": "/rooms/1/separate_from/0",
+      "value": "open_kitchen_living",
+      "reason": "On a single storey, bedrooms are kept apart from the living area for privacy."
+    },
+    {
+      "path": "/rooms/2/count",
+      "value": 1,
+      "reason": "One shared bathroom is assumed for a three-bedroom house."
+    },
+    {
+      "path": "/rooms/3/type",
+      "value": "wc",
+      "reason": "A guest WC is added as a safe residential default."
+    },
+    {
+      "path": "/style/architectural_style",
+      "value": "modern",
+      "reason": "No architectural style was mentioned, so the default is used."
+    },
+    {
+      "path": "/style/roof/type",
+      "value": "hip",
+      "reason": "No roof type was mentioned, so the default hip roof is used."
+    },
+    {
+      "path": "/style/facade_material",
+      "value": "render",
+      "reason": "Render suits a painted yellow facade."
+    }
+  ],
+  "description": "A single-storey family house with an L-shaped footprint and yellow facade walls. It has an open kitchen-living area, three bedrooms, a bathroom and a WC.",
+  "requirements": [
+    {
+      "path": "/design/footprint_shape",
+      "quote": "make me a long L designed house",
+      "origin": "user_text",
+      "priority": "should"
+    }
+  ],
+  "building_type": "single_family_house",
+  "open_questions": [
+    "How large should the house be (total floor area in m²)?",
+    "How many bedrooms and bathrooms do you need?",
+    "Should one wing of the L be noticeably longer? Exact wing proportions are decided by the layout engine.",
+    "Would you like a garage, a garden terrace or a home office?",
+    "What roof type do you prefer: flat, gable or hip?"
+  ],
+  "schema_version": "1.2.0"
+}

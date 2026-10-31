@@ -1,0 +1,104 @@
+# Reference-only knowledge: bibliographic and contextual information from the book. Never a
+# runtime candidate.
+items:
+  - id: reference.standards_cited
+    kind: reference
+    category: reference
+    concept: standards the book relies on
+    statement: >-
+      The book lists the ESKD standards (GOST 2 series) that apply to building drawings together
+      with SPDS, and the SPDS standards (GOST 21 series) for each kind of construction drawing.
+    params:
+      eskd: ["ГОСТ 2.301-68", "ГОСТ 2.302-68", "ГОСТ 2.303-68", "ГОСТ 2.304-81", "ГОСТ 2.305-68", "ГОСТ 2.306-68", "ГОСТ 2.307-68", "ГОСТ 2.316-68", "ГОСТ 2.317-69", "ГОСТ 2.410-68"]
+      spds: ["ГОСТ 21.101-97", "ГОСТ 21.110-95", "ГОСТ 21.204-93", "ГОСТ 21.205-93", "ГОСТ 21.206-93", "ГОСТ 21.404-85", "ГОСТ 21.501-93", "ГОСТ 21.601-79", "ГОСТ 21.602-79", "ГОСТ 21.608-84", "ГОСТ 21.609-83", "ГОСТ 21.614-88"]
+    provenance: [{ source: georgievsky-2004, pages: [129, 130, 131, 132], section: "Прил. 1; Прил. 2", supports: [statement, params] }]
+    confidence: medium
+    inferences:
+      - "Only the standards most relevant to BuildAI are listed; the book's lists are longer."
+      - "Year suffixes are as printed in 2004 and may have been superseded."
+    usage: reference_only
+    status: needs_verification
+
+  - id: reference.abbreviations
+    kind: code_list
+    category: reference
+    concept: abbreviations on construction drawings
+    statement: >-
+      Common drawing abbreviations include the level mark, ground level, rail-head level and
+      finished floor level, and the seismic, temperature and expansion joints.
+    params:
+      abbreviations:
+        - { abbr: "отм.", en: level mark, term: term.level_mark }
+        - { abbr: "Ур.з.", en: ground level, term: term.ground_level }
+        - { abbr: "Ур.г.р.", en: rail-head level }
+        - { abbr: "Ур.ч.п.", en: finished floor level, term: term.finished_floor_level }
+        - { abbr: "а.с.ш.", en: seismic joint }
+        - { abbr: "т.ш.", en: temperature joint }
+        - { abbr: "д.ш.", en: expansion joint }
+    provenance: [{ source: georgievsky-2004, pages: [133], section: "Прил. 3", supports: [statement, params] }]
+    confidence: high
+    usage: reference_only
+    status: extracted
+
+  - id: reference.documentation_composition
+    kind: reference
+    category: reference
+    concept: composition of design documentation
+    statement: >-
+      Working documentation comprises working drawings, product documents, sketches of
+      non-standard products, specifications of equipment and materials, other documents and
+      estimates; design documentation for approval is bound in numbered volumes starting with a
+      cover, title sheet, contents and explanatory note.
+    provenance: [{ source: georgievsky-2004, pages: [4, 5], section: "1.1; 1.2", cites: ["ГОСТ 21.101-97"] }]
+    confidence: high
+    usage: reference_only
+    status: extracted
+
+  - id: reference.design_stages
+    kind: reference
+    category: reference
+    concept: design stages
+    statement: >-
+      Design is done in two stages (project, then working drawings) or in a single combined
+      stage; projects may be typical, individual or experimental.
+    provenance: [{ source: georgievsky-2004, pages: [6, 7], section: "2.1" }]
+    confidence: high
+    usage: reference_only
+    status: extracted
+
+  - id: reference.fonts_and_mouldings
+    kind: reference
+    category: reference
+    concept: architectural fonts and mouldings
+    statement: >-
+      The book describes narrow architectural and Roman lettering and the construction of
+      architectural mouldings and curve conjugations used for plaster templates.
+    provenance: [{ source: georgievsky-2004, pages: [28, 29, 30, 40, 41, 42], section: "3.5; 3.9; 3.10" }]
+    confidence: medium
+    usage: reference_only
+    status: extracted
+
+  - id: reference.construction_site_plans
+    kind: reference
+    category: reference
+    concept: construction site plans
+    statement: >-
+      Construction site plans show buildings under construction, existing and to be demolished,
+      storage areas, temporary buildings, temporary and permanent roads and networks, and the
+      main construction machines, each with its own symbols.
+    provenance: [{ source: georgievsky-2004, pages: [115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127], section: "11" }]
+    confidence: medium
+    usage: reference_only
+    status: extracted
+
+  - id: reference.student_sheet_examples
+    kind: reference
+    category: reference
+    concept: student drawing sheet examples
+    statement: >-
+      Appendices show a student album cover, a diploma title page and a sample sheet of building
+      element symbols with a title block.
+    provenance: [{ source: georgievsky-2004, pages: [135, 136, 137], section: "Прил. 5-7" }]
+    confidence: high
+    usage: reference_only
+    status: extracted

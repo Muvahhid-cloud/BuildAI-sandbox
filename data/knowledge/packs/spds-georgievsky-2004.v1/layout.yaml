@@ -1,0 +1,100 @@
+# Layout-related knowledge (category layout). The book gives little layout guidance; these
+# are reference size tables and conventions, NOT rules: nothing here constrains a design, and
+# typed families/types over them are K2 work. Sizes are SI meters converted from millimetres.
+items:
+  - id: layout.window_sizes_gost_11214_86
+    kind: dimension_table
+    category: layout
+    concept: residential window and balcony-door overall sizes
+    statement: >-
+      The book tabulates a series of residential window types and balcony doors with overall
+      widths from 570 to 2070 mm and heights from 560 to 1760 mm, and balcony doors 2175 or
+      2375 mm high and 720 or 870 mm wide.
+    params:
+      window_widths_m: [0.57, 0.72, 0.87, 1.17, 1.32, 1.47, 1.77, 2.07]
+      window_heights_m: [0.56, 0.86, 1.16, 1.46, 1.76]
+      balcony_door_heights_m: [2.175, 2.375]
+      balcony_door_widths_m: [0.72, 0.87]
+      window_marks: ["6-9", "6-12", "9-9", "9-12", "9-13.5", "9-15", "12-7.5", "12-9", "12-12", "12-13.5", "12-15", "12-7.5A", "12-9A", "15-6", "15-7.5", "15-9", "15-12", "15-13.5", "15-15", "15-18", "15-21", "15-7.5A", "15-9A", "18-7.5", "18-9", "18-13.5", "18-15", "18-18", "18-7.5A", "18-9A"]
+      balcony_door_marks: ["22-7.5", "22-9", "24-7.5", "24-9"]
+    provenance: [{ source: georgievsky-2004, pages: [138], section: "Прил. 8", cites: ["ГОСТ 11214-86"], supports: [statement, params] }]
+    confidence: medium
+    inferences:
+      - The mark format (nominal height and width in decimetres) is inferred from the table layout; the book does not state it.
+      - The row and column assignment of sizes to marks is read from a low-resolution scan.
+    intended_use: [catalog.types.windows]
+    related: [class.window]
+    status: needs_verification
+
+  - id: layout.door_sizes_gost_24698_81
+    kind: dimension_table
+    category: layout
+    concept: wooden door overall sizes for residential and public buildings
+    statement: >-
+      The book tabulates wooden internal and external door types with overall heights of about
+      2085 and 2385 mm, plus service doors and hatches as separate groups.
+    params:
+      door_heights_m: [2.085, 2.385]
+      groups: [doors, service_doors, hatches]
+    provenance: [{ source: georgievsky-2004, pages: [128, 139], section: "Прил. 9", cites: ["ГОСТ 24698-81"], supports: [statement, params] }]
+    confidence: low
+    inferences: [Door widths are not transcribed because the scanned table is not reliably legible.]
+    intended_use: [catalog.types.doors]
+    related: [class.door]
+    status: needs_verification
+
+  - id: layout.sanitary_fixture_footprints
+    kind: dimension_table
+    category: layout
+    concept: plan footprints of sanitary fixtures
+    statement: >-
+      Plan symbols of sanitary fixtures are drawn at stated sizes: washbasin 500 x 450 mm,
+      one- and two-bowl kitchen sinks 600 x 600 and 1000 x 600 mm, bath 1500 x 700 mm, sitting
+      bath 1200 x 700 mm, shower tray 900 x 900 mm, WC 380 x 460 mm (with a 220 mm cistern in
+      one variant) and bidet 340 x 600 mm.
+    params:
+      fixtures_m:
+        - { fixture: washbasin, width_m: 0.5, depth_m: 0.45 }
+        - { fixture: kitchen_sink_single, width_m: 0.6, depth_m: 0.6 }
+        - { fixture: kitchen_sink_double, width_m: 1.0, depth_m: 0.6 }
+        - { fixture: bath, width_m: 1.5, depth_m: 0.7 }
+        - { fixture: sitting_bath, width_m: 1.2, depth_m: 0.7 }
+        - { fixture: shower_tray, width_m: 0.9, depth_m: 0.9 }
+        - { fixture: wc, width_m: 0.38, depth_m: 0.46, cistern_depth_m: 0.22 }
+        - { fixture: bidet, width_m: 0.34, depth_m: 0.6 }
+      wash_stand_width_range_m: [0.55, 0.65]
+    provenance: [{ source: georgievsky-2004, pages: [72], section: "6.2", tables: ["Табл. 16"], cites: ["ГОСТ 2786-70"], supports: [statement, params] }]
+    confidence: medium
+    inferences:
+      - These are the sizes the plan symbols are drawn at, not product requirements.
+      - Wash-stand depth, flush-cistern and wall-urinal sizes are omitted as not reliably legible.
+    intended_use: [catalog.types.sanitary_fixtures, mep.fixtures]
+    related: [class.sanitary_fixture]
+    status: needs_verification
+
+  - id: layout.dwelling_area_fraction
+    kind: convention
+    category: layout
+    concept: dwelling area notation
+    statement: >-
+      On residential plans the apartment type and area may be written as a fraction: living area
+      over total (useful) area.
+    provenance: [{ source: georgievsky-2004, pages: [71], section: "6.2" }]
+    confidence: high
+    intended_use: [reports.area_summary]
+    status: extracted
+
+  - id: layout.block_section_axes
+    kind: convention
+    category: layout
+    concept: axes of block-section buildings
+    statement: >-
+      Residential buildings assembled from block-sections mark block-section axes with the index
+      "с"; on the assembled plan only the extreme axes of each block-section are marked without
+      the index.
+    params: { axis_index: "с" }
+    provenance: [{ source: georgievsky-2004, pages: [45], section: "4.1", figures: ["Рис. 54"] }]
+    confidence: medium
+    usage: reference_only
+    inferences: [Multi-unit block-section buildings are outside the v1 single-family scope.]
+    status: extracted

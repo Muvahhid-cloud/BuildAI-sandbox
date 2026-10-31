@@ -1,0 +1,28 @@
+# spds-georgievsky-2004@1 — knowledge derived from one source: Georgievsky (2004).
+#
+# Scoped as the `spds` drawing-convention profile (ESKD/SPDS practice as of 2004). It is NOT a
+# global architectural standard and NOT a construction-code engine. Nothing here is a rule:
+# enforceable minimums/maximums live only in BuildingRulesProfiles (data/rules-profiles).
+# Every item starts as `extracted` or `needs_verification`; only reviewed and then approved
+# items may ever be consumed by engines or AI (none in K1).
+id: spds-georgievsky-2004
+version: 1
+name: SPDS drafting conventions (Georgievsky 2004)
+description: >-
+  Building-model, layout, drawing, structural-drawing, building-services and reference
+  knowledge paraphrased from Georgievsky (2004), with printed-page provenance.
+status: extracted
+scope:
+  kind: drawing_convention_profile
+  drawing_profile: spds
+  jurisdiction_context: [RU]
+  era: "2004"
+  note: >-
+    Reflects ESKD/SPDS standards as cited in 2004; later revisions of those standards are not
+    reflected. Region profiles opt into this pack explicitly; it is never applied globally.
+sources: [georgievsky-2004, buildai-editorial]
+depends_on: [core@1]
+contents:
+  items: [model.yaml, layout.yaml, drawing-sheets.yaml, drawing-views.yaml, structural.yaml, mep.yaml, reference.yaml]
+  glossary: [glossary.ru.yaml]
+  drawing_profiles: [drawing-profile.yaml]

@@ -1,0 +1,190 @@
+# Design systems of buildai-design-systems@1 (Phase 3.5 K3). Editorial drafts.
+#
+# Types below are VISUAL variants of the generic types (buildai-generic-types@1): same family,
+# same dimensions/defaults, same (or no) assembly — only a frame, leaf or railing material/kind
+# differs. Families and assemblies are reused from the generic pack; nothing here is
+# construction data. Colors are palette names (apps/api/app/modules/building/appearance.py);
+# materials are ids of data/materials/library.json.
+
+types:
+  - { id: type.door.minimal_entrance, family: family.door.hinged, name: "Entrance door (steel, flush)", params: { element_type: door, door_kind: entrance, height: 2.2, thickness: 0.06, material_id: metal, frame_material_id: window_frame, default_width: 1.0 }, derived_from: { layout_config: [entrance_door, door_thickness] }, provenance: [&ed { source: buildai-editorial, supports: [mapping], note: "Visual variant of a generic type (material only)." }], status: draft }
+  - { id: type.door.warm_entrance, family: family.door.hinged, name: Entrance door (oak), params: { element_type: door, door_kind: entrance, height: 2.2, thickness: 0.06, material_id: wood, frame_material_id: wood_dark, default_width: 1.0 }, derived_from: { layout_config: [entrance_door, door_thickness] }, provenance: [*ed], status: draft }
+  - { id: type.railing.minimal_stair_glass, family: family.railing.basic, name: Stair railing (glass), params: { element_type: railing, railing_kind: glass, height: 0.9, post_spacing: 1.0, material_id: metal }, derived_from: { layout_config: [stair_railing_height, railing_post_spacing] }, provenance: [*ed], status: draft }
+  - { id: type.window.white_frame_standard, family: family.window.basic, name: Standard window (white frame), params: { element_type: window, material_id: glass, frame_material_id: window_frame_white, default_sill: 0.9, default_height: 1.4, glazing_ratio: 0.16, mullion_spacing: 1.0 }, derived_from: { layout_config: [window_presets.standard] }, provenance: [*ed], status: draft }
+  - { id: type.window.white_frame_large, family: family.window.basic, name: Large window (white frame), params: { element_type: window, material_id: glass, frame_material_id: window_frame_white, default_sill: 0.6, default_height: 1.8, glazing_ratio: 0.22, mullion_spacing: 1.2 }, derived_from: { layout_config: [window_presets.large] }, provenance: [*ed], status: draft }
+  - { id: type.window.white_frame_panoramic, family: family.window.basic, name: Panoramic window (white frame), params: { element_type: window, material_id: glass, frame_material_id: window_frame_white, default_sill: 0.1, default_height: 2.4, glazing_ratio: 0.3, mullion_spacing: 1.4 }, derived_from: { layout_config: [window_presets.panoramic] }, provenance: [*ed], status: draft }
+  - { id: type.window.wood_frame_standard, family: family.window.basic, name: Standard window (oak frame), params: { element_type: window, material_id: glass, frame_material_id: wood, default_sill: 0.9, default_height: 1.4, glazing_ratio: 0.16, mullion_spacing: 1.0 }, derived_from: { layout_config: [window_presets.standard] }, provenance: [*ed], status: draft }
+  - { id: type.window.wood_frame_large, family: family.window.basic, name: Large window (oak frame), params: { element_type: window, material_id: glass, frame_material_id: wood, default_sill: 0.6, default_height: 1.8, glazing_ratio: 0.22, mullion_spacing: 1.2 }, derived_from: { layout_config: [window_presets.large] }, provenance: [*ed], status: draft }
+  - { id: type.window.wood_frame_panoramic, family: family.window.basic, name: Panoramic window (oak frame), params: { element_type: window, material_id: glass, frame_material_id: wood, default_sill: 0.1, default_height: 2.4, glazing_ratio: 0.3, mullion_spacing: 1.4 }, derived_from: { layout_config: [window_presets.panoramic] }, provenance: [*ed], status: draft }
+
+role_mappings:
+  - id: mapping.modern_minimal
+    name: Modern minimal
+    roles:
+      wall.exterior: type.wall.generic_exterior_300
+      wall.interior: type.wall.generic_interior_120
+      slab.ground: type.slab.generic_ground_300
+      slab.floor: type.slab.generic_floor_200
+      slab.balcony: type.slab.generic_balcony_200
+      slab.terrace: type.slab.generic_terrace_150
+      roof.main: type.roof.generic_200
+      roof.garage: type.roof.generic_200
+      door.entrance: type.door.minimal_entrance
+      door.interior: type.door.generic_interior
+      door.wet_room: type.door.generic_wet_room
+      door.sliding: type.door.generic_sliding
+      door.garage: type.door.generic_garage
+      window.standard: type.window.generic_standard
+      window.large: type.window.generic_large
+      window.panoramic: type.window.generic_panoramic
+      window.service: type.window.generic_service
+      window.stair: type.window.generic_stair
+      stair.main: type.stair.generic_straight_1000
+      railing.stair: type.railing.minimal_stair_glass
+      railing.balcony: type.railing.generic_balcony
+    provenance: [*ed]
+    status: draft
+  - id: mapping.contemporary_warm
+    name: Contemporary warm
+    roles:
+      wall.exterior: type.wall.generic_exterior_300
+      wall.interior: type.wall.generic_interior_120
+      slab.ground: type.slab.generic_ground_300
+      slab.floor: type.slab.generic_floor_200
+      slab.balcony: type.slab.generic_balcony_200
+      slab.terrace: type.slab.generic_terrace_150
+      roof.main: type.roof.generic_200
+      roof.garage: type.roof.generic_200
+      door.entrance: type.door.warm_entrance
+      door.interior: type.door.generic_interior
+      door.wet_room: type.door.generic_wet_room
+      door.sliding: type.door.generic_sliding
+      door.garage: type.door.generic_garage
+      window.standard: type.window.wood_frame_standard
+      window.large: type.window.wood_frame_large
+      window.panoramic: type.window.wood_frame_panoramic
+      window.service: type.window.generic_service
+      window.stair: type.window.generic_stair
+      stair.main: type.stair.generic_straight_1000
+      railing.stair: type.railing.generic_stair
+      railing.balcony: type.railing.generic_balcony
+    provenance: [*ed]
+    status: draft
+  - id: mapping.classic_brick
+    name: Classic brick
+    roles:
+      wall.exterior: type.wall.generic_exterior_300
+      wall.interior: type.wall.generic_interior_120
+      slab.ground: type.slab.generic_ground_300
+      slab.floor: type.slab.generic_floor_200
+      slab.balcony: type.slab.generic_balcony_200
+      slab.terrace: type.slab.generic_terrace_150
+      roof.main: type.roof.generic_200
+      roof.garage: type.roof.generic_200
+      door.entrance: type.door.generic_entrance
+      door.interior: type.door.generic_interior
+      door.wet_room: type.door.generic_wet_room
+      door.sliding: type.door.generic_sliding
+      door.garage: type.door.generic_garage
+      window.standard: type.window.white_frame_standard
+      window.large: type.window.white_frame_large
+      window.panoramic: type.window.white_frame_panoramic
+      window.service: type.window.generic_service
+      window.stair: type.window.generic_stair
+      stair.main: type.stair.generic_straight_1000
+      railing.stair: type.railing.generic_stair
+      railing.balcony: type.railing.generic_balcony
+    provenance: [*ed]
+    status: draft
+  - id: mapping.scandinavian_timber
+    name: Scandinavian timber
+    roles:
+      wall.exterior: type.wall.generic_exterior_300
+      wall.interior: type.wall.generic_interior_120
+      slab.ground: type.slab.generic_ground_300
+      slab.floor: type.slab.generic_floor_200
+      slab.balcony: type.slab.generic_balcony_200
+      slab.terrace: type.slab.generic_terrace_150
+      roof.main: type.roof.generic_200
+      roof.garage: type.roof.generic_200
+      door.entrance: type.door.warm_entrance
+      door.interior: type.door.generic_interior
+      door.wet_room: type.door.generic_wet_room
+      door.sliding: type.door.generic_sliding
+      door.garage: type.door.generic_garage
+      window.standard: type.window.white_frame_standard
+      window.large: type.window.white_frame_large
+      window.panoramic: type.window.white_frame_panoramic
+      window.service: type.window.generic_service
+      window.stair: type.window.generic_stair
+      stair.main: type.stair.generic_straight_1000
+      railing.stair: type.railing.generic_stair
+      railing.balcony: type.railing.generic_balcony
+    provenance: [*ed]
+    status: draft
+
+design_systems:
+  - id: modern-minimal
+    name: Modern minimal
+    description: >-
+      Calm, reduced volumes: smooth render or exposed concrete in white, grey or black (an accent
+      color is allowed), large glazing, flat or simple gable roofs, light oak and stone-look
+      floors, grey upholstery and a steel entrance door with a glass stair balustrade.
+    style_tags: [modern, minimalist, contemporary]
+    interior_styles: [minimalist, modern]
+    role_mapping: mapping.modern_minimal
+    roof: { types: [flat, gable], default: flat }
+    windows: { styles: [standard, large, panoramic], default: large }
+    facade: { materials: [render, concrete], default_material: render, colors: [white, off_white, light_grey, grey, anthracite, black], default_color: white, custom_colors: true }
+    finishes: { dry_floor: oak_light, wet_floor: stone_tile, interior_wall: interior_wall, wet_wall: stone_tile }
+    furniture: { upholstery: fabric, upholstery_light: fabric_light, wood: oak_light, wood_dark: wood_dark, cabinet: cabinet, countertop: countertop }
+    provenance: [*ed]
+    status: draft
+  - id: contemporary-warm
+    name: Contemporary warm
+    description: >-
+      Contemporary forms in warm earth tones: beige, sand, ochre or terracotta render, brick or
+      timber, gable or hip roofs, oak-framed windows, oak entrance door, warm white walls,
+      oak parquet and terracotta upholstery.
+    style_tags: [contemporary, modern]
+    interior_styles: [modern, cozy, scandinavian]
+    role_mapping: mapping.contemporary_warm
+    roof: { types: [gable, hip, flat], default: gable, default_pitch_deg: 30 }
+    windows: { styles: [standard, large, panoramic], default: large }
+    facade: { materials: [render, brick, timber], default_material: render, colors: [warm_beige, sand, off_white, ochre, terracotta, yellow], default_color: warm_beige, custom_colors: false }
+    finishes: { dry_floor: parquet, wet_floor: stone_tile, interior_wall: wall_warm, wet_wall: tile }
+    furniture: { upholstery: fabric_warm, upholstery_light: fabric_light, wood: wood, wood_dark: wood_dark, cabinet: cabinet, countertop: countertop }
+    provenance: [*ed]
+    status: draft
+  - id: classic-brick
+    name: Classic brick
+    description: >-
+      Traditional massing in exposed brick (or plain render), hip or gable roofs with a clear
+      pitch, standard and large windows with white frames, oak parquet and warm upholstery.
+      Brick facades keep their own color; there is no facade color palette.
+    style_tags: [classic, traditional]
+    interior_styles: [classic, cozy]
+    role_mapping: mapping.classic_brick
+    roof: { types: [hip, gable], default: hip, default_pitch_deg: 35 }
+    windows: { styles: [standard, large], default: standard }
+    facade: { materials: [brick, render], default_material: brick, colors: [], custom_colors: false }
+    finishes: { dry_floor: parquet, wet_floor: tile, interior_wall: interior_wall, wet_wall: tile }
+    furniture: { upholstery: fabric_warm, upholstery_light: fabric_light, wood: wood, wood_dark: wood_dark, cabinet: cabinet, countertop: countertop }
+    provenance: [*ed]
+    status: draft
+  - id: scandinavian-timber
+    name: Scandinavian timber
+    description: >-
+      Simple gabled volumes in timber cladding or painted render (white, light grey, sage,
+      timber brown, Falu-style red, black), white-framed windows, light oak floors and
+      furniture, light textiles.
+    style_tags: [scandinavian, minimalist, contemporary]
+    interior_styles: [scandinavian, minimalist, cozy]
+    role_mapping: mapping.scandinavian_timber
+    roof: { types: [gable], default: gable, default_pitch_deg: 35 }
+    windows: { styles: [standard, large, panoramic], default: large }
+    facade: { materials: [timber, render], default_material: timber, colors: [white, off_white, light_grey, sage_green, timber_brown, brick_red, black], custom_colors: false }
+    finishes: { dry_floor: oak_light, wet_floor: stone_tile, interior_wall: interior_wall, wet_wall: tile }
+    furniture: { upholstery: fabric_light, upholstery_light: fabric_light, wood: oak_light, wood_dark: wood, cabinet: cabinet, countertop: countertop }
+    provenance: [*ed]
+    status: draft

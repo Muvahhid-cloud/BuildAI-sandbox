@@ -1,0 +1,1685 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "GENERATED from Pydantic (app/modules/ai/schemas/responses.py). Do not edit.",
+  "title": "AIGenerationContracts",
+  "$defs": {
+    "AIGenerateRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "prompt": {
+          "maxLength": 4000,
+          "minLength": 3,
+          "type": "string"
+        },
+        "options": {
+          "$ref": "#/$defs/GenerationOptions"
+        }
+      },
+      "required": [
+        "prompt"
+      ],
+      "title": "AIGenerateRequest",
+      "type": "object"
+    },
+    "AIGenerationList": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/AIGenerationSummaryOut"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "title": "AIGenerationList",
+      "type": "object"
+    },
+    "AIGenerationOut": {
+      "description": "Full generation record: what was asked, what the AI understood, what was built.",
+      "properties": {
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "project_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "completed",
+            "needs_clarification",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "stage": {
+          "anyOf": [
+            {
+              "enum": [
+                "queued",
+                "interpreting",
+                "validating",
+                "repairing",
+                "layout",
+                "checking",
+                "saving",
+                "done"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "understanding": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version_number": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "clarification_questions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GenerationErrorOut"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "repair_count": {
+          "type": "integer"
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "options": {
+          "$ref": "#/$defs/GenerationOptions"
+        },
+        "prompt_version": {
+          "type": "string"
+        },
+        "seed": {
+          "type": "integer"
+        },
+        "rules_profile": {
+          "type": "string"
+        },
+        "engine_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "specification": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BuildingSpecification"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assumptions": {
+          "items": {
+            "$ref": "#/$defs/Assumption"
+          },
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "$ref": "#/$defs/Issue"
+          },
+          "type": "array"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/RequirementCheck"
+          },
+          "type": "array"
+        },
+        "input_tokens": {
+          "type": "integer"
+        },
+        "output_tokens": {
+          "type": "integer"
+        },
+        "started_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "status",
+        "stage",
+        "prompt",
+        "provider",
+        "model",
+        "understanding",
+        "version_id",
+        "version_number",
+        "clarification_questions",
+        "error",
+        "repair_count",
+        "duration_ms",
+        "created_at",
+        "finished_at",
+        "options",
+        "prompt_version",
+        "seed",
+        "rules_profile",
+        "engine_version",
+        "specification",
+        "assumptions",
+        "warnings",
+        "summary",
+        "checks",
+        "input_tokens",
+        "output_tokens",
+        "started_at"
+      ],
+      "title": "AIGenerationOut",
+      "type": "object"
+    },
+    "AIGenerationSummaryOut": {
+      "description": "One entry of a project's generation history.",
+      "properties": {
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "project_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "completed",
+            "needs_clarification",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "stage": {
+          "anyOf": [
+            {
+              "enum": [
+                "queued",
+                "interpreting",
+                "validating",
+                "repairing",
+                "layout",
+                "checking",
+                "saving",
+                "done"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "understanding": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version_number": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "clarification_questions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GenerationErrorOut"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "repair_count": {
+          "type": "integer"
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "status",
+        "stage",
+        "prompt",
+        "provider",
+        "model",
+        "understanding",
+        "version_id",
+        "version_number",
+        "clarification_questions",
+        "error",
+        "repair_count",
+        "duration_ms",
+        "created_at",
+        "finished_at"
+      ],
+      "title": "AIGenerationSummaryOut",
+      "type": "object"
+    },
+    "ArchitecturalStyle": {
+      "enum": [
+        "modern",
+        "minimalist",
+        "contemporary",
+        "classic",
+        "traditional",
+        "scandinavian",
+        "industrial",
+        "mediterranean",
+        "luxury"
+      ],
+      "title": "ArchitecturalStyle",
+      "type": "string"
+    },
+    "Assumption": {
+      "additionalProperties": false,
+      "description": "Something that was inferred rather than stated (shown to the user).",
+      "properties": {
+        "path": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reason": {
+          "maxLength": 500,
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "reason"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "Balcony": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "maximum": 2,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "attached_to": {
+          "anyOf": [
+            {
+              "maxLength": 40,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "side": {
+          "default": "garden",
+          "enum": [
+            "garden",
+            "street"
+          ],
+          "type": "string"
+        },
+        "width_m": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1.2,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "depth_m": {
+          "default": 1.5,
+          "maximum": 3.0,
+          "minimum": 0.8,
+          "type": "number"
+        }
+      },
+      "required": [
+        "level"
+      ],
+      "title": "Balcony",
+      "type": "object"
+    },
+    "Budget": {
+      "additionalProperties": false,
+      "description": "A constraint recorded with the spec. Nothing is costed from it in Phase 2.",
+      "properties": {
+        "amount": {
+          "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,16}|(?=[\\d.]{1,19}0*$)\\d{0,16}\\.\\d{0,2}0*$)",
+          "type": "string"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "title": "Budget",
+      "type": "object"
+    },
+    "BuildingSpecification": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "default": "1.2.0",
+          "enum": [
+            "1.0.0",
+            "1.1.0",
+            "1.2.0"
+          ],
+          "type": "string"
+        },
+        "building_type": {
+          "const": "single_family_house",
+          "default": "single_family_house",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2000,
+          "type": "string"
+        },
+        "targets": {
+          "$ref": "#/$defs/Targets"
+        },
+        "site": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Site"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "style": {
+          "$ref": "#/$defs/Style"
+        },
+        "rooms": {
+          "items": {
+            "$ref": "#/$defs/RoomRequirement"
+          },
+          "maxItems": 40,
+          "minItems": 1,
+          "type": "array"
+        },
+        "features": {
+          "$ref": "#/$defs/Features"
+        },
+        "design": {
+          "$ref": "#/$defs/DesignIntent"
+        },
+        "budget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Budget"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "requirements": {
+          "items": {
+            "$ref": "#/$defs/RequirementTrace"
+          },
+          "maxItems": 60,
+          "type": "array"
+        },
+        "assumptions": {
+          "items": {
+            "$ref": "#/$defs/Assumption"
+          },
+          "maxItems": 50,
+          "type": "array"
+        },
+        "open_questions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "targets",
+        "rooms"
+      ],
+      "title": "BuildingSpecification",
+      "type": "object"
+    },
+    "DesignIntent": {
+      "additionalProperties": false,
+      "description": "Explicit visual/directional design requests (1.1.0). Null = not requested.",
+      "properties": {
+        "facade_color": {
+          "anyOf": [
+            {
+              "pattern": "^(#[0-9a-f]{6}|[a-z][a-z_]{1,30})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "windows": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WindowIntent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "priorities": {
+          "items": {
+            "$ref": "#/$defs/DesignPriority"
+          },
+          "maxItems": 5,
+          "type": "array"
+        },
+        "footprint_shape": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FootprintShape"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "DesignIntent",
+      "type": "object"
+    },
+    "DesignPriority": {
+      "description": "What the client cares about most (1.2.0). Each one raises the weight of the matching\ncriterion in candidate evaluation (building/evaluation.py) and can select layout patterns;\nnone of them is a hard requirement.",
+      "enum": [
+        "daylight",
+        "privacy",
+        "garden_connection",
+        "compactness",
+        "open_plan"
+      ],
+      "title": "DesignPriority",
+      "type": "string"
+    },
+    "FacadeMaterial": {
+      "description": "High-level facade choice; the layout engine maps it to material-library ids.",
+      "enum": [
+        "render",
+        "brick",
+        "concrete",
+        "timber"
+      ],
+      "title": "FacadeMaterial",
+      "type": "string"
+    },
+    "FacadeSide": {
+      "description": "Semantic facade of the house (building/facades.py). The street is on the model's south\nside (-y): front = street/entrance side, rear = garden/backyard side, left/right as seen\nfrom the street.",
+      "enum": [
+        "front",
+        "rear",
+        "left",
+        "right"
+      ],
+      "title": "FacadeSide",
+      "type": "string"
+    },
+    "Features": {
+      "additionalProperties": false,
+      "properties": {
+        "garage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Garage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "balconies": {
+          "items": {
+            "$ref": "#/$defs/Balcony"
+          },
+          "maxItems": 4,
+          "type": "array"
+        },
+        "terrace": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Terrace"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Features",
+      "type": "object"
+    },
+    "FinishLevel": {
+      "enum": [
+        "economy",
+        "standard",
+        "premium"
+      ],
+      "title": "FinishLevel",
+      "type": "string"
+    },
+    "FootprintShape": {
+      "description": "Footprint topology the client asks for (1.2.0). Recording a shape does not mean the\nengine can build it: what each shape needs and whether a generator exists is in\nbuilding/footprint.py CAPABILITIES (docs/3d-engine.md §16.12). An unsupported shape is\nstill recorded, so it is reported honestly instead of being dropped.",
+      "enum": [
+        "rectangular",
+        "l_shape",
+        "t_shape",
+        "u_shape",
+        "courtyard"
+      ],
+      "title": "FootprintShape",
+      "type": "string"
+    },
+    "Garage": {
+      "additionalProperties": false,
+      "properties": {
+        "cars": {
+          "maximum": 3,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "cars"
+      ],
+      "title": "Garage",
+      "type": "object"
+    },
+    "GenerationErrorOut": {
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "items": {
+            "$ref": "#/$defs/Issue"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "GenerationErrorOut",
+      "type": "object"
+    },
+    "GenerationOptions": {
+      "additionalProperties": false,
+      "description": "Optional structured fields next to the prompt. They are explicit user requirements:\nthe interpreter must honour them, and the generation service verifies that it did.",
+      "properties": {
+        "gross_floor_area_m2": {
+          "anyOf": [
+            {
+              "maximum": 2000,
+              "minimum": 20,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "storeys": {
+          "anyOf": [
+            {
+              "maximum": 3,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "architectural_style": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArchitecturalStyle"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "budget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Budget"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "region_code": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 2,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "seed": {
+          "default": 0,
+          "maximum": 2147483647,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "title": "GenerationOptions",
+      "type": "object"
+    },
+    "InteriorStyle": {
+      "enum": [
+        "minimalist",
+        "modern",
+        "classic",
+        "scandinavian",
+        "industrial",
+        "luxury",
+        "cozy"
+      ],
+      "title": "InteriorStyle",
+      "type": "string"
+    },
+    "Issue": {
+      "additionalProperties": false,
+      "properties": {
+        "severity": {
+          "enum": [
+            "error",
+            "warning"
+          ],
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "suggestion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rule_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "element_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "constraint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "related_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "measure": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Measure"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "severity",
+        "code",
+        "path",
+        "message",
+        "suggestion",
+        "rule_ref",
+        "element_id",
+        "constraint",
+        "related_ids",
+        "measure"
+      ],
+      "title": "Issue",
+      "type": "object"
+    },
+    "Measure": {
+      "additionalProperties": false,
+      "description": "A measured quantity and the limit it violates (SI units).",
+      "properties": {
+        "quantity": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "actual": {
+          "type": "number"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "unit": {
+          "enum": [
+            "m",
+            "m2"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "quantity",
+        "actual",
+        "limit",
+        "unit"
+      ],
+      "title": "Measure",
+      "type": "object"
+    },
+    "ModelSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "storeys": {
+          "type": "integer"
+        },
+        "gross_floor_area_m2": {
+          "type": "number"
+        },
+        "net_floor_area_m2": {
+          "type": "number"
+        },
+        "rooms": {
+          "type": "integer"
+        },
+        "bedrooms": {
+          "type": "integer"
+        },
+        "bathrooms": {
+          "type": "integer"
+        },
+        "wcs": {
+          "type": "integer"
+        },
+        "garage": {
+          "type": "boolean"
+        },
+        "balconies": {
+          "type": "integer"
+        },
+        "terraces": {
+          "type": "integer"
+        },
+        "walls": {
+          "type": "integer"
+        },
+        "doors": {
+          "type": "integer"
+        },
+        "windows": {
+          "type": "integer"
+        },
+        "elements": {
+          "type": "integer"
+        },
+        "facade_colors": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "windows_by_facade": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "type": "object"
+        },
+        "rooms_on_facade": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "storeys",
+        "gross_floor_area_m2",
+        "net_floor_area_m2",
+        "rooms",
+        "bedrooms",
+        "bathrooms",
+        "wcs",
+        "garage",
+        "balconies",
+        "terraces",
+        "walls",
+        "doors",
+        "windows",
+        "elements",
+        "facade_colors",
+        "windows_by_facade",
+        "rooms_on_facade"
+      ],
+      "title": "ModelSummary",
+      "type": "object"
+    },
+    "Priority": {
+      "description": "MUST = mandatory: a candidate that misses it is rejected and generation fails with the\nreason rather than relaxing it. SHOULD = preference: scored, reported when missed.",
+      "enum": [
+        "must",
+        "should"
+      ],
+      "title": "Priority",
+      "type": "string"
+    },
+    "RequirementCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "requested": {
+          "type": "string"
+        },
+        "delivered": {
+          "type": "string"
+        },
+        "met": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key",
+        "label",
+        "requested",
+        "delivered",
+        "met"
+      ],
+      "title": "RequirementCheck",
+      "type": "object"
+    },
+    "RequirementOrigin": {
+      "enum": [
+        "user_text",
+        "form",
+        "assumption"
+      ],
+      "title": "RequirementOrigin",
+      "type": "string"
+    },
+    "RequirementTrace": {
+      "additionalProperties": false,
+      "description": "Priority and origin of one spec value (1.2.0), so each design decision can be traced\nback to the request. `path` is a JSON pointer to a value that exists in the spec: a room's\ntarget_area_m2, an adjacent_to/open_to/separate_from entry, faces, or design.windows.",
+      "properties": {
+        "path": {
+          "maxLength": 200,
+          "pattern": "^(/[a-z0-9_]+)+$",
+          "type": "string"
+        },
+        "priority": {
+          "$ref": "#/$defs/Priority"
+        },
+        "origin": {
+          "$ref": "#/$defs/RequirementOrigin"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "RequirementTrace",
+      "type": "object"
+    },
+    "RoofSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/RoofType"
+        },
+        "pitch_deg": {
+          "anyOf": [
+            {
+              "maximum": 45,
+              "minimum": 5,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "RoofSpec",
+      "type": "object"
+    },
+    "RoofType": {
+      "enum": [
+        "flat",
+        "gable",
+        "hip"
+      ],
+      "title": "RoofType",
+      "type": "string"
+    },
+    "RoomFeature": {
+      "description": "Rooms attached to a bedroom and reached through it.",
+      "enum": [
+        "en_suite",
+        "walk_in_closet"
+      ],
+      "title": "RoomFeature",
+      "type": "string"
+    },
+    "RoomRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "maxLength": 40,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/SpecRoomType"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "count": {
+          "default": 1,
+          "maximum": 12,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "target_area_m2": {
+          "anyOf": [
+            {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "min_area_m2": {
+          "anyOf": [
+            {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_area_m2": {
+          "anyOf": [
+            {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "level": {
+          "anyOf": [
+            {
+              "maximum": 2,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "adjacent_to": {
+          "items": {
+            "maxLength": 40,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "maxItems": 8,
+          "type": "array"
+        },
+        "open_to": {
+          "items": {
+            "maxLength": 40,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "type": "array"
+        },
+        "features": {
+          "items": {
+            "$ref": "#/$defs/RoomFeature"
+          },
+          "maxItems": 2,
+          "type": "array"
+        },
+        "faces": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FacadeSide"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "separate_from": {
+          "items": {
+            "maxLength": 40,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "maxItems": 8,
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "type"
+      ],
+      "title": "RoomRequirement",
+      "type": "object"
+    },
+    "Site": {
+      "additionalProperties": false,
+      "description": "Plot and setbacks. The street is on the model's south side (-y).",
+      "properties": {
+        "plot_width_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "plot_depth_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "setback_front_m": {
+          "default": 0,
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        "setback_rear_m": {
+          "default": 0,
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        "setback_side_m": {
+          "default": 0,
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        "region_code": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 2,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Site",
+      "type": "object"
+    },
+    "SpecRoomType": {
+      "description": "Room types a specification may request. Circulation (entrance hall, corridors, stair\ncore), the garage, balconies and terraces are produced by the engine from `features`.",
+      "enum": [
+        "bedroom",
+        "bathroom",
+        "wc",
+        "kitchen",
+        "living",
+        "dining",
+        "open_kitchen_living",
+        "study",
+        "laundry",
+        "utility",
+        "storage",
+        "plant_room"
+      ],
+      "title": "SpecRoomType",
+      "type": "string"
+    },
+    "Style": {
+      "additionalProperties": false,
+      "properties": {
+        "architectural_style": {
+          "$ref": "#/$defs/ArchitecturalStyle"
+        },
+        "interior_style": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteriorStyle"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "roof": {
+          "$ref": "#/$defs/RoofSpec"
+        },
+        "window_style": {
+          "$ref": "#/$defs/WindowStyle"
+        },
+        "facade_material": {
+          "$ref": "#/$defs/FacadeMaterial"
+        },
+        "interior_finish_level": {
+          "$ref": "#/$defs/FinishLevel"
+        },
+        "design_system": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 2,
+              "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Style",
+      "type": "object"
+    },
+    "Targets": {
+      "additionalProperties": false,
+      "properties": {
+        "gross_floor_area_m2": {
+          "anyOf": [
+            {
+              "maximum": 2000,
+              "minimum": 20,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "storeys": {
+          "maximum": 3,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "floor_to_floor_height_m": {
+          "default": 3.0,
+          "maximum": 4.0,
+          "minimum": 2.4,
+          "type": "number"
+        },
+        "max_footprint_width_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 200,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_footprint_depth_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 200,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "storeys"
+      ],
+      "title": "Targets",
+      "type": "object"
+    },
+    "Terrace": {
+      "additionalProperties": false,
+      "description": "Ground-level terrace on the garden side, reached from a living space.",
+      "properties": {
+        "attached_to": {
+          "anyOf": [
+            {
+              "maxLength": 40,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "width_m": {
+          "anyOf": [
+            {
+              "maximum": 20,
+              "minimum": 2,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "depth_m": {
+          "default": 3.0,
+          "maximum": 8,
+          "minimum": 1.5,
+          "type": "number"
+        }
+      },
+      "title": "Terrace",
+      "type": "object"
+    },
+    "WindowIntent": {
+      "additionalProperties": false,
+      "description": "Where the emphasised (large/panoramic) windows go. Facades not listed keep\n`style.window_style`; excluded facades never get emphasised windows (standard ones).",
+      "properties": {
+        "emphasis": {
+          "$ref": "#/$defs/WindowStyle"
+        },
+        "preferred_facades": {
+          "items": {
+            "$ref": "#/$defs/FacadeSide"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "type": "array"
+        },
+        "excluded_facades": {
+          "items": {
+            "$ref": "#/$defs/FacadeSide"
+          },
+          "maxItems": 3,
+          "type": "array"
+        }
+      },
+      "required": [
+        "preferred_facades"
+      ],
+      "title": "WindowIntent",
+      "type": "object"
+    },
+    "WindowStyle": {
+      "enum": [
+        "standard",
+        "large",
+        "panoramic"
+      ],
+      "title": "WindowStyle",
+      "type": "string"
+    }
+  }
+}

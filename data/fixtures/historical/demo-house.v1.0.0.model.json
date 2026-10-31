@@ -1,0 +1,5006 @@
+{
+  "schema_version": "1.0.0",
+  "id": "4a01093a-3d16-527a-9510-250c82094720",
+  "building": {
+    "name": "Demo family house",
+    "building_type": "single_family_house",
+    "description": "Hand-authored two-floor family house (12 x 10 m, ~240 m2) used to prove the BuildingModel -> procedural 3D pipeline. Not produced by the layout engine."
+  },
+  "units": "m",
+  "engine_version": "fixture@1",
+  "seed": null,
+  "levels": [
+    {
+      "id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "name": "Floor 1",
+      "index": 0,
+      "elevation": 0.0,
+      "height": 3.0,
+      "semantic_key": "level:L0"
+    },
+    {
+      "id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "name": "Floor 2",
+      "index": 1,
+      "elevation": 3.0,
+      "height": 3.0,
+      "semantic_key": "level:L1"
+    }
+  ],
+  "elements": [
+    {
+      "id": "0f436215-4c94-5c37-b508-d568f65d6f80",
+      "name": "Entrance",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "floor",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "07aefd95-3a5b-5ae7-8763-0156b8dd5b9e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:entrance",
+      "type": "room",
+      "dimensions": {
+        "area": 16.32,
+        "perimeter": 16.4,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "entrance",
+        "zone": "circulation",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 3.4,
+            "y": 0.0
+          },
+          {
+            "x": 3.4,
+            "y": 4.8
+          },
+          {
+            "x": 0.0,
+            "y": 4.8
+          }
+        ],
+        "floor_material_id": "floor"
+      }
+    },
+    {
+      "id": "07aefd95-3a5b-5ae7-8763-0156b8dd5b9e",
+      "name": "Staircase",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 3.4,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "floor",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "0f436215-4c94-5c37-b508-d568f65d6f80"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "2ecff5a8-bbb5-5a07-98c4-42ce1f4a0759"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:staircase",
+      "type": "room",
+      "dimensions": {
+        "area": 6.72,
+        "perimeter": 12.4,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "staircase",
+        "zone": "circulation",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 1.4,
+            "y": 0.0
+          },
+          {
+            "x": 1.4,
+            "y": 4.8
+          },
+          {
+            "x": 0.0,
+            "y": 4.8
+          }
+        ],
+        "floor_material_id": "floor"
+      }
+    },
+    {
+      "id": "2ecff5a8-bbb5-5a07-98c4-42ce1f4a0759",
+      "name": "Storage",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 4.8,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "floor",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "07aefd95-3a5b-5ae7-8763-0156b8dd5b9e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:storage",
+      "type": "room",
+      "dimensions": {
+        "area": 6.24,
+        "perimeter": 10.0,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "storage",
+        "zone": "service",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 2.6,
+            "y": 0.0
+          },
+          {
+            "x": 2.6,
+            "y": 2.4
+          },
+          {
+            "x": 0.0,
+            "y": 2.4
+          }
+        ],
+        "floor_material_id": "floor"
+      }
+    },
+    {
+      "id": "d0bee683-2b45-5f2c-8404-c1cad840dae1",
+      "name": "Bathroom",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 4.8,
+        "y": 2.4,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "tile",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "07aefd95-3a5b-5ae7-8763-0156b8dd5b9e"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "2ecff5a8-bbb5-5a07-98c4-42ce1f4a0759"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:bath_g",
+      "type": "room",
+      "dimensions": {
+        "area": 6.24,
+        "perimeter": 10.0,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "bathroom",
+        "zone": "service",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 2.6,
+            "y": 0.0
+          },
+          {
+            "x": 2.6,
+            "y": 2.4
+          },
+          {
+            "x": 0.0,
+            "y": 2.4
+          }
+        ],
+        "floor_material_id": "tile"
+      }
+    },
+    {
+      "id": "01eb090e-e9dd-577c-9fbf-add2f64e7473",
+      "name": "Kitchen",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 7.4,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "floor",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "2ecff5a8-bbb5-5a07-98c4-42ce1f4a0759"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:kitchen",
+      "type": "room",
+      "dimensions": {
+        "area": 27.6,
+        "perimeter": 21.2,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "kitchen",
+        "zone": "service",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 4.6,
+            "y": 0.0
+          },
+          {
+            "x": 4.6,
+            "y": 6.0
+          },
+          {
+            "x": 0.0,
+            "y": 6.0
+          }
+        ],
+        "floor_material_id": "floor"
+      }
+    },
+    {
+      "id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef",
+      "name": "Corridor",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.0,
+        "y": 4.8,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "parquet",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "0f436215-4c94-5c37-b508-d568f65d6f80"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "07aefd95-3a5b-5ae7-8763-0156b8dd5b9e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:corridor_g",
+      "type": "room",
+      "dimensions": {
+        "area": 8.88,
+        "perimeter": 17.2,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "corridor",
+        "zone": "circulation",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 7.4,
+            "y": 0.0
+          },
+          {
+            "x": 7.4,
+            "y": 1.2
+          },
+          {
+            "x": 0.0,
+            "y": 1.2
+          }
+        ],
+        "floor_material_id": "parquet"
+      }
+    },
+    {
+      "id": "e9988190-4e55-5d88-9bb4-cddfa3df597e",
+      "name": "Living room",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.0,
+        "y": 6.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "parquet",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:living",
+      "type": "room",
+      "dimensions": {
+        "area": 29.6,
+        "perimeter": 22.8,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "living",
+        "zone": "public",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 7.4,
+            "y": 0.0
+          },
+          {
+            "x": 7.4,
+            "y": 4.0
+          },
+          {
+            "x": 0.0,
+            "y": 4.0
+          }
+        ],
+        "floor_material_id": "parquet"
+      }
+    },
+    {
+      "id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e",
+      "name": "Dining area",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 7.4,
+        "y": 6.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "parquet",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:dining",
+      "type": "room",
+      "dimensions": {
+        "area": 18.4,
+        "perimeter": 17.2,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "dining",
+        "zone": "public",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 4.6,
+            "y": 0.0
+          },
+          {
+            "x": 4.6,
+            "y": 4.0
+          },
+          {
+            "x": 0.0,
+            "y": 4.0
+          }
+        ],
+        "floor_material_id": "parquet"
+      }
+    },
+    {
+      "id": "299c89a0-bfcb-59e2-91ba-744f936ba23d",
+      "name": "Bedroom 3",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "parquet",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:bedroom3",
+      "type": "room",
+      "dimensions": {
+        "area": 16.32,
+        "perimeter": 16.4,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "bedroom",
+        "zone": "private",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 3.4,
+            "y": 0.0
+          },
+          {
+            "x": 3.4,
+            "y": 4.8
+          },
+          {
+            "x": 0.0,
+            "y": 4.8
+          }
+        ],
+        "floor_material_id": "parquet"
+      }
+    },
+    {
+      "id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2",
+      "name": "Bathroom",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 4.8,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "tile",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "cce34d81-2932-5fc0-b049-f9425d7f130b"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:bath_f",
+      "type": "room",
+      "dimensions": {
+        "area": 12.48,
+        "perimeter": 14.8,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "bathroom",
+        "zone": "service",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 2.6,
+            "y": 0.0
+          },
+          {
+            "x": 2.6,
+            "y": 4.8
+          },
+          {
+            "x": 0.0,
+            "y": 4.8
+          }
+        ],
+        "floor_material_id": "tile"
+      }
+    },
+    {
+      "id": "cce34d81-2932-5fc0-b049-f9425d7f130b",
+      "name": "Bedroom 2",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 7.4,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "parquet",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:bedroom2",
+      "type": "room",
+      "dimensions": {
+        "area": 22.08,
+        "perimeter": 18.8,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "bedroom",
+        "zone": "private",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 4.6,
+            "y": 0.0
+          },
+          {
+            "x": 4.6,
+            "y": 4.8
+          },
+          {
+            "x": 0.0,
+            "y": 4.8
+          }
+        ],
+        "floor_material_id": "parquet"
+      }
+    },
+    {
+      "id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84",
+      "name": "Corridor",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.0,
+        "y": 4.8,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "parquet",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "cce34d81-2932-5fc0-b049-f9425d7f130b"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "299c89a0-bfcb-59e2-91ba-744f936ba23d"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "a2652aba-a291-5fea-a0b7-3e379a12189e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:corridor_f",
+      "type": "room",
+      "dimensions": {
+        "area": 14.4,
+        "perimeter": 26.4,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "corridor",
+        "zone": "circulation",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 12.0,
+            "y": 0.0
+          },
+          {
+            "x": 12.0,
+            "y": 1.2
+          },
+          {
+            "x": 0.0,
+            "y": 1.2
+          }
+        ],
+        "floor_material_id": "parquet"
+      }
+    },
+    {
+      "id": "a3ea024d-d965-5a9b-80de-2228029a8997",
+      "name": "Master bedroom",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.0,
+        "y": 6.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "parquet",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "0409fbc0-160e-5f1e-873b-6be3be0a02d6"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "a2652aba-a291-5fea-a0b7-3e379a12189e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:master",
+      "type": "room",
+      "dimensions": {
+        "area": 29.6,
+        "perimeter": 22.8,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "bedroom",
+        "zone": "private",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 7.4,
+            "y": 0.0
+          },
+          {
+            "x": 7.4,
+            "y": 4.0
+          },
+          {
+            "x": 0.0,
+            "y": 4.0
+          }
+        ],
+        "floor_material_id": "parquet"
+      }
+    },
+    {
+      "id": "a2652aba-a291-5fea-a0b7-3e379a12189e",
+      "name": "Study",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 7.4,
+        "y": 6.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "parquet",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        },
+        {
+          "kind": "adjacent_to",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:study",
+      "type": "room",
+      "dimensions": {
+        "area": 18.4,
+        "perimeter": 17.2,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "study",
+        "zone": "private",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 4.6,
+            "y": 0.0
+          },
+          {
+            "x": 4.6,
+            "y": 4.0
+          },
+          {
+            "x": 0.0,
+            "y": 4.0
+          }
+        ],
+        "floor_material_id": "parquet"
+      }
+    },
+    {
+      "id": "0409fbc0-160e-5f1e-873b-6be3be0a02d6",
+      "name": "Balcony",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.6,
+        "y": 10.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "decking",
+      "relationships": [
+        {
+          "kind": "adjacent_to",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "room:balcony",
+      "type": "room",
+      "dimensions": {
+        "area": 9.6,
+        "perimeter": 15.2,
+        "height": 2.8
+      },
+      "properties": {
+        "room_type": "balcony",
+        "zone": "exterior",
+        "boundary": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 6.0,
+            "y": 0.0
+          },
+          {
+            "x": 6.0,
+            "y": 1.6
+          },
+          {
+            "x": 0.0,
+            "y": 1.6
+          }
+        ],
+        "floor_material_id": "decking"
+      }
+    },
+    {
+      "id": "fc09bfe5-815d-5959-89fb-af79b3071ad0",
+      "name": "W-G01",
+      "layer": "structure",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "brick",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "0f436215-4c94-5c37-b508-d568f65d6f80"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "07aefd95-3a5b-5ae7-8763-0156b8dd5b9e"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "2ecff5a8-bbb5-5a07-98c4-42ce1f4a0759"
+        },
+        {
+          "kind": "supports",
+          "target_id": "393858fa-cee3-5fb7-b63c-07bd3c08afb2"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:G-S",
+      "type": "wall",
+      "dimensions": {
+        "length": 12.0,
+        "thickness": 0.3,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "exterior",
+        "alignment": "center",
+        "load_bearing": true,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "brick"
+      }
+    },
+    {
+      "id": "77ec556d-09c2-56f7-be4d-dd2a6242bed6",
+      "name": "W-G02",
+      "layer": "structure",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 12.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "brick",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        },
+        {
+          "kind": "supports",
+          "target_id": "393858fa-cee3-5fb7-b63c-07bd3c08afb2"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:G-E",
+      "type": "wall",
+      "dimensions": {
+        "length": 10.0,
+        "thickness": 0.3,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "exterior",
+        "alignment": "center",
+        "load_bearing": true,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "brick"
+      }
+    },
+    {
+      "id": "83ce8bd4-7a66-5733-b2c9-5d9e0eabb766",
+      "name": "W-G03",
+      "layer": "structure",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 12.0,
+        "y": 10.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "brick",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        },
+        {
+          "kind": "supports",
+          "target_id": "393858fa-cee3-5fb7-b63c-07bd3c08afb2"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:G-N",
+      "type": "wall",
+      "dimensions": {
+        "length": 12.0,
+        "thickness": 0.3,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "exterior",
+        "alignment": "center",
+        "load_bearing": true,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "brick"
+      }
+    },
+    {
+      "id": "8c0ae820-bb41-534b-91b1-3e1b2d91ba39",
+      "name": "W-G04",
+      "layer": "structure",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.0,
+        "y": 10.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "brick",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "0f436215-4c94-5c37-b508-d568f65d6f80"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        },
+        {
+          "kind": "supports",
+          "target_id": "393858fa-cee3-5fb7-b63c-07bd3c08afb2"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:G-W",
+      "type": "wall",
+      "dimensions": {
+        "length": 10.0,
+        "thickness": 0.3,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "exterior",
+        "alignment": "center",
+        "load_bearing": true,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "brick"
+      }
+    },
+    {
+      "id": "cc87c181-135a-539b-9944-b2be1c1f82fa",
+      "name": "W-F01",
+      "layer": "structure",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "exterior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "cce34d81-2932-5fc0-b049-f9425d7f130b"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "299c89a0-bfcb-59e2-91ba-744f936ba23d"
+        },
+        {
+          "kind": "supports",
+          "target_id": "30cd3b00-742d-51bf-a899-a2994cf5f3f0"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-S",
+      "type": "wall",
+      "dimensions": {
+        "length": 12.0,
+        "thickness": 0.3,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "exterior",
+        "alignment": "center",
+        "load_bearing": true,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "exterior_wall"
+      }
+    },
+    {
+      "id": "eb877d81-d000-5751-8dbf-0fff59effa1e",
+      "name": "W-F02",
+      "layer": "structure",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 12.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "exterior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "cce34d81-2932-5fc0-b049-f9425d7f130b"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "a2652aba-a291-5fea-a0b7-3e379a12189e"
+        },
+        {
+          "kind": "supports",
+          "target_id": "30cd3b00-742d-51bf-a899-a2994cf5f3f0"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-E",
+      "type": "wall",
+      "dimensions": {
+        "length": 10.0,
+        "thickness": 0.3,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "exterior",
+        "alignment": "center",
+        "load_bearing": true,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "exterior_wall"
+      }
+    },
+    {
+      "id": "ad6c60b4-0dc9-5c73-a784-d21ca07ceacf",
+      "name": "W-F03",
+      "layer": "structure",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 12.0,
+        "y": 10.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "exterior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "0409fbc0-160e-5f1e-873b-6be3be0a02d6"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "a2652aba-a291-5fea-a0b7-3e379a12189e"
+        },
+        {
+          "kind": "supports",
+          "target_id": "30cd3b00-742d-51bf-a899-a2994cf5f3f0"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-N",
+      "type": "wall",
+      "dimensions": {
+        "length": 12.0,
+        "thickness": 0.3,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "exterior",
+        "alignment": "center",
+        "load_bearing": true,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "exterior_wall"
+      }
+    },
+    {
+      "id": "b69cfab8-f04a-5abd-81f6-3303629c0b28",
+      "name": "W-F04",
+      "layer": "structure",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.0,
+        "y": 10.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "exterior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "299c89a0-bfcb-59e2-91ba-744f936ba23d"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        },
+        {
+          "kind": "supports",
+          "target_id": "30cd3b00-742d-51bf-a899-a2994cf5f3f0"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-W",
+      "type": "wall",
+      "dimensions": {
+        "length": 10.0,
+        "thickness": 0.3,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "exterior",
+        "alignment": "center",
+        "load_bearing": true,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "exterior_wall"
+      }
+    },
+    {
+      "id": "f297e2f0-d155-58c8-ba86-3786e039bcbc",
+      "name": "W-G05",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.0,
+        "y": 4.8,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "0f436215-4c94-5c37-b508-d568f65d6f80"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:G-I1",
+      "type": "wall",
+      "dimensions": {
+        "length": 3.4,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "0ecd2b31-c6dd-5c0f-b39b-1ac3a715cdc6",
+      "name": "W-G06",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 4.8,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "07aefd95-3a5b-5ae7-8763-0156b8dd5b9e"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "2ecff5a8-bbb5-5a07-98c4-42ce1f4a0759"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:G-I2",
+      "type": "wall",
+      "dimensions": {
+        "length": 4.8,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "24f184f1-39af-5f2d-b53b-a62cc23bee44",
+      "name": "W-G07",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 4.8,
+        "y": 4.8,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:G-I3",
+      "type": "wall",
+      "dimensions": {
+        "length": 2.6,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "tile"
+      }
+    },
+    {
+      "id": "40ee0d27-1d39-58ee-bdde-d28e15f50815",
+      "name": "W-G08",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 4.8,
+        "y": 2.4,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "2ecff5a8-bbb5-5a07-98c4-42ce1f4a0759"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:G-I4",
+      "type": "wall",
+      "dimensions": {
+        "length": 2.6,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "tile",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "f96e9d86-bc78-5eb5-a734-2fb3e212a7aa",
+      "name": "W-G09",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 7.4,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "2ecff5a8-bbb5-5a07-98c4-42ce1f4a0759"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:G-I5",
+      "type": "wall",
+      "dimensions": {
+        "length": 6.0,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "cd09cf8e-81e0-5bb0-8d02-41fffc53adbf",
+      "name": "W-G10",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.0,
+        "y": 6.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:G-I6",
+      "type": "wall",
+      "dimensions": {
+        "length": 7.4,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "812d2542-7c0b-508a-8130-c362933e61be",
+      "name": "W-F05",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 3.4,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "299c89a0-bfcb-59e2-91ba-744f936ba23d"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-I1",
+      "type": "wall",
+      "dimensions": {
+        "length": 4.8,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "b4560e2a-b2ec-5011-b421-915dad511a2e",
+      "name": "W-F06",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 4.8,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-I2",
+      "type": "wall",
+      "dimensions": {
+        "length": 4.8,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "tile"
+      }
+    },
+    {
+      "id": "85d720ab-f6d5-5ee5-942d-d1888aaff1ae",
+      "name": "W-F07",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.0,
+        "y": 4.8,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "299c89a0-bfcb-59e2-91ba-744f936ba23d"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-I3",
+      "type": "wall",
+      "dimensions": {
+        "length": 3.4,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "64ad93b0-3010-5672-b87d-ee14a5c0b799",
+      "name": "W-F08",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 4.8,
+        "y": 4.8,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "cce34d81-2932-5fc0-b049-f9425d7f130b"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-I4",
+      "type": "wall",
+      "dimensions": {
+        "length": 7.2,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "3029b010-fd9a-5775-94cd-a823d2b7b0c2",
+      "name": "W-F09",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 7.4,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "cce34d81-2932-5fc0-b049-f9425d7f130b"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-I5",
+      "type": "wall",
+      "dimensions": {
+        "length": 4.8,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "tile",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "142fc2f2-b7d1-57bf-8258-4522bf2b5359",
+      "name": "W-F10",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.0,
+        "y": 6.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "a2652aba-a291-5fea-a0b7-3e379a12189e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-I6",
+      "type": "wall",
+      "dimensions": {
+        "length": 12.0,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "2a0e2283-143a-53d5-a715-61d0f5b1f793",
+      "name": "W-F11",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 7.4,
+        "y": 6.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "interior_wall",
+      "relationships": [
+        {
+          "kind": "bounds",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        },
+        {
+          "kind": "bounds",
+          "target_id": "a2652aba-a291-5fea-a0b7-3e379a12189e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "wall:F-I7",
+      "type": "wall",
+      "dimensions": {
+        "length": 4.0,
+        "thickness": 0.12,
+        "height": 2.8
+      },
+      "properties": {
+        "wall_kind": "interior",
+        "alignment": "center",
+        "load_bearing": false,
+        "finish_left_id": "interior_wall",
+        "finish_right_id": "interior_wall"
+      }
+    },
+    {
+      "id": "7f4b15c3-bf0d-5956-8529-86e4af29a1a3",
+      "name": "Front door",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 1.2,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood_dark",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "fc09bfe5-815d-5959-89fb-af79b3071ad0"
+        },
+        {
+          "kind": "connects",
+          "target_id": "0f436215-4c94-5c37-b508-d568f65d6f80"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:front",
+      "type": "door",
+      "dimensions": {
+        "width": 1.0,
+        "height": 2.2,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "entrance",
+        "swing": "left",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "3055bc38-8d8d-527b-9f5c-f27404d40507",
+      "name": "Door D-G02",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 1.2,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "f297e2f0-d155-58c8-ba86-3786e039bcbc"
+        },
+        {
+          "kind": "connects",
+          "target_id": "0f436215-4c94-5c37-b508-d568f65d6f80"
+        },
+        {
+          "kind": "connects",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:ent_corr",
+      "type": "door",
+      "dimensions": {
+        "width": 0.9,
+        "height": 2.1,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "interior",
+        "swing": "right",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "74eae87d-c216-5cea-9f90-8563c198824a",
+      "name": "Door D-G03",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.5,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "24f184f1-39af-5f2d-b53b-a62cc23bee44"
+        },
+        {
+          "kind": "connects",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        },
+        {
+          "kind": "connects",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:bath_g",
+      "type": "door",
+      "dimensions": {
+        "width": 0.8,
+        "height": 2.1,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "interior",
+        "swing": "left",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "60137afd-2671-54e0-9c41-86cdcd2e2a54",
+      "name": "Door D-G04",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.8,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "f96e9d86-bc78-5eb5-a734-2fb3e212a7aa"
+        },
+        {
+          "kind": "connects",
+          "target_id": "2ecff5a8-bbb5-5a07-98c4-42ce1f4a0759"
+        },
+        {
+          "kind": "connects",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:storage",
+      "type": "door",
+      "dimensions": {
+        "width": 0.8,
+        "height": 2.1,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "interior",
+        "swing": "right",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "7c1b9470-c4c2-59fc-9ecf-db45af97bb53",
+      "name": "Door D-G05",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 5.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "f96e9d86-bc78-5eb5-a734-2fb3e212a7aa"
+        },
+        {
+          "kind": "connects",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        },
+        {
+          "kind": "connects",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:kitchen",
+      "type": "door",
+      "dimensions": {
+        "width": 0.9,
+        "height": 2.1,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "interior",
+        "swing": "left",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "c9ac1e50-a855-5928-ba93-30d87d4a435e",
+      "name": "Door D-G06",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 2.8,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "cd09cf8e-81e0-5bb0-8d02-41fffc53adbf"
+        },
+        {
+          "kind": "connects",
+          "target_id": "bcd3498d-1c05-56dc-854c-78b6c8ed4fef"
+        },
+        {
+          "kind": "connects",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:living",
+      "type": "door",
+      "dimensions": {
+        "width": 1.6,
+        "height": 2.1,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "interior",
+        "swing": "double",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "4627a96e-d03e-5b97-b386-0bdd2810440f",
+      "name": "Garden door",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "83ce8bd4-7a66-5733-b2c9-5d9e0eabb766"
+        },
+        {
+          "kind": "connects",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:garden",
+      "type": "door",
+      "dimensions": {
+        "width": 2.5,
+        "height": 2.4,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "sliding",
+        "swing": "sliding",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "087f0367-437e-5efe-a83d-19c571d0bdd8",
+      "name": "Door D-F01",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 1.2,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "85d720ab-f6d5-5ee5-942d-d1888aaff1ae"
+        },
+        {
+          "kind": "connects",
+          "target_id": "299c89a0-bfcb-59e2-91ba-744f936ba23d"
+        },
+        {
+          "kind": "connects",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:bedroom3",
+      "type": "door",
+      "dimensions": {
+        "width": 0.9,
+        "height": 2.1,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "interior",
+        "swing": "right",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "9c455f79-61b8-5f25-9221-3fe6710e803a",
+      "name": "Door D-F02",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.5,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "64ad93b0-3010-5672-b87d-ee14a5c0b799"
+        },
+        {
+          "kind": "connects",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        },
+        {
+          "kind": "connects",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:bath_f",
+      "type": "door",
+      "dimensions": {
+        "width": 0.8,
+        "height": 2.1,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "interior",
+        "swing": "left",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "9d357d94-622d-5e10-afa0-e5fa2732837f",
+      "name": "Door D-F03",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 3.4,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "64ad93b0-3010-5672-b87d-ee14a5c0b799"
+        },
+        {
+          "kind": "connects",
+          "target_id": "cce34d81-2932-5fc0-b049-f9425d7f130b"
+        },
+        {
+          "kind": "connects",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:bedroom2",
+      "type": "door",
+      "dimensions": {
+        "width": 0.9,
+        "height": 2.1,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "interior",
+        "swing": "right",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "e823b443-c6d0-57fa-84d5-f599f55c8489",
+      "name": "Door D-F04",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 5.4,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "142fc2f2-b7d1-57bf-8258-4522bf2b5359"
+        },
+        {
+          "kind": "connects",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        },
+        {
+          "kind": "connects",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:master",
+      "type": "door",
+      "dimensions": {
+        "width": 0.9,
+        "height": 2.1,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "interior",
+        "swing": "left",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "a561487f-1cb8-5a7e-9be4-1188165a975d",
+      "name": "Door D-F05",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 8.2,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "142fc2f2-b7d1-57bf-8258-4522bf2b5359"
+        },
+        {
+          "kind": "connects",
+          "target_id": "2fbbf768-3bc8-55d4-a3b5-7cb78b9b3f84"
+        },
+        {
+          "kind": "connects",
+          "target_id": "a2652aba-a291-5fea-a0b7-3e379a12189e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:study",
+      "type": "door",
+      "dimensions": {
+        "width": 0.9,
+        "height": 2.1,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "interior",
+        "swing": "right",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "1f88b024-d956-51bb-92c9-947bd9fcad4f",
+      "name": "Balcony door",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 7.4,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "ad6c60b4-0dc9-5c73-a784-d21ca07ceacf"
+        },
+        {
+          "kind": "connects",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        },
+        {
+          "kind": "connects",
+          "target_id": "0409fbc0-160e-5f1e-873b-6be3be0a02d6"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "door:balcony",
+      "type": "door",
+      "dimensions": {
+        "width": 2.4,
+        "height": 2.4,
+        "thickness": 0.06
+      },
+      "properties": {
+        "door_kind": "sliding",
+        "swing": "sliding",
+        "frame_material_id": "window_frame"
+      }
+    },
+    {
+      "id": "aadfc0a0-4b84-509f-9fcb-ac42783ba90d",
+      "name": "Window WN-G01",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.3,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "fc09bfe5-815d-5959-89fb-af79b3071ad0"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:ent",
+      "type": "window",
+      "dimensions": {
+        "width": 0.6,
+        "height": 1.3
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0
+      }
+    },
+    {
+      "id": "9bebf41a-dff4-502e-a45c-3b83419effcb",
+      "name": "Window WN-G02",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 3.6,
+        "y": 0.0,
+        "z": 1.2
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "fc09bfe5-815d-5959-89fb-af79b3071ad0"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:stair_g",
+      "type": "window",
+      "dimensions": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "properties": {
+        "window_kind": "fixed",
+        "frame_material_id": "window_frame",
+        "mullions": 0
+      }
+    },
+    {
+      "id": "97338e3d-82fc-5a22-835f-7e3323e86b77",
+      "name": "Window WN-G03",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 5.7,
+        "y": 0.0,
+        "z": 1.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "fc09bfe5-815d-5959-89fb-af79b3071ad0"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:storage",
+      "type": "window",
+      "dimensions": {
+        "width": 0.8,
+        "height": 0.6
+      },
+      "properties": {
+        "window_kind": "fixed",
+        "frame_material_id": "window_frame",
+        "mullions": 0
+      }
+    },
+    {
+      "id": "a1dc46c4-26bd-5803-ab98-a5ec169d3e24",
+      "name": "Window WN-G04",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 8.2,
+        "y": 0.0,
+        "z": 0.95
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "fc09bfe5-815d-5959-89fb-af79b3071ad0"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:kitchen_s",
+      "type": "window",
+      "dimensions": {
+        "width": 3.0,
+        "height": 1.3
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 2
+      }
+    },
+    {
+      "id": "c17d87c8-40af-5f8c-8c0a-247095d56efb",
+      "name": "Window WN-G05",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 1.1
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "77ec556d-09c2-56f7-be4d-dd2a6242bed6"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:kitchen_e",
+      "type": "window",
+      "dimensions": {
+        "width": 1.8,
+        "height": 1.1
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1
+      }
+    },
+    {
+      "id": "8ddf2f51-be30-5397-8d3f-e86ab5283e6d",
+      "name": "Window WN-G06",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 6.8,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "77ec556d-09c2-56f7-be4d-dd2a6242bed6"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:dining_e",
+      "type": "window",
+      "dimensions": {
+        "width": 2.2,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1
+      }
+    },
+    {
+      "id": "312616e2-201b-5af3-93fb-e9adafef0c3f",
+      "name": "Window WN-G07",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.8,
+        "y": 0.0,
+        "z": 0.1
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "83ce8bd4-7a66-5733-b2c9-5d9e0eabb766"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:dining_n",
+      "type": "window",
+      "dimensions": {
+        "width": 3.2,
+        "height": 2.4
+      },
+      "properties": {
+        "window_kind": "panoramic",
+        "frame_material_id": "window_frame",
+        "mullions": 2
+      }
+    },
+    {
+      "id": "a2c997c8-a2a9-5dce-9164-7dde9f916628",
+      "name": "Window WN-G08",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 5.2,
+        "y": 0.0,
+        "z": 0.1
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "83ce8bd4-7a66-5733-b2c9-5d9e0eabb766"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:living_n",
+      "type": "window",
+      "dimensions": {
+        "width": 2.2,
+        "height": 2.4
+      },
+      "properties": {
+        "window_kind": "panoramic",
+        "frame_material_id": "window_frame",
+        "mullions": 1
+      }
+    },
+    {
+      "id": "3d6c62b7-1aa6-5578-b8ac-07d1e04f7115",
+      "name": "Window WN-G09",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.8,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "8c0ae820-bb41-534b-91b1-3e1b2d91ba39"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:living_w",
+      "type": "window",
+      "dimensions": {
+        "width": 2.4,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1
+      }
+    },
+    {
+      "id": "6befa91d-bd3c-5214-89ec-3449cd3288e1",
+      "name": "Window WN-F01",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.9,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "cc87c181-135a-539b-9944-b2be1c1f82fa"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:bed3_s",
+      "type": "window",
+      "dimensions": {
+        "width": 1.6,
+        "height": 1.4
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1
+      }
+    },
+    {
+      "id": "4d259dfe-107a-5aa7-a989-8bea932de1ca",
+      "name": "Window WN-F02",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 7.0,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "b69cfab8-f04a-5abd-81f6-3303629c0b28"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:bed3_w",
+      "type": "window",
+      "dimensions": {
+        "width": 1.6,
+        "height": 1.4
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0
+      }
+    },
+    {
+      "id": "9a6ac509-31db-5c1e-97be-de1610af50c2",
+      "name": "Window WN-F03",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 3.6,
+        "y": 0.0,
+        "z": 1.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "cc87c181-135a-539b-9944-b2be1c1f82fa"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:stair_f",
+      "type": "window",
+      "dimensions": {
+        "width": 1.0,
+        "height": 1.2
+      },
+      "properties": {
+        "window_kind": "fixed",
+        "frame_material_id": "window_frame",
+        "mullions": 0
+      }
+    },
+    {
+      "id": "9fa3f6a0-6b43-54fd-83cd-ce57433409fd",
+      "name": "Window WN-F04",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 5.5,
+        "y": 0.0,
+        "z": 1.3
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "cc87c181-135a-539b-9944-b2be1c1f82fa"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:bath_f",
+      "type": "window",
+      "dimensions": {
+        "width": 1.2,
+        "height": 0.9
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0
+      }
+    },
+    {
+      "id": "83271f58-a73c-5cc2-8707-53ff42c9565b",
+      "name": "Window WN-F05",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 8.4,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "cc87c181-135a-539b-9944-b2be1c1f82fa"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:bed2_s",
+      "type": "window",
+      "dimensions": {
+        "width": 2.6,
+        "height": 1.4
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1
+      }
+    },
+    {
+      "id": "095a7fca-56c4-517d-9c72-9d068eeab366",
+      "name": "Window WN-F06",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 1.4,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "eb877d81-d000-5751-8dbf-0fff59effa1e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:bed2_e",
+      "type": "window",
+      "dimensions": {
+        "width": 2.0,
+        "height": 1.4
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1
+      }
+    },
+    {
+      "id": "62859a18-8b31-5cb7-a569-f8f0f9d44f48",
+      "name": "Window WN-F07",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 5.0,
+        "y": 0.0,
+        "z": 1.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "eb877d81-d000-5751-8dbf-0fff59effa1e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:corr_e",
+      "type": "window",
+      "dimensions": {
+        "width": 0.8,
+        "height": 1.2
+      },
+      "properties": {
+        "window_kind": "fixed",
+        "frame_material_id": "window_frame",
+        "mullions": 0
+      }
+    },
+    {
+      "id": "f2674abc-8eb4-5933-8c7c-6c856d7b15d0",
+      "name": "Window WN-F08",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 4.2,
+        "y": 0.0,
+        "z": 1.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "b69cfab8-f04a-5abd-81f6-3303629c0b28"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:corr_w",
+      "type": "window",
+      "dimensions": {
+        "width": 0.8,
+        "height": 1.2
+      },
+      "properties": {
+        "window_kind": "fixed",
+        "frame_material_id": "window_frame",
+        "mullions": 0
+      }
+    },
+    {
+      "id": "1a525dac-33c0-5c33-b0fd-944d8cd63da1",
+      "name": "Window WN-F09",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 5.2,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "ad6c60b4-0dc9-5c73-a784-d21ca07ceacf"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:master_n",
+      "type": "window",
+      "dimensions": {
+        "width": 1.8,
+        "height": 1.4
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1
+      }
+    },
+    {
+      "id": "6368a7ee-3fb0-5121-9d90-d91f72fe3fba",
+      "name": "Window WN-F10",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.4,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "b69cfab8-f04a-5abd-81f6-3303629c0b28"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:master_w",
+      "type": "window",
+      "dimensions": {
+        "width": 1.2,
+        "height": 1.4
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0
+      }
+    },
+    {
+      "id": "e89a9647-e7e5-5a76-9ec1-1535373676c1",
+      "name": "Window WN-F11",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "ad6c60b4-0dc9-5c73-a784-d21ca07ceacf"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:study_n",
+      "type": "window",
+      "dimensions": {
+        "width": 2.6,
+        "height": 1.4
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1
+      }
+    },
+    {
+      "id": "78454d3c-2241-5062-9636-c3ef244fe22a",
+      "name": "Window WN-F12",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 6.8,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "eb877d81-d000-5751-8dbf-0fff59effa1e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "window:study_e",
+      "type": "window",
+      "dimensions": {
+        "width": 2.0,
+        "height": 1.4
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1
+      }
+    },
+    {
+      "id": "9980ede7-d064-5c86-b64d-134e93f2467e",
+      "name": "Sofa",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 2.4,
+        "y": 6.75,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "fabric",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:sofa",
+      "type": "furniture",
+      "dimensions": {
+        "width": 2.4,
+        "depth": 0.95,
+        "height": 0.8
+      },
+      "properties": {
+        "furniture_kind": "sofa",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "880e6c95-b2c3-51b8-b324-a1c0a7dd6900",
+      "name": "Coffee table",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 2.4,
+        "y": 8.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:coffee",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.2,
+        "depth": 0.6,
+        "height": 0.4
+      },
+      "properties": {
+        "furniture_kind": "coffee_table",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "a8df2718-081d-5bc9-aeae-dc7fb5d21255",
+      "name": "Armchair",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 4.5,
+        "y": 8.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "fabric",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:armchair",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.85,
+        "depth": 0.85,
+        "height": 0.8
+      },
+      "properties": {
+        "furniture_kind": "armchair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "83f405fd-aff3-54ee-82da-c3e4897fc38e",
+      "name": "TV unit",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.4,
+        "y": 8.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "wood_dark",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e9988190-4e55-5d88-9bb4-cddfa3df597e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:tv",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.8,
+        "depth": 0.45,
+        "height": 0.5
+      },
+      "properties": {
+        "furniture_kind": "tv_unit",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "75b1e199-452f-5afe-9d08-42df7e1d12ce",
+      "name": "Dining table",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 9.7,
+        "y": 8.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:dtable",
+      "type": "furniture",
+      "dimensions": {
+        "width": 2.0,
+        "depth": 1.0,
+        "height": 0.75
+      },
+      "properties": {
+        "furniture_kind": "dining_table",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "54de7082-743f-5711-8c69-0009a1a2696d",
+      "name": "Chair 1",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 9.05,
+        "y": 7.25,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:chair_s0",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.5,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "f4186f94-e4aa-542c-b2f0-4548317f4767",
+      "name": "Chair 4",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 9.05,
+        "y": 8.75,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:chair_n0",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.5,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "0b14d777-6885-5695-8359-23ca10744366",
+      "name": "Chair 2",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 9.7,
+        "y": 7.25,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:chair_s1",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.5,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "b7f4d6a6-b802-5581-b0b2-93422a3dc6fe",
+      "name": "Chair 5",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 9.7,
+        "y": 8.75,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:chair_n1",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.5,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "47bef5cf-c0a8-59b4-81f5-cef043f31a6e",
+      "name": "Chair 3",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 10.35,
+        "y": 7.25,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:chair_s2",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.5,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "e680cb4c-8b2b-5a3e-89bb-fd16864be250",
+      "name": "Chair 6",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 10.35,
+        "y": 8.75,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "e3c2d692-3960-5b28-bc46-13abdc2eb45e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:chair_n2",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.5,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "6a6e6856-ba6d-5aa9-a5ce-e0f1b3a5f05b",
+      "name": "Kitchen counter",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 11.55,
+        "y": 2.4,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "countertop",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:counter",
+      "type": "furniture",
+      "dimensions": {
+        "width": 3.6,
+        "depth": 0.6,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "kitchen_counter",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "82388507-7618-529e-8d66-4b2a6b322f46",
+      "name": "Fridge",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 11.5,
+        "y": 4.7,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "metal",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:fridge",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.7,
+        "depth": 0.7,
+        "height": 1.9
+      },
+      "properties": {
+        "furniture_kind": "fridge",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "fc0e64af-5afd-5d86-8ef4-cb5b46d9e808",
+      "name": "Kitchen island",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 9.4,
+        "y": 2.6,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "countertop",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "01eb090e-e9dd-577c-9fbf-add2f64e7473"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:island",
+      "type": "furniture",
+      "dimensions": {
+        "width": 2.0,
+        "depth": 0.9,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "kitchen_island",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "e938a387-816f-51d5-959a-f0df9767c235",
+      "name": "Toilet",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 5.2,
+        "y": 3.1,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "ceramic",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:toilet_g",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.4,
+        "depth": 0.65,
+        "height": 0.8
+      },
+      "properties": {
+        "furniture_kind": "toilet",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "d422e48e-9e9f-55a2-9971-5f2358753ce7",
+      "name": "Basin",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 6.4,
+        "y": 2.72,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "ceramic",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:basin_g",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.8,
+        "depth": 0.5,
+        "height": 0.85
+      },
+      "properties": {
+        "furniture_kind": "basin",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "afac7291-5809-594f-bed5-9ff128b24420",
+      "name": "Shower",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 6.85,
+        "y": 3.95,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "d0bee683-2b45-5f2c-8404-c1cad840dae1"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:shower_g",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.9,
+        "depth": 0.9,
+        "height": 2.0
+      },
+      "properties": {
+        "furniture_kind": "shower",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "6eff5370-d842-5555-815b-0404af59dca8",
+      "name": "Coat wardrobe",
+      "layer": "furniture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 0.45,
+        "y": 2.8,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "0f436215-4c94-5c37-b508-d568f65d6f80"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:coat",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.2,
+        "depth": 0.6,
+        "height": 2.0
+      },
+      "properties": {
+        "furniture_kind": "wardrobe",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "85a5514e-8bb4-57f5-84ef-ebd9b5e8230e",
+      "name": "Double bed",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 2.8,
+        "y": 7.11,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "fabric_light",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:bed_m",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.8,
+        "depth": 2.1,
+        "height": 0.5
+      },
+      "properties": {
+        "furniture_kind": "bed",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "4c831602-3069-5d65-8254-dfdc6661f3a7",
+      "name": "Nightstand 1",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 1.55,
+        "y": 6.3,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:ns_m1",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.5,
+        "depth": 0.4,
+        "height": 0.5
+      },
+      "properties": {
+        "furniture_kind": "nightstand",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "5f8b09da-fdd4-53eb-946e-fe04be7df99b",
+      "name": "Nightstand 2",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 4.05,
+        "y": 6.3,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:ns_m2",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.5,
+        "depth": 0.4,
+        "height": 0.5
+      },
+      "properties": {
+        "furniture_kind": "nightstand",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "bc15c89e-b755-5a18-b0bf-15518b320b4e",
+      "name": "Wardrobe",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 7.04,
+        "y": 8.2,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "a3ea024d-d965-5a9b-80de-2228029a8997"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:wardrobe_m",
+      "type": "furniture",
+      "dimensions": {
+        "width": 2.0,
+        "depth": 0.6,
+        "height": 2.2
+      },
+      "properties": {
+        "furniture_kind": "wardrobe",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "6c21d7c7-ed36-573e-9b0c-84358b7b076a",
+      "name": "Bed",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 10.85,
+        "y": 2.6,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "fabric_light",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "cce34d81-2932-5fc0-b049-f9425d7f130b"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:bed_2",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.6,
+        "depth": 2.0,
+        "height": 0.5
+      },
+      "properties": {
+        "furniture_kind": "bed",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "42a43313-b0e5-56af-878c-29f5aa1a4110",
+      "name": "Desk",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 7.76,
+        "y": 3.6,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "cce34d81-2932-5fc0-b049-f9425d7f130b"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:desk_2",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.2,
+        "depth": 0.6,
+        "height": 0.75
+      },
+      "properties": {
+        "furniture_kind": "desk",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "31b0f556-e6ea-5840-9b81-e35786af2464",
+      "name": "Wardrobe",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 10.8,
+        "y": 4.44,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "cce34d81-2932-5fc0-b049-f9425d7f130b"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:wardrobe_2",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.6,
+        "depth": 0.6,
+        "height": 2.2
+      },
+      "properties": {
+        "furniture_kind": "wardrobe",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "af71f632-36d6-5f76-a6d6-647611168771",
+      "name": "Bed",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 2.34,
+        "y": 2.8,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "fabric_light",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "299c89a0-bfcb-59e2-91ba-744f936ba23d"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:bed_3",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.4,
+        "depth": 2.0,
+        "height": 0.5
+      },
+      "properties": {
+        "furniture_kind": "bed",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "95351604-114b-5183-8744-449a312aa276",
+      "name": "Desk",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.45,
+        "y": 2.2,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "299c89a0-bfcb-59e2-91ba-744f936ba23d"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:desk_3",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.2,
+        "depth": 0.6,
+        "height": 0.75
+      },
+      "properties": {
+        "furniture_kind": "desk",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "c127fa34-992a-501c-95b7-c6f02a1ee12c",
+      "name": "Bathtub",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 6.1,
+        "y": 0.525,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "ceramic",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:tub",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.7,
+        "depth": 0.75,
+        "height": 0.55
+      },
+      "properties": {
+        "furniture_kind": "bathtub",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "676645ad-ce2d-56e5-9c0b-7a1017abd059",
+      "name": "Toilet",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 5.2,
+        "y": 2.2,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "ceramic",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:toilet_f",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.4,
+        "depth": 0.65,
+        "height": 0.8
+      },
+      "properties": {
+        "furniture_kind": "toilet",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "d94eb85e-1ece-5f14-8c7f-1b909eff3245",
+      "name": "Basin",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 7.09,
+        "y": 2.6,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "ceramic",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:basin_f",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.8,
+        "depth": 0.5,
+        "height": 0.85
+      },
+      "properties": {
+        "furniture_kind": "basin",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "e03dfd94-f2d4-5454-88dd-f904d27dc480",
+      "name": "Shower",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 6.85,
+        "y": 4.2,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "badf4bc8-70d5-573a-b14f-7cf2ca43f9d2"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:shower_f",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.9,
+        "depth": 0.9,
+        "height": 2.0
+      },
+      "properties": {
+        "furniture_kind": "shower",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "c6839af6-ba67-50a8-b869-f4a870a1ce08",
+      "name": "Desk",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 9.7,
+        "y": 9.5,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "a2652aba-a291-5fea-a0b7-3e379a12189e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:desk_s",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.4,
+        "depth": 0.7,
+        "height": 0.75
+      },
+      "properties": {
+        "furniture_kind": "desk",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "e579db80-03e2-54fa-88a4-8e1730ca6526",
+      "name": "Desk chair",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 9.7,
+        "y": 8.95,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.141593
+      },
+      "material_id": "fabric",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "a2652aba-a291-5fea-a0b7-3e379a12189e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:chair_s",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.5,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "1fca7abe-815b-5b2d-9a5b-cc2041f9aa63",
+      "name": "Bookshelf",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 7.66,
+        "y": 8.6,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "a2652aba-a291-5fea-a0b7-3e379a12189e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:shelf_s",
+      "type": "furniture",
+      "dimensions": {
+        "width": 1.6,
+        "depth": 0.4,
+        "height": 2.0
+      },
+      "properties": {
+        "furniture_kind": "bookshelf",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "bc17dcce-a702-5898-af8b-cf4cbb9f6048",
+      "name": "Balcony table",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 3.6,
+        "y": 10.9,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "0409fbc0-160e-5f1e-873b-6be3be0a02d6"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:btable",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.7,
+        "depth": 0.7,
+        "height": 0.45
+      },
+      "properties": {
+        "furniture_kind": "coffee_table",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "acc04785-2675-5ab9-a5c7-6569669cea3b",
+      "name": "Balcony chair 1",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 2.9,
+        "y": 10.9,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "metal",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "0409fbc0-160e-5f1e-873b-6be3be0a02d6"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:bchair1",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.5,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "8edefb3a-278b-5f53-b63a-d976f921a8ed",
+      "name": "Balcony chair 2",
+      "layer": "furniture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 4.3,
+        "y": 10.9,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "metal",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "0409fbc0-160e-5f1e-873b-6be3be0a02d6"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "furniture:bchair2",
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.5,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "647e6698-1953-5da6-bc69-cb23afec26d9",
+      "name": "Ground slab",
+      "layer": "structure",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": -0.15,
+        "y": -0.15,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "concrete",
+      "relationships": [],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "slab:ground",
+      "type": "slab",
+      "dimensions": {
+        "thickness": 0.3,
+        "area": 126.69
+      },
+      "properties": {
+        "slab_kind": "ground",
+        "outline": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 12.3,
+            "y": 0.0
+          },
+          {
+            "x": 12.3,
+            "y": 10.3
+          },
+          {
+            "x": 0.0,
+            "y": 10.3
+          }
+        ],
+        "holes": []
+      }
+    },
+    {
+      "id": "393858fa-cee3-5fb7-b63c-07bd3c08afb2",
+      "name": "Floor 2 slab",
+      "layer": "structure",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": -0.15,
+        "y": -0.15,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "concrete",
+      "relationships": [],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "slab:floor_f",
+      "type": "slab",
+      "dimensions": {
+        "thickness": 0.2,
+        "area": 120.74
+      },
+      "properties": {
+        "slab_kind": "floor",
+        "outline": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 12.3,
+            "y": 0.0
+          },
+          {
+            "x": 12.3,
+            "y": 10.3
+          },
+          {
+            "x": 0.0,
+            "y": 10.3
+          }
+        ],
+        "holes": [
+          [
+            {
+              "x": 3.61,
+              "y": 0.3
+            },
+            {
+              "x": 4.89,
+              "y": 0.3
+            },
+            {
+              "x": 4.89,
+              "y": 4.95
+            },
+            {
+              "x": 3.61,
+              "y": 4.95
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "id": "7d58bcc0-4270-5945-bafd-b74d084c4376",
+      "name": "Balcony slab",
+      "layer": "structure",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.6,
+        "y": 10.15,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "concrete",
+      "relationships": [],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "slab:balcony",
+      "type": "slab",
+      "dimensions": {
+        "thickness": 0.2,
+        "area": 8.7
+      },
+      "properties": {
+        "slab_kind": "balcony",
+        "outline": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 6.0,
+            "y": 0.0
+          },
+          {
+            "x": 6.0,
+            "y": 1.45
+          },
+          {
+            "x": 0.0,
+            "y": 1.45
+          }
+        ],
+        "holes": []
+      }
+    },
+    {
+      "id": "01bd86e0-6907-572b-9015-fd07084881ba",
+      "name": "Main stair",
+      "layer": "structure",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 4.65,
+        "y": 0.9,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "07aefd95-3a5b-5ae7-8763-0156b8dd5b9e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "stair:main",
+      "type": "stair",
+      "dimensions": {
+        "width": 1.1,
+        "run_length": 3.9,
+        "rise_total": 3.0
+      },
+      "properties": {
+        "stair_type": "straight",
+        "risers": 16,
+        "riser_height": 0.188,
+        "tread_depth": 0.26,
+        "from_level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+        "to_level_id": "18af44ef-7390-50bc-8379-242d6f005426"
+      }
+    },
+    {
+      "id": "cb7f6d4d-074a-5d05-a18f-4877a845ffa4",
+      "name": "Stair railing",
+      "layer": "architecture",
+      "level_id": "f9f09f4d-adfe-586f-a929-171c03b2824f",
+      "position": {
+        "x": 3.58,
+        "y": 0.9,
+        "z": 0.188
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "metal",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "07aefd95-3a5b-5ae7-8763-0156b8dd5b9e"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "railing:stair",
+      "type": "railing",
+      "dimensions": {
+        "length": 3.9,
+        "height": 0.9
+      },
+      "properties": {
+        "railing_kind": "bars",
+        "rise": 2.812,
+        "post_spacing": 1.0
+      }
+    },
+    {
+      "id": "082760e0-6012-5a17-835d-a73fb6afd4b7",
+      "name": "Balcony railing W",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.65,
+        "y": 10.15,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.570796
+      },
+      "material_id": "metal",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "0409fbc0-160e-5f1e-873b-6be3be0a02d6"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "railing:balcony_w",
+      "type": "railing",
+      "dimensions": {
+        "length": 1.4,
+        "height": 1.1
+      },
+      "properties": {
+        "railing_kind": "glass",
+        "rise": 0.0,
+        "post_spacing": 1.0
+      }
+    },
+    {
+      "id": "82fd2935-df6f-505d-9ed9-d4fefa0556b1",
+      "name": "Balcony railing N",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 0.65,
+        "y": 11.55,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "metal",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "0409fbc0-160e-5f1e-873b-6be3be0a02d6"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "railing:balcony_n",
+      "type": "railing",
+      "dimensions": {
+        "length": 5.9,
+        "height": 1.1
+      },
+      "properties": {
+        "railing_kind": "glass",
+        "rise": 0.0,
+        "post_spacing": 1.0
+      }
+    },
+    {
+      "id": "3db3b50b-c2cb-52eb-ab26-a12d812c07d5",
+      "name": "Balcony railing E",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": 6.55,
+        "y": 11.55,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "metal",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "0409fbc0-160e-5f1e-873b-6be3be0a02d6"
+        }
+      ],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "railing:balcony_e",
+      "type": "railing",
+      "dimensions": {
+        "length": 1.4,
+        "height": 1.1
+      },
+      "properties": {
+        "railing_kind": "glass",
+        "rise": 0.0,
+        "post_spacing": 1.0
+      }
+    },
+    {
+      "id": "30cd3b00-742d-51bf-a899-a2994cf5f3f0",
+      "name": "Roof",
+      "layer": "architecture",
+      "level_id": "18af44ef-7390-50bc-8379-242d6f005426",
+      "position": {
+        "x": -0.65,
+        "y": -0.65,
+        "z": 2.767
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "roof",
+      "relationships": [],
+      "origin": "user",
+      "locked": false,
+      "semantic_key": "roof:main",
+      "type": "roof",
+      "dimensions": {
+        "thickness": 0.2,
+        "overhang": 0.5
+      },
+      "properties": {
+        "roof_type": "hip",
+        "outline": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 13.3,
+            "y": 0.0
+          },
+          {
+            "x": 13.3,
+            "y": 11.3
+          },
+          {
+            "x": 0.0,
+            "y": 11.3
+          }
+        ],
+        "pitch_deg": 25.0,
+        "ridge_axis": "x",
+        "parapet_height": 0.0
+      }
+    }
+  ],
+  "metadata": {
+    "source": "fixture",
+    "generator": "app.modules.building.fixtures.demo_house"
+  }
+}

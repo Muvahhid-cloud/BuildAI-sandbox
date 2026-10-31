@@ -1,0 +1,42 @@
+{
+  "id": "a5f8c6ae-4a5a-4cd6-8b12-dd20a4b729dc",
+  "project_id": "e9400998-be7d-46c3-a45c-da54460c249e",
+  "status": "needs_clarification",
+  "stage": "done",
+  "prompt": "Create me a house.",
+  "provider": "mock",
+  "model": "mock-interpreter@1",
+  "understanding": "The request does not describe the house yet.",
+  "version_id": null,
+  "version_number": null,
+  "clarification_questions": [
+    "How many floors should the house have (1 to 3)?",
+    "About how many bedrooms and bathrooms do you need?",
+    "Do you have an approximate total floor area (m²) or budget?"
+  ],
+  "error": null,
+  "repair_count": 0,
+  "duration_ms": 10,
+  "created_at": "2026-09-28T07:17:09.372982Z",
+  "finished_at": "2026-09-28T07:17:09.388966Z",
+  "options": {
+    "gross_floor_area_m2": null,
+    "storeys": null,
+    "architectural_style": null,
+    "budget": null,
+    "region_code": null,
+    "seed": 0
+  },
+  "prompt_version": "building-generation@1",
+  "seed": 0,
+  "rules_profile": "generic-residential@1",
+  "engine_version": null,
+  "specification": null,
+  "assumptions": [],
+  "warnings": [],
+  "summary": null,
+  "checks": [],
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "started_at": "2026-09-28T07:17:09.380978Z"
+}

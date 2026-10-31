@@ -1,0 +1,232 @@
+# Building-services knowledge (category mep) for the future Phase 6 MEP layers and their
+# drawings. Codes and naming patterns are drawing conventions, not sizing rules. Values shown in
+# worked examples are recorded as `example` items and are never rules.
+items:
+  - id: mep.systems.taxonomy
+    kind: definition
+    category: mep
+    concept: sanitary-technical systems
+    statement: >-
+      Sanitary-technical systems of a building are internal cold and hot water supply,
+      sewerage, internal roof drainage, heating, ventilation and gas supply. They consist of
+      pipelines, fittings such as valves and taps, equipment such as water heaters and pumps,
+      and instruments.
+    params:
+      systems: [cold_water, hot_water, sewerage, roof_drainage, heating, ventilation, gas]
+      components: [pipelines, fittings, equipment, instruments]
+    provenance: [{ source: georgievsky-2004, pages: [93], section: "9.1", cites: ["ГОСТ 21.601-79"] }]
+    confidence: high
+    intended_use: [ontology.mep_systems, mep.systems]
+    related: [class.mep_system, class.pipeline, class.pipe_fitting, class.mep_equipment]
+    status: extracted
+
+  - id: mep.pipeline_codes
+    kind: code_list
+    category: mep
+    concept: letter-number codes of pipelines
+    statement: >-
+      Pipelines are coded by system: water supply B0 to B5 (general, domestic drinking,
+      fire-fighting, process and circulation), sewerage K0 to K4 (general, domestic, storm,
+      process and polluted) and heat supply T0 to T8 (heating and ventilation supply and return,
+      domestic hot water and circulation, process water, steam and condensate).
+    params:
+      codes:
+        - { code: "В0", en: water supply general, confidence: high }
+        - { code: "В1", en: domestic drinking water, maps_to_system: domestic_cold_water, confidence: high }
+        - { code: "В2", en: fire-fighting water, confidence: medium }
+        - { code: "В3", en: process water general, confidence: medium }
+        - { code: "В4", en: circulating water supply, confidence: medium }
+        - { code: "В5", en: circulating water return, confidence: medium }
+        - { code: "К0", en: sewerage general, confidence: high }
+        - { code: "К1", en: domestic sewer, maps_to_system: sanitary_drain, confidence: high }
+        - { code: "К2", en: storm drainage, confidence: high }
+        - { code: "К3", en: process sewer general, confidence: medium }
+        - { code: "К4", en: mechanically polluted sewer, confidence: medium }
+        - { code: "Т0", en: heat supply general, confidence: high }
+        - { code: "Т1", en: heating and ventilation hot water supply, confidence: medium }
+        - { code: "Т2", en: heating and ventilation hot water return, confidence: medium }
+        - { code: "Т3", en: domestic hot water supply, maps_to_system: domestic_hot_water, confidence: medium }
+        - { code: "Т4", en: domestic hot water circulation, confidence: medium }
+        - { code: "Т5", en: process hot water supply, confidence: medium }
+        - { code: "Т6", en: process hot water return, confidence: medium }
+        - { code: "Т7", en: steam, confidence: medium }
+        - { code: "Т8", en: condensate, confidence: medium }
+    provenance: [{ source: georgievsky-2004, pages: [94], section: "9.2", tables: ["Табл. 20"], cites: ["ГОСТ 21.601-79"], supports: [statement, params] }, { source: buildai-editorial, supports: [mapping], note: "maps_to_system names BuildAI system ids planned for Phase 6." }]
+    confidence: medium
+    inferences:
+      - "The book numbers two different tables as Table 20; this is the pipeline-code table."
+      - "The fire-water code is misprinted in the scan and read as B2 from the sequence."
+    intended_use: [mep.system_codes, documentation.mep.codes]
+    related: [class.pipeline]
+    status: needs_verification
+
+  - id: mep.designations
+    kind: convention
+    category: mep
+    concept: designations of risers, inlets, outlets and installations
+    statement: >-
+      Risers, water inlets and sewer outlets are designated by their kind, the system code and a
+      sequence number (for example riser B1-1, inlet B1-1, outlet K1-2); an installation number
+      may prefix the system code. Pipe diameters are written on the leader shelf.
+    params:
+      riser_pattern: "Ст.{system}-{n}"
+      inlet_pattern: "Ввод {system}-{n}"
+      outlet_pattern: "Выпуск {system}-{n}"
+      installation_pattern: "{n}{system}"
+    provenance: [{ source: georgievsky-2004, pages: [95], section: "9.2", figures: ["Рис. 106"] }]
+    confidence: high
+    inferences: ["The placeholder patterns are BuildAI templates built from the book's examples."]
+    intended_use: [mep.naming, documentation.mep.labels]
+    related: [class.riser, class.water_inlet, class.sewer_outlet]
+    status: extracted
+
+  - id: mep.pipe_line_conventions
+    kind: convention
+    category: mep
+    concept: pipeline line conventions
+    statement: >-
+      Designed visible pipelines are drawn with a solid main line, hidden ones (in channels or
+      underground) dashed at the same weight, and existing ones thinner. Pipes up to 100 mm in
+      diameter are drawn as one line and larger ones as two on installation drawings and large
+      fragments. Pipeline codes go on leader shelves, above the line or in line breaks.
+    params: { single_line_max_diameter_m: 0.1 }
+    provenance: [{ source: georgievsky-2004, pages: [95, 96, 101, 114], section: "9.2; 9.4; 10", cites: ["ГОСТ 21.206-93"] }]
+    confidence: high
+    intended_use: [documentation.mep.lines]
+    related: [class.pipeline]
+    status: extracted
+
+  - id: mep.line_weights
+    kind: dimension_table
+    category: mep
+    concept: line weights on water, sewer and HVAC drawings
+    statement: >-
+      On plans and sections, building structures are drawn at 0.2 mm, process equipment at
+      0.4 mm, sanitary fixtures at 0.2-0.4 mm, water and sewer pipelines at 0.6-0.8 mm, heating
+      pipelines at 0.6 mm, and ducts at 0.8 mm (single line) or 0.6 mm (double line).
+    params:
+      plan_weights_paper_mm:
+        - { element: building_structures, weight: 0.2 }
+        - { element: process_equipment, weight: 0.4 }
+        - { element: sanitary_fixtures, weight: [0.2, 0.4] }
+        - { element: water_and_sewer_pipes, weight: [0.6, 0.8] }
+        - { element: heating_pipes, weight: 0.6 }
+        - { element: ducts_single_line, weight: 0.8 }
+        - { element: ducts_double_line, weight: 0.6 }
+    provenance: [{ source: georgievsky-2004, pages: [95], section: "9.2", supports: [statement, params] }]
+    confidence: high
+    intended_use: [documentation.mep.lines]
+    status: extracted
+
+  - id: mep.plans
+    kind: content_list
+    category: mep
+    concept: water and sewer system plans
+    statement: >-
+      System plans are drawn at 1:100 to 1:400 (fragments 1:50 or 1:100, nodes 1:20 or 1:50);
+      water and sewer plans are usually combined. They show axes, finished floor levels,
+      tie-ins of inlets, outlets, risers and fixtures, pipe diameters and riser designations, and
+      are titled by floor level or floor numbers.
+    params:
+      plan_scales: ["1:100", "1:200", "1:400"]
+      fragment_scales: ["1:50", "1:100"]
+      node_scales: ["1:20", "1:50"]
+      contents: [axes, floor_levels, tie_ins, pipe_diameters, riser_designations, fixtures]
+    provenance: [{ source: georgievsky-2004, pages: [96, 97], section: "9.3" }]
+    confidence: high
+    intended_use: [documentation.mep.plans]
+    status: extracted
+
+  - id: mep.schemes
+    kind: content_list
+    category: mep
+    concept: axonometric schemes of water and sewer systems
+    statement: >-
+      Each water and sewer system gets an axonometric scheme in frontal isometric projection at
+      1:100 or 1:200. Water schemes show inlets, pipelines, diameters, axis levels, slopes,
+      fittings, taps, risers and equipment; sewer schemes show outlets with diameter, slope and
+      length, branch diameters, tray levels, risers, fixtures, drains and cleanouts.
+    params:
+      scheme_scales: ["1:100", "1:200"]
+      projection: frontal_isometric
+    provenance: [{ source: georgievsky-2004, pages: [98, 99, 100], section: "9.3", figures: ["Рис. 109", "Рис. 110"] }]
+    confidence: high
+    intended_use: [documentation.mep.schemes]
+    status: extracted
+
+  - id: mep.sewer_scheme_example_values
+    kind: example
+    category: mep
+    concept: values in the sewer scheme example
+    statement: >-
+      The worked sewer-scheme example labels pipe slopes such as 0.035 on branch pipes. These
+      are example values from one illustration, not design rules.
+    params: { example_slope_ratio: 0.035 }
+    provenance: [{ source: georgievsky-2004, pages: [100], section: "9.3", figures: ["Рис. 110"], supports: [params] }]
+    confidence: medium
+    usage: reference_only
+    status: extracted
+
+  - id: mep.installation_drawings
+    kind: convention
+    category: mep
+    concept: installation drawings
+    statement: >-
+      Installation drawings are made at 1:50 or 1:100 (nodes 1:20, details 1:2 to 1:10); their
+      positions are numbered per installation and the specification sits on the plan sheet.
+    params: { drawing_scales: ["1:50", "1:100"], node_scales: ["1:20"], detail_scales: ["1:2", "1:5", "1:10"] }
+    provenance: [{ source: georgievsky-2004, pages: [101], section: "9.4" }]
+    confidence: medium
+    intended_use: [documentation.mep.installations]
+    status: extracted
+
+  - id: mep.symbols.catalog
+    kind: symbol_set
+    category: mep
+    concept: symbols of building-services elements
+    statement: >-
+      Building-services drawings use symbols for general elements (filters, heaters, coolers,
+      humidifiers), fixtures, heating and ventilation devices, flow directions and actuators,
+      tanks, pumps and fans, pipeline elements, shut-off and regulating fittings, and pipe
+      connections and fittings. Symbols are not drawn to scale.
+    params:
+      groups: [general_elements, fixtures, heating_ventilation, flow_and_actuators, tanks_pumps_fans, pipeline_elements, fittings, pipes_and_connections]
+    provenance: [{ source: georgievsky-2004, pages: [103, 104, 105, 106, 107, 108, 109, 110, 112, 113], section: "10", tables: ["Табл. 21", "Табл. 22", "Табл. 23", "Табл. 24", "Табл. 25", "Табл. 26", "Табл. 27", "Табл. 30"], cites: ["ГОСТ 21.205-93", "ГОСТ 21.206-93"] }]
+    confidence: high
+    intended_use: [documentation.mep.symbols]
+    status: extracted
+
+  - id: mep.instrument_letters
+    kind: code_list
+    category: mep
+    concept: instrument and automation letter codes
+    statement: >-
+      Automation schemes label instruments with letters for the measured quantity (such as
+      temperature, pressure, difference) and the function (such as indication, automatic
+      regulation, switching).
+    params:
+      quantities: { "T": temperature, "P": pressure, "D": difference, "H": manual }
+      functions: { "I": indication, "C": automatic_regulation, "S": switching_or_interlock }
+    provenance: [{ source: georgievsky-2004, pages: [111], section: "10", cites: ["ГОСТ 21.404-85"] }]
+    confidence: medium
+    usage: reference_only
+    status: extracted
+
+  - id: mep.electrical_network_codes
+    kind: code_list
+    category: mep
+    concept: letter-number codes of electrical networks
+    statement: >-
+      Power and lighting networks are coded W0 (general), W1 (up to 1 kV), W2 (over 1 kV up to
+      35 kV) and W3 (over 35 kV); communication and control networks V0.
+    params:
+      codes:
+        - { code: W0, en: power and lighting network general }
+        - { code: W1, en: up to 1 kV }
+        - { code: W2, en: over 1 kV up to 35 kV }
+        - { code: W3, en: over 35 kV }
+        - { code: V0, en: communication and control networks general }
+    provenance: [{ source: georgievsky-2004, pages: [126], section: "11", tables: ["Табл. 43"], supports: [statement, params] }]
+    confidence: high
+    intended_use: [mep.system_codes]
+    status: extracted

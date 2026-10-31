@@ -1,0 +1,351 @@
+# Drawing knowledge, part 2: axes, level marks, callouts, titles, views, symbols, site plans.
+# Symbols are described by meaning and parameters only; glyphs are never reproduced.
+items:
+  - id: drawing.axes.labeling
+    kind: convention
+    category: drawing
+    concept: coordination axis labels
+    statement: >-
+      Axes are thin dash-dot lines labelled with Arabic numerals and Cyrillic capitals in circles
+      6-12 mm across, without gaps. Numerals run along the side with more axes, ordered left to
+      right and bottom to top; labels go on the left and bottom, and also on the top or right
+      where the axes of opposite sides differ.
+    params:
+      alphabet: cyrillic_upper
+      excluded_letters: ["Ё", "З", "Й", "О", "Х", "Ц", "Ч", "Щ", "Ъ", "Ы", "Ь"]
+      bubble_diameter_paper_mm: [6, 12]
+      numerals_on: side_with_more_axes
+      label_sides: [left, bottom]
+    provenance: [{ source: georgievsky-2004, pages: [43], section: "4.1", cites: ["ГОСТ 21.101-97"], supports: [statement, params] }]
+    confidence: high
+    intended_use: [documentation.plan.axes]
+    related: [class.coordination_axis]
+    status: extracted
+
+  - id: drawing.axes.secondary_and_repeating
+    kind: convention
+    category: drawing
+    concept: secondary axes and repeated elements
+    statement: >-
+      Secondary elements between main axes may get additional axes labelled as a fraction: the
+      preceding axis over the sequence number within the bay. A repeated element tied to several
+      axes lists them (up to three), gives the first and last, or refers to all axes.
+    params: { secondary_axis_format: "{preceding}/{n}", list_axes_up_to_count: 3 }
+    provenance: [{ source: georgievsky-2004, pages: [43, 44, 45], section: "4.1", figures: ["Рис. 52", "Рис. 53"] }]
+    confidence: high
+    intended_use: [documentation.plan.axes]
+    status: extracted
+
+  - id: drawing.level_marks
+    kind: convention
+    category: drawing
+    concept: level marks
+    statement: >-
+      Level marks give heights from the zero level in meters with three decimals, the zero as
+      0,000 without sign and others with + or -. On facades and sections they sit on extension or
+      contour lines with a 45-degree arrow of 2-4 mm; on plans in a rectangle or on a leader.
+    params:
+      decimal_places_count: 3
+      arrow_length_paper_mm: [2, 4]
+      arrow_angle_deg: 45
+      plan_style: rectangle_or_leader
+    provenance: [{ source: georgievsky-2004, pages: [45, 46], section: "4.2", figures: ["Рис. 55", "Рис. 56", "Рис. 57"], supports: [statement, params] }]
+    confidence: high
+    intended_use: [documentation.level_marks]
+    related: [term.level_mark, term.finished_floor_level, term.ground_level]
+    status: extracted
+
+  - id: drawing.level_marks.layer_leaders
+    kind: convention
+    category: drawing
+    concept: leader notes for multi-layer constructions
+    statement: Layers of multi-layer constructions are listed on leader shelves in the order the layers occur.
+    provenance: [{ source: georgievsky-2004, pages: [46, 47], section: "4.2", figures: ["Рис. 58"] }]
+    confidence: medium
+    intended_use: [documentation.sections.layers]
+    status: extracted
+
+  - id: drawing.callouts
+    kind: convention
+    category: drawing
+    concept: detail and fragment callouts
+    statement: >-
+      Fragments are marked with a curly bracket, named and numbered, with the sheet reference
+      when drawn elsewhere. Details are marked with a closed thin line (usually a circle or oval)
+      and a number on a leader, with the sheet number under the leader or in brackets; the
+      detail itself is headed by its number in a circle.
+    provenance: [{ source: georgievsky-2004, pages: [45, 46, 47, 48], section: "4.2", figures: ["Рис. 59", "Рис. 60", "Рис. 61", "Рис. 62"] }]
+    confidence: high
+    intended_use: [documentation.callouts]
+    related: [term.node, term.fragment]
+    status: extracted
+
+  - id: drawing.titles
+    kind: convention
+    category: drawing
+    concept: drawing titles
+    statement: >-
+      Floor plans are titled by the finished floor level, the floor numbers or the cutting plane,
+      and may name the room purpose; sections by their cutting plane; facades by the extreme
+      axes between which they lie.
+    params:
+      plan_title_patterns: ["План на отм. {level}", "План {floors} этажей", "План {plane}"]
+      section_title_pattern: "Разрез {plane}"
+      facade_title_pattern: "Фасад {first_axis}-{last_axis}"
+    provenance: [{ source: georgievsky-2004, pages: [48, 49], section: "4.2" }]
+    confidence: high
+    inferences: ["The placeholder patterns are BuildAI templates built from the book's examples."]
+    intended_use: [documentation.titles]
+    status: extracted
+
+  - id: drawing.plan.cut_plane
+    kind: convention
+    category: drawing
+    concept: floor plan cutting plane
+    statement: >-
+      A floor plan is a horizontal section at the level of the window openings or at one third
+      of the storey height; where windows lie above that plane, the perimeter walls are shown cut
+      at window level.
+    params: { cut_height_of_storey_ratio: 0.333 }
+    provenance: [{ source: georgievsky-2004, pages: [69], section: "6.2", figures: ["Рис. 76"] }]
+    confidence: high
+    intended_use: [documentation.plan.cut]
+    related: [term.floor_plan]
+    status: extracted
+
+  - id: drawing.plan.contents
+    kind: content_list
+    category: drawing
+    concept: contents of a floor plan
+    statement: >-
+      A floor plan shows coordination axes; dimensions between axes and openings, wall
+      thicknesses and level marks; section lines passing through windows and external doors;
+      element marks; detail and fragment references; room names or numbers with their areas in
+      the lower right corner, underlined; and fixture symbols.
+    params:
+      contents: [axes, dimensions, level_marks, section_lines, element_marks, callouts, room_names, room_areas, sanitary_fixtures]
+      room_area_position: lower_right_underlined
+    provenance: [{ source: georgievsky-2004, pages: [70, 71, 73], section: "6.2" }]
+    confidence: high
+    intended_use: [documentation.plan.contents]
+    status: extracted
+
+  - id: drawing.plan.room_schedule
+    kind: convention
+    category: drawing
+    concept: room schedule (explication)
+    statement: >-
+      Room numbers may replace names on the plan, with a room schedule listing number, name,
+      area and category; for residential buildings the schedule is usually not made.
+    params: { columns: [number, name, area_m2, category], column_widths_paper_mm: [15, 80, 20, 10] }
+    provenance: [{ source: georgievsky-2004, pages: [71], section: "6.2", figures: ["Рис. 79"] }]
+    confidence: medium
+    intended_use: [documentation.schedules.rooms]
+    related: [term.room_schedule]
+    status: extracted
+
+  - id: drawing.plan.special_outlines
+    kind: convention
+    category: drawing
+    concept: built-in rooms and elements above the cut
+    statement: >-
+      Built-in rooms are drawn schematically with thin solid lines; platforms and mezzanines
+      above the cutting plane with thin dash-double-dot lines.
+    provenance: [{ source: georgievsky-2004, pages: [71], section: "6.2" }]
+    confidence: high
+    intended_use: [documentation.plan.contents]
+    status: extracted
+
+  - id: drawing.plan.repetition
+    kind: convention
+    category: drawing
+    concept: similar floor plans
+    statement: >-
+      When floors differ little, one floor is drawn in full and only the differing parts of the
+      others, with a note referring to the full plan.
+    provenance: [{ source: georgievsky-2004, pages: [48], section: "4.2" }]
+    confidence: high
+    intended_use: [documentation.plan.repetition]
+    status: extracted
+
+  - id: drawing.plan.ventilation_channels
+    kind: symbol_set
+    category: drawing
+    concept: smoke and ventilation channels in plan
+    statement: >-
+      Ventilation shafts and channels and smoke flues for solid, liquid and gas fuels have
+      distinct plan symbols at 1:50 and 1:100, simplified at 1:200.
+    params: { detailed_scales: ["1:50", "1:100"], simplified_scales: ["1:200"], kinds: [ventilation, smoke_solid_fuel, smoke_liquid_fuel, gas_flue] }
+    provenance: [{ source: georgievsky-2004, pages: [74], section: "6.2", tables: ["Табл. 17"] }]
+    confidence: medium
+    intended_use: [documentation.plan.symbols]
+    related: [class.ventilation_channel, class.smoke_flue]
+    status: extracted
+
+  - id: drawing.plan.drawing_sequence
+    kind: convention
+    category: drawing
+    concept: order of drawing a plan
+    statement: >-
+      A plan is built up in stages: coordination axes, then walls and partitions, then openings,
+      then dimensions and remaining details.
+    provenance: [{ source: georgievsky-2004, pages: [73], section: "6.2", figures: ["Рис. 80"] }]
+    confidence: medium
+    intended_use: [documentation.plan.pipeline]
+    status: extracted
+
+  - id: drawing.section_facade.contents
+    kind: content_list
+    category: drawing
+    concept: contents of sections and facades
+    statement: >-
+      Sections and facades show axes at characteristic places (with dimensions between them on
+      sections), level marks of load-bearing and enclosing elements, dimensions and heights of
+      openings in section, element marks not shown on plans, window types and differing wall
+      materials on facades, and detail references. Cut contours are thick; contours beyond the
+      cut are thin.
+    params:
+      contents: [axes, axis_dimensions, level_marks, opening_dimensions, element_marks, window_types, wall_materials, callouts]
+    provenance: [{ source: georgievsky-2004, pages: [74, 75], section: "6.3" }]
+    confidence: high
+    intended_use: [documentation.section.contents, documentation.facade.contents]
+    related: [term.section, term.facade]
+    status: extracted
+
+  - id: drawing.facade.drawing_sequence
+    kind: convention
+    category: drawing
+    concept: order of drawing a facade
+    statement: >-
+      A facade is built up from the axes and the overall contour, then windows, doors, balcony
+      railings and roof stacks, then level marks and the final outline.
+    provenance: [{ source: georgievsky-2004, pages: [75], section: "6.3" }]
+    confidence: high
+    intended_use: [documentation.facade.pipeline]
+    status: extracted
+
+  - id: drawing.section.kinds
+    kind: definition
+    category: drawing
+    concept: architectural and constructive sections
+    statement: >-
+      An architectural (contour) section shows spaces and outlines, while a constructive section
+      also shows foundations, floor and roof build-ups and the roof structure.
+    provenance: [{ source: georgievsky-2004, pages: [77], section: "6.3", figures: ["Рис. 85"] }]
+    confidence: medium
+    intended_use: [documentation.section.kinds]
+    status: extracted
+
+  - id: drawing.roof_plan.contents
+    kind: content_list
+    category: drawing
+    concept: contents of a roof plan
+    statement: >-
+      A roof plan shows coordination axes, slope directions, level marks or a schematic
+      cross-profile, and marks of roof elements such as drains, parapets, fencing and fire
+      ladders; expansion joints are drawn as two thin solid lines.
+    params: { contents: [axes, slopes, level_marks, element_marks] }
+    provenance: [{ source: georgievsky-2004, pages: [79], section: "6.4" }]
+    confidence: high
+    intended_use: [documentation.roof_plan.contents]
+    related: [term.roof_plan, class.roof_drain, class.parapet]
+    status: extracted
+
+  - id: drawing.symbols.openings
+    kind: symbol_set
+    category: drawing
+    concept: door and window-sash symbols
+    statement: >-
+      Doors are distinguished in plan as single or double leaf, double doors, swing, sliding,
+      lifting, folding and revolving doors. Window sashes are distinguished as side-, bottom- and
+      top-hung (inward or outward), pivoting, sliding, lifting and fixed; the apex of the opening
+      sign points to the side of the frame the sash is not hung on.
+    params:
+      door_kinds: [single_leaf, double_leaf, double_single_leaf, double_double_leaf, swing_single, swing_double, sliding_single, sliding_double, lifting, folding, revolving, lift_and_swing_gate]
+      sash_kinds: [side_hung_in, side_hung_out, bottom_hung_in, bottom_hung_out, top_hung_in, top_hung_out, pivot_horizontal, pivot_vertical, sliding, lifting, fixed]
+    provenance: [{ source: georgievsky-2004, pages: [52], section: "5.1", tables: ["Табл. 9"] }]
+    confidence: high
+    inferences: ["Kind keys are BuildAI names for the table rows."]
+    intended_use: [documentation.symbols.openings]
+    related: [class.door, class.window]
+    status: extracted
+
+  - id: drawing.symbols.stairs_ramps
+    kind: symbol_set
+    category: drawing
+    concept: stair and ramp symbols
+    statement: >-
+      Lower, intermediate and upper stair flights have distinct plan symbols, the arrow showing
+      the direction of ascent; sections show steps in detail at 1:50 and larger and
+      schematically at 1:100 and smaller. On ramps the plan arrow shows the direction of descent
+      and the slope is given in percent or as a ratio. Existing elements to be demolished are
+      dashed.
+    params:
+      flights: [lower, intermediate, upper]
+      stair_arrow: ascent
+      ramp_arrow: descent
+      detailed_section_scales: ["1:50"]
+      schematic_section_scales: ["1:100"]
+    provenance:
+      - { source: georgievsky-2004, pages: [50, 51], section: "5.1", tables: ["Табл. 8"], cites: ["ГОСТ 21.501-93"] }
+      - { source: georgievsky-2004, pages: [137], section: "Прил. 7", supports: [existence] }
+    confidence: high
+    intended_use: [documentation.symbols.stairs]
+    related: [class.stair_flight, term.ramp]
+    status: extracted
+
+  - id: drawing.symbols.sanitary
+    kind: symbol_set
+    category: drawing
+    concept: sanitary fixture symbols
+    statement: >-
+      Internal water and sewer fixtures (washbasins, sinks, wash-stands, baths, shower trays,
+      bidets, WCs, urinals, floor drains, roof drain funnels, drinking fountains) have plan and
+      elevation symbols; the number of crosses shows the number of taps; symbols are not drawn
+      to scale.
+    provenance: [{ source: georgievsky-2004, pages: [103, 104, 105], section: "10", tables: ["Табл. 22"], cites: ["ГОСТ 21.205-93"] }]
+    confidence: medium
+    intended_use: [documentation.symbols.sanitary]
+    related: [class.sanitary_fixture]
+    status: extracted
+
+  - id: drawing.site.general_plan
+    kind: convention
+    category: drawing
+    concept: site plan conventions
+    statement: >-
+      The site plan shows designed, existing, reconstructed and demolished buildings, networks,
+      roads, landscaping and grading. Designed above-ground buildings and networks are thick
+      solid lines and underground ones dashed; demolition and reconstruction have their own
+      markings; symbols are drawn to scale.
+    provenance: [{ source: georgievsky-2004, pages: [87, 88, 89], section: "8.1", cites: ["ГОСТ 21.204-93"] }]
+    confidence: high
+    intended_use: [documentation.site_plan]
+    status: extracted
+
+  - id: drawing.site.landscaping
+    kind: content_list
+    category: drawing
+    concept: landscaping plan
+    statement: >-
+      The landscaping plan shows playgrounds, greenery, small architectural forms, sidewalks and
+      paths with their widths and tie-ins; trees, shrubs, hedges, flower beds and lawns have
+      their own symbols.
+    provenance: [{ source: georgievsky-2004, pages: [90, 91], section: "8.2", tables: ["Табл. 19"] }]
+    confidence: medium
+    intended_use: [documentation.site_plan.landscaping]
+    status: extracted
+
+  - id: drawing.site.wind_rose
+    kind: convention
+    category: drawing
+    concept: north arrow and wind rose
+    statement: >-
+      The north direction is always shown by an arrow. A wind rose plots, for eight directions,
+      the share of windy days over the year from the centre toward the wind, the shares summing
+      to 100 percent.
+    params: { directions_count: 8, shares_total_ratio: 1.0 }
+    provenance: [{ source: georgievsky-2004, pages: [92], section: "8.3", figures: ["Рис. 105"] }]
+    confidence: high
+    intended_use: [documentation.site_plan.orientation]
+    status: extracted

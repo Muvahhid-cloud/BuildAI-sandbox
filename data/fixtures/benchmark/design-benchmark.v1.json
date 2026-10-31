@@ -1,0 +1,401 @@
+{
+  "$comment": "Design Intelligence V1 quality benchmark. Each case is a natural-language request run through the offline interpreter (MockAIProvider) and the deterministic layout engine. Expectations are checked on the generated BuildingModel by apps/api/evals/design_benchmark.py, independently of the engine's own evaluation. priority: hard = must hold; soft = preference, reported and scored. category: intent | spatial | visual | knowledge | honesty. set: the benchmark generation a case was added in (untagged = v1, Design Intelligence V1; v1.1 = L footprints; v1.2 = L layout quality; v1.3 = footprint shape intent and T footprints); results are reported per set so new cases never blur the existing ones. known_gap = a capability the platform does not have yet; the check is expected to FAIL and the test fails if it starts passing unnoticed. Do not weaken an expectation to match the output: fix the engine, or record a known gap with the reason.",
+  "version": 1,
+  "cases": [
+    {
+      "id": "compact-family-home",
+      "prompt": "Compact single-storey family home of 95 m2 with 2 bedrooms, 1 bathroom and an open kitchen-living room. Space-efficient circulation is important.",
+      "expectations": [
+        { "kind": "storeys", "equals": 1, "priority": "hard", "category": "intent" },
+        { "kind": "room_count", "room_type": "bedroom", "equals": 2, "priority": "hard", "category": "intent" },
+        { "kind": "room_count", "room_type": "open_kitchen_living", "equals": 1, "priority": "hard", "category": "intent" },
+        { "kind": "spec_priority", "priority_value": "compactness", "priority": "hard", "category": "intent" },
+        { "kind": "circulation_share_max", "max": 0.2, "priority": "soft", "category": "spatial" },
+        { "kind": "pattern_applied", "pattern": "pattern.compact_family_home", "priority": "soft", "category": "knowledge" }
+      ]
+    },
+    {
+      "id": "garden-panoramic-rear",
+      "prompt": "Contemporary two-storey house of 200 m2 with 3 bedrooms. Panoramic windows on the rear facade facing the garden, not on the street side. The living room should face the garden.",
+      "expectations": [
+        { "kind": "windows_on_facade", "facade": "rear", "size": "panoramic", "min": 2, "priority": "hard", "category": "visual" },
+        { "kind": "no_windows_on_facade", "facade": "front", "sizes": ["large", "panoramic"], "priority": "hard", "category": "visual" },
+        { "kind": "reaches_facade", "room": "living", "facade": "rear", "priority": "hard", "category": "spatial" },
+        { "kind": "reaches_facade", "room": "dining", "facade": "rear", "priority": "soft", "category": "spatial" },
+        { "kind": "pattern_applied", "pattern": "pattern.garden_oriented_living", "priority": "soft", "category": "knowledge" }
+      ]
+    },
+    {
+      "id": "courtyard-house",
+      "prompt": "Single-storey courtyard house of 180 m2 with 3 bedrooms arranged around a private inner courtyard.",
+      "expectations": [
+        { "kind": "spec_shape", "equals": "courtyard", "priority_value": "must", "priority": "hard", "category": "intent" },
+        { "kind": "musts_honoured_or_explained", "priority": "hard", "category": "honesty" },
+        { "kind": "failure_mentions", "contains": ["courtyard", "cannot"], "priority": "hard", "category": "honesty" },
+        { "kind": "spec_storeys", "equals": 1, "priority": "hard", "category": "intent" },
+        { "kind": "spec_room_count", "room_type": "bedroom", "equals": 3, "priority": "hard", "category": "intent" },
+        { "kind": "pattern_not_applied", "pattern": "pattern.courtyard_house", "priority": "hard", "category": "honesty" },
+        { "kind": "enclosed_courtyard", "priority": "hard", "category": "spatial", "known_gap": "No courtyard generator yet (building/footprint.py CAPABILITIES): the request is refused with the reason, never built as another shape (pattern.courtyard_house is reference-only)." }
+      ]
+    },
+    {
+      "id": "narrow-urban-plot",
+      "prompt": "Narrow urban plot 8 m wide and 30 m deep: a two-storey townhouse of 140 m2 with 3 bedrooms and the kitchen next to the dining room.",
+      "expectations": [
+        { "kind": "footprint_max_width", "max": 8.0, "priority": "hard", "category": "intent" },
+        { "kind": "storeys", "equals": 2, "priority": "hard", "category": "intent" },
+        { "kind": "adjacent", "a": "kitchen", "b": "dining", "priority": "soft", "category": "spatial" },
+        { "kind": "reaches_facade", "room": "living", "facade": "rear", "priority": "soft", "category": "spatial" },
+        { "kind": "pattern_applied", "pattern": "pattern.narrow_plot_linear", "priority": "soft", "category": "knowledge" }
+      ]
+    },
+    {
+      "id": "open-plan-living",
+      "prompt": "Two-storey family house of 180 m2 with 3 bedrooms and an open-plan living, dining and kitchen area.",
+      "expectations": [
+        { "kind": "open_connection", "a": "kitchen", "b": "dining", "priority": "hard", "category": "spatial" },
+        { "kind": "open_connection", "a": "dining", "b": "living", "priority": "hard", "category": "spatial" },
+        { "kind": "adjacent", "a": "kitchen", "b": "dining", "priority": "soft", "category": "spatial" },
+        { "kind": "pattern_applied", "pattern": "pattern.open_plan_living", "priority": "soft", "category": "knowledge" }
+      ]
+    },
+    {
+      "id": "kitchen-next-to-dining",
+      "prompt": "Modern two-storey family house of 220 m2 with 4 bedrooms and a study; the kitchen must be next to the dining room.",
+      "expectations": [
+        { "kind": "spec_must", "path_suffix": "adjacent_to/0", "priority": "hard", "category": "intent" },
+        { "kind": "adjacent", "a": "kitchen", "b": "dining", "priority": "hard", "category": "spatial" },
+        { "kind": "room_count", "room_type": "study", "equals": 1, "priority": "hard", "category": "intent" }
+      ]
+    },
+    {
+      "id": "explicit-room-areas",
+      "prompt": "Modern two-storey house of 220 m2 with 4 bedrooms: a 40 m2 living room, a kitchen of 16 m2 and a master bedroom of at least 20 m2.",
+      "expectations": [
+        { "kind": "spec_gfa", "equals": 220, "priority": "hard", "category": "intent" },
+        { "kind": "room_area", "room": "living", "target": 40, "tolerance": 0.1, "priority": "hard", "category": "spatial" },
+        { "kind": "room_area", "room": "kitchen", "target": 16, "tolerance": 0.1, "priority": "hard", "category": "spatial" },
+        { "kind": "room_area_range", "room": "master_bedroom", "min": 20, "max": 25, "priority": "hard", "category": "spatial" },
+        { "kind": "room_area", "room": "living", "target": 40, "tolerance": 0.05, "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "public-private-separation",
+      "prompt": "Single-storey house of 160 m2 with 3 bedrooms and 2 bathrooms. The bedrooms must be separated from the living spaces for privacy.",
+      "expectations": [
+        { "kind": "apart", "a_type": "bedroom", "b_types": ["living", "dining", "kitchen", "open_kitchen_living"], "priority": "hard", "category": "spatial" },
+        { "kind": "spec_priority", "priority_value": "privacy", "priority": "hard", "category": "intent" },
+        { "kind": "pattern_applied", "pattern": "pattern.public_private_zoning", "priority": "soft", "category": "knowledge" }
+      ]
+    },
+    {
+      "id": "facade-material-palette",
+      "prompt": "Scandinavian two-storey timber house of 150 m2 with 3 bedrooms, a dark grey facade, a gable roof and large windows on the rear facade.",
+      "expectations": [
+        { "kind": "facade_material", "material_id": "wood", "priority": "hard", "category": "visual" },
+        { "kind": "facade_color", "hex": "#3b3f44", "priority": "hard", "category": "visual" },
+        { "kind": "roof_type", "equals": "gable", "priority": "hard", "category": "visual" },
+        { "kind": "windows_on_facade", "facade": "rear", "size": "large", "min": 2, "priority": "hard", "category": "visual" },
+        { "kind": "no_windows_on_facade", "facade": "front", "sizes": ["large", "panoramic"], "priority": "soft", "category": "visual" }
+      ]
+    },
+    {
+      "id": "conflicting-constraints",
+      "prompt": "Single-storey 130 m2 house with 3 bedrooms, a 40 m2 living room, a 20 m2 kitchen; the kitchen must be next to the dining room and the bedrooms must be separated from the living spaces.",
+      "expectations": [
+        { "kind": "musts_honoured_or_explained", "priority": "hard", "category": "honesty" },
+        { "kind": "room_area", "room": "living", "target": 40, "tolerance": 0.1, "priority": "soft", "category": "spatial" },
+        { "kind": "adjacent", "a": "kitchen", "b": "dining", "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "daylight-home-office",
+      "prompt": "Two-storey house of 170 m2 with 3 bedrooms and a home office, plenty of natural light and a light grey render facade.",
+      "expectations": [
+        { "kind": "facade_color", "hex": "#c9cbcc", "priority": "hard", "category": "visual" },
+        { "kind": "facade_material", "material_id": "exterior_wall", "priority": "hard", "category": "visual" },
+        { "kind": "spec_priority", "priority_value": "daylight", "priority": "hard", "category": "intent" },
+        { "kind": "daylight_all_habitable", "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "garden-terrace-bungalow",
+      "prompt": "Single-storey bungalow of 150 m2 with 3 bedrooms, 2 bathrooms, a garage and a terrace off the living room facing the garden.",
+      "expectations": [
+        { "kind": "has_room_type", "room_type": "terrace", "priority": "hard", "category": "intent" },
+        { "kind": "has_room_type", "room_type": "garage", "priority": "hard", "category": "intent" },
+        { "kind": "reaches_facade", "room": "living", "facade": "rear", "priority": "hard", "category": "spatial" },
+        { "kind": "pattern_applied", "pattern": "pattern.garden_oriented_living", "priority": "soft", "category": "knowledge" },
+        { "kind": "reaches_facade", "room": "dining", "facade": "rear", "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "rect-compact-retained",
+      "set": "v1.1",
+      "prompt": "Compact single-storey house of 100 m2 with 2 bedrooms and an open kitchen-living room.",
+      "expectations": [
+        { "kind": "footprint_shape", "equals": "rectangular", "priority": "hard", "category": "spatial" },
+        { "kind": "envelope_closed", "priority": "hard", "category": "spatial" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "openings_hosted", "priority": "hard", "category": "spatial" },
+        { "kind": "deterministic", "priority": "hard", "category": "honesty" }
+      ]
+    },
+    {
+      "id": "l-explicit",
+      "set": "v1.1",
+      "prompt": "A single-storey L-shaped house of 170 m2 with 3 bedrooms and 2 bathrooms.",
+      "expectations": [
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "envelope_closed", "priority": "hard", "category": "spatial" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "openings_hosted", "priority": "hard", "category": "spatial" },
+        { "kind": "deterministic", "priority": "hard", "category": "honesty" },
+        { "kind": "circulation_share_max", "max": 0.22, "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "l-garden-living-dining",
+      "set": "v1.1",
+      "prompt": "Single-storey L-shaped house of 180 m2 with 3 bedrooms and large windows facing the garden; the living room and dining room should face the garden.",
+      "expectations": [
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "reaches_facade", "room": "living", "facade": "rear", "priority": "hard", "category": "spatial" },
+        { "kind": "reaches_facade", "room": "dining", "facade": "rear", "priority": "hard", "category": "spatial" },
+        { "kind": "windows_on_facade", "facade": "rear", "size": "large", "min": 2, "priority": "hard", "category": "visual" },
+        { "kind": "envelope_closed", "priority": "hard", "category": "spatial" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "openings_hosted", "priority": "hard", "category": "spatial" },
+        { "kind": "adjacent", "a": "kitchen", "b": "dining", "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "l-kitchen-dining",
+      "set": "v1.1",
+      "prompt": "L-shaped single-storey house of 160 m2 with 3 bedrooms; the kitchen must be next to the dining room.",
+      "expectations": [
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "adjacent", "a": "kitchen", "b": "dining", "priority": "hard", "category": "spatial" },
+        { "kind": "envelope_closed", "priority": "hard", "category": "spatial" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "openings_hosted", "priority": "hard", "category": "spatial" },
+        { "kind": "reaches_facade", "room": "living", "facade": "rear", "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "l-explicit-areas",
+      "set": "v1.1",
+      "prompt": "L-shaped single-storey house of 170 m2 with 3 bedrooms, a 30 m2 living room and a 14 m2 kitchen.",
+      "expectations": [
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "room_area", "room": "living", "target": 30, "tolerance": 0.1, "priority": "hard", "category": "spatial" },
+        { "kind": "room_area", "room": "kitchen", "target": 14, "tolerance": 0.1, "priority": "hard", "category": "spatial" },
+        { "kind": "envelope_closed", "priority": "hard", "category": "spatial" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "openings_hosted", "priority": "hard", "category": "spatial" },
+        { "kind": "room_area", "room": "living", "target": 30, "tolerance": 0.05, "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "l-infeasible-plot",
+      "set": "v1.1",
+      "prompt": "Single-storey L-shaped house of 170 m2 with 3 bedrooms and 2 bathrooms on a plot 9.3 m wide; the L shape is required.",
+      "expectations": [
+        { "kind": "musts_honoured_or_explained", "priority": "hard", "category": "honesty" },
+        { "kind": "failure_mentions", "contains": ["L-shaped", "wider than the plot"], "priority": "hard", "category": "honesty" }
+      ]
+    },
+    {
+      "id": "rect-must-stay-rectangular",
+      "set": "v1.2",
+      "prompt": "Single-storey house of 160 m2 with 3 bedrooms, the living room facing the garden and privacy for the bedrooms. A rectangular house is required.",
+      "expectations": [
+        { "kind": "spec_must", "path_suffix": "/design/footprint_shape", "priority": "hard", "category": "intent" },
+        { "kind": "footprint_shape", "equals": "rectangular", "priority": "hard", "category": "spatial" },
+        { "kind": "reaches_facade", "room": "living", "facade": "rear", "priority": "hard", "category": "spatial" },
+        { "kind": "envelope_closed", "priority": "hard", "category": "spatial" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "deterministic", "priority": "hard", "category": "honesty" }
+      ]
+    },
+    {
+      "id": "l-must-garden-living-dining",
+      "set": "v1.2",
+      "prompt": "Single-storey L-shaped house of 170 m2 with 3 bedrooms; the L shape is required. The living room and the dining room must face the garden.",
+      "expectations": [
+        { "kind": "spec_must", "path_suffix": "/design/footprint_shape", "priority": "hard", "category": "intent" },
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "musts_honoured_or_explained", "priority": "hard", "category": "honesty" },
+        { "kind": "reaches_facade", "room": "living", "facade": "rear", "priority": "hard", "category": "spatial" },
+        { "kind": "reaches_facade", "room": "dining", "facade": "rear", "priority": "hard", "category": "spatial" },
+        { "kind": "envelope_closed", "priority": "hard", "category": "spatial" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "openings_hosted", "priority": "hard", "category": "spatial" },
+        { "kind": "deterministic", "priority": "hard", "category": "honesty" },
+        { "kind": "circulation_share_max", "max": 0.22, "priority": "soft", "category": "spatial" },
+        { "kind": "facade_share_min", "rooms": ["living", "dining"], "facade": "rear", "min": 0.5, "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "garden-living-dining-must",
+      "set": "v1.2",
+      "prompt": "Single-storey house of 150 m2 with 3 bedrooms. The living room and the dining room must face the garden.",
+      "expectations": [
+        { "kind": "musts_honoured_or_explained", "priority": "hard", "category": "honesty" },
+        { "kind": "reaches_facade", "room": "living", "facade": "rear", "priority": "hard", "category": "spatial" },
+        { "kind": "reaches_facade", "room": "dining", "facade": "rear", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "facade_share_min", "rooms": ["living", "dining"], "facade": "rear", "min": 0.4, "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "l-garden-kitchen-dining-must",
+      "set": "v1.2",
+      "prompt": "L-shaped single-storey house of 180 m2 with 3 bedrooms. The kitchen must be next to the dining room. The living room and the dining room should face the garden.",
+      "expectations": [
+        { "kind": "spec_must", "path_suffix": "/adjacent_to/0", "priority": "hard", "category": "intent" },
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "adjacent", "a": "kitchen", "b": "dining", "priority": "hard", "category": "spatial" },
+        { "kind": "musts_honoured_or_explained", "priority": "hard", "category": "honesty" },
+        { "kind": "envelope_closed", "priority": "hard", "category": "spatial" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "openings_hosted", "priority": "hard", "category": "spatial" },
+        { "kind": "reaches_facade", "room": "living", "facade": "rear", "priority": "soft", "category": "spatial" },
+        { "kind": "reaches_facade", "room": "dining", "facade": "rear", "priority": "soft", "category": "spatial" },
+        { "kind": "circulation_share_max", "max": 0.22, "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "l-explicit-areas-three",
+      "set": "v1.2",
+      "prompt": "L-shaped single-storey house of 180 m2 with 3 bedrooms, a 34 m2 living room, a 16 m2 kitchen and a 15 m2 dining room.",
+      "expectations": [
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "room_area", "room": "living", "target": 34, "tolerance": 0.1, "priority": "hard", "category": "spatial" },
+        { "kind": "room_area", "room": "kitchen", "target": 16, "tolerance": 0.1, "priority": "hard", "category": "spatial" },
+        { "kind": "room_area", "room": "dining", "target": 15, "tolerance": 0.1, "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "room_area", "room": "living", "target": 34, "tolerance": 0.05, "priority": "soft", "category": "spatial" },
+        { "kind": "room_area", "room": "kitchen", "target": 16, "tolerance": 0.05, "priority": "soft", "category": "spatial" },
+        { "kind": "room_area", "room": "dining", "target": 15, "tolerance": 0.05, "priority": "soft", "category": "spatial" },
+        { "kind": "circulation_share_max", "max": 0.22, "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "l-musts-cannot-all-fit",
+      "set": "v1.2",
+      "prompt": "Single-storey L-shaped house of 130 m2 with 3 bedrooms, a 45 m2 living room and a 25 m2 kitchen; the L shape is required.",
+      "expectations": [
+        { "kind": "musts_honoured_or_explained", "priority": "hard", "category": "honesty" },
+        { "kind": "failure_mentions", "contains": ["Living"], "priority": "hard", "category": "honesty" }
+      ]
+    },
+    {
+      "id": "shape-rectangular",
+      "set": "v1.3",
+      "prompt": "A rectangular single-storey house of 140 m2 with 3 bedrooms.",
+      "expectations": [
+        { "kind": "spec_shape", "equals": "rectangular", "priority_value": "must", "priority": "hard", "category": "intent" },
+        { "kind": "footprint_shape", "equals": "rectangular", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "deterministic", "priority": "hard", "category": "honesty" }
+      ]
+    },
+    {
+      "id": "shape-reported-yellow-long-l",
+      "set": "v1.3",
+      "prompt": "make me a long L designed house with the yellow walls",
+      "expectations": [
+        { "kind": "spec_shape", "equals": "l_shape", "priority_value": "must", "priority": "hard", "category": "intent" },
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "facade_color", "hex": "#e8c547", "priority": "hard", "category": "visual" },
+        { "kind": "no_warning", "code": "LAYOUT_TOPOLOGY_FALLBACK", "priority": "hard", "category": "honesty" },
+        { "kind": "envelope_closed", "priority": "hard", "category": "spatial" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "openings_hosted", "priority": "hard", "category": "spatial" },
+        { "kind": "deterministic", "priority": "hard", "category": "honesty" }
+      ]
+    },
+    {
+      "id": "shape-long-l-yellow",
+      "set": "v1.3",
+      "prompt": "Make me a long L-shaped house with yellow walls.",
+      "expectations": [
+        { "kind": "spec_shape", "equals": "l_shape", "priority_value": "must", "priority": "hard", "category": "intent" },
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "facade_color", "hex": "#e8c547", "priority": "hard", "category": "visual" },
+        { "kind": "no_warning", "code": "LAYOUT_TOPOLOGY_FALLBACK", "priority": "hard", "category": "honesty" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "shape-t-villa",
+      "set": "v1.3",
+      "prompt": "Design a T-shaped villa.",
+      "expectations": [
+        { "kind": "spec_shape", "equals": "t_shape", "priority_value": "must", "priority": "hard", "category": "intent" },
+        { "kind": "footprint_shape", "equals": "t_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "envelope_closed", "priority": "hard", "category": "spatial" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "openings_hosted", "priority": "hard", "category": "spatial" },
+        { "kind": "deterministic", "priority": "hard", "category": "honesty" },
+        { "kind": "daylight_all_habitable", "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "shape-u-house",
+      "set": "v1.3",
+      "prompt": "A U-shaped house with 3 bedrooms.",
+      "expectations": [
+        { "kind": "spec_shape", "equals": "u_shape", "priority_value": "must", "priority": "hard", "category": "intent" },
+        { "kind": "musts_honoured_or_explained", "priority": "hard", "category": "honesty" },
+        { "kind": "failure_mentions", "contains": ["U-shaped", "cannot"], "priority": "hard", "category": "honesty" },
+        { "kind": "footprint_shape", "equals": "u_shape", "priority": "hard", "category": "spatial", "known_gap": "No U-shaped generator yet (building/footprint.py CAPABILITIES): the request is refused with the reason." }
+      ]
+    },
+    {
+      "id": "shape-courtyard-house",
+      "set": "v1.3",
+      "prompt": "Design a courtyard house of 200 m2 with 4 bedrooms.",
+      "expectations": [
+        { "kind": "spec_shape", "equals": "courtyard", "priority_value": "must", "priority": "hard", "category": "intent" },
+        { "kind": "musts_honoured_or_explained", "priority": "hard", "category": "honesty" },
+        { "kind": "failure_mentions", "contains": ["courtyard", "cannot"], "priority": "hard", "category": "honesty" },
+        { "kind": "footprint_shape", "equals": "courtyard", "priority": "hard", "category": "spatial", "known_gap": "No courtyard generator yet (building/footprint.py CAPABILITIES): the request is refused with the reason." }
+      ]
+    },
+    {
+      "id": "shape-l-preference",
+      "set": "v1.3",
+      "prompt": "A single-storey house of 150 m2 with 3 bedrooms; an L shape would be nice if possible.",
+      "expectations": [
+        { "kind": "spec_shape", "equals": "l_shape", "priority_value": "should", "priority": "hard", "category": "intent" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" },
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "soft", "category": "spatial" }
+      ]
+    },
+    {
+      "id": "shape-l-on-12m-plot",
+      "set": "v1.3",
+      "prompt": "Single-storey L-shaped house of 170 m2 with 3 bedrooms and 2 bathrooms on a plot 12 m wide; the L shape is required.",
+      "expectations": [
+        { "kind": "spec_shape", "equals": "l_shape", "priority_value": "must", "priority": "hard", "category": "intent" },
+        { "kind": "footprint_shape", "equals": "l_shape", "priority": "hard", "category": "spatial" },
+        { "kind": "footprint_max_width", "max": 12.0, "priority": "hard", "category": "intent" },
+        { "kind": "rooms_tile_envelope", "priority": "hard", "category": "spatial" },
+        { "kind": "all_rooms_reachable", "priority": "hard", "category": "spatial" }
+      ]
+    }
+  ]
+}

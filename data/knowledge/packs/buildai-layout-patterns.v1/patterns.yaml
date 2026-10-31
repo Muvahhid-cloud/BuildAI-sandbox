@@ -1,0 +1,318 @@
+# Layout patterns of buildai-layout-patterns@1. Editorial drafts: every statement is either a
+# general design principle (stated without a source claim) or a BuildAI heuristic. There are no
+# source_rule statements because no published source has been reviewed for them.
+#
+# Recipe semantics (apps/api/app/modules/layout/patterns.py): band_preferences = the facade side
+# a room type should reach (garden = rear/north, street = front/south), weight = penalty on the
+# other side; affinities / separations = room-type pairs that should / should not share a wall,
+# weight = penalty when missed; footprint_aspect = preferred width/depth range (x along the
+# street), penalised outside it.
+
+patterns:
+  - id: pattern.compact_family_home
+    name: Compact family home
+    intent: >-
+      Fit a family programme into a small, economical volume with short circulation and the
+      kitchen, dining and wet rooms grouped close together.
+    context: >-
+      Small storeys or a client who asks for a compact or efficient house; one or two storeys.
+    relationships: >-
+      Kitchen next to dining; dining next to living; bathrooms tucked next to the bedrooms they
+      serve; living spaces on the ground floor.
+    circulation: >-
+      One short corridor per storey; the entrance hall doubles as the stair landing.
+    privacy: >-
+      Bedrooms are kept upstairs on two-storey houses; on one storey they share the corridor
+      with the living spaces.
+    daylight: >-
+      A near-square plan has less facade per room, so service rooms take the inner positions
+      and habitable rooms the facades.
+    facade: Few, regular openings; no facade emphasis is implied.
+    tradeoffs:
+      - A near-square plan is deep, so the street-side band is shaded on narrow plots.
+      - Short circulation leaves little room for storage along corridors.
+    limitations:
+      - Compactness is scored through footprint proportions and circulation share only; wall
+        length and cost are not evaluated yet.
+    statements:
+      - kind: principle
+        text: >-
+          A plan close to square encloses a given floor area with less external wall and keeps
+          walking distances short.
+      - kind: principle
+        text: Placing the kitchen next to the dining space shortens daily routes.
+      - kind: heuristic
+        text: >-
+          BuildAI prefers footprints between 0.8 and 1.25 width/depth for compact programmes and
+          rewards kitchen-dining and dining-living neighbours.
+    engine_support: partial
+    applicability:
+      triggers: [compact_program]
+      max_floor_area_per_storey_m2: 80
+    recipe:
+      footprint_aspect: [0.8, 1.25]
+      affinities:
+        - { a: kitchen, b: dining, weight: 1.5 }
+        - { a: dining, b: living, weight: 1.0 }
+    provenance: [&ed { source: buildai-editorial, supports: [definition], note: "Team-authored layout heuristic; not a verified standard." }]
+    status: draft
+
+  - id: pattern.garden_oriented_living
+    name: Garden-oriented living
+    intent: >-
+      Open the day spaces (living, dining, open kitchen-living) towards the rear garden and keep
+      entrance, service rooms and the stair on the street side.
+    context: >-
+      Houses whose client asks for views or glazing towards the garden, a terrace, or rooms
+      facing the backyard.
+    relationships: >-
+      Living and dining on the garden band, side by side; kitchen next to dining; the terrace
+      opens from the living space; service rooms and the hall on the street band.
+    circulation: >-
+      The corridor runs between the street-side services and the garden-side day rooms.
+    privacy: >-
+      Day rooms face away from the street; on two storeys the bedrooms are upstairs.
+    daylight: >-
+      Day rooms get the garden facade; the plan is widened so more rooms share that facade.
+    facade: >-
+      The garden facade is the main facade; where the client asks for panoramic or large
+      windows there, design.windows places them (the pattern itself adds no glazing).
+    tradeoffs:
+      - A wide, shallow footprint needs a wider plot.
+      - Street-side rooms get less direct sun when the street side faces away from it.
+    limitations:
+      - The garden is always the rear (model north) side; plot orientation to the sun is not
+        modelled.
+      - The pattern does not change window sizes; explicit window intent does.
+    statements:
+      - kind: principle
+        text: >-
+          Rooms used during the day benefit most from views and direct access to private
+          outdoor space.
+      - kind: heuristic
+        text: >-
+          BuildAI puts living, dining and open kitchen-living spaces on the garden band (strong
+          penalty on the street band), rewards dining-living and kitchen-dining neighbours and
+          prefers footprints 1.15 to 1.8 times wider than deep.
+    engine_support: partial
+    applicability:
+      triggers: [garden_focus]
+    recipe:
+      footprint_aspect: [1.15, 1.8]
+      band_preferences:
+        - { room_types: [living, dining, open_kitchen_living], side: garden, weight: 1.2 }
+      affinities:
+        - { a: kitchen, b: dining, weight: 1.5 }
+        - { a: dining, b: living, weight: 1.2 }
+    provenance: [*ed]
+    status: draft
+
+  - id: pattern.narrow_plot_linear
+    name: Narrow plot, front-to-back plan
+    intent: >-
+      Organise a house on a narrow plot as a deep plan with a street room and a garden room on
+      each storey, joined by a short cross corridor and the stair.
+    context: >-
+      Plots or footprint limits that force the house to be clearly deeper than wide (urban
+      infill, terraced and townhouse plots).
+    relationships: >-
+      Living space at the garden end; kitchen and dining together; entrance, stair and service
+      rooms at the street end.
+    circulation: >-
+      A short corridor across the width with the stair beside the entrance keeps circulation to
+      a minimum on a narrow plan.
+    privacy: Bedrooms upstairs; ground floor rooms at the street end are service rooms.
+    daylight: >-
+      Rooms are lit from the street and garden facades; the side walls usually face neighbours.
+    facade: The narrow street facade carries the entrance; the garden facade the main glazing.
+    tradeoffs:
+      - Deep rooms are darker at their inner end.
+      - The stair takes a large share of a narrow storey.
+    limitations:
+      - Side walls are treated as normal facades (windows may be placed there); party walls
+        with neighbours are not modelled.
+    statements:
+      - kind: principle
+        text: >-
+          On narrow plots, rooms lit from both ends and a compact stair core keep a deep plan
+          usable.
+      - kind: heuristic
+        text: >-
+          BuildAI prefers footprints 0.5 to 0.8 times as wide as deep when the footprint limit
+          forces a narrow plan, puts the living space on the garden band and rewards
+          kitchen-dining neighbours.
+    engine_support: partial
+    applicability:
+      triggers: [narrow_site]
+    recipe:
+      footprint_aspect: [0.5, 0.8]
+      band_preferences:
+        - { room_types: [living, open_kitchen_living], side: garden, weight: 1.0 }
+      affinities:
+        - { a: kitchen, b: dining, weight: 1.5 }
+    provenance: [*ed]
+    status: draft
+
+  - id: pattern.open_plan_living
+    name: Open-plan living, dining and kitchen
+    intent: >-
+      Arrange kitchen, dining and living as one connected sequence so they can be opened to
+      each other.
+    context: Requests for open-plan living or an open kitchen-living space.
+    relationships: Kitchen, dining and living in a row on the same band, dining in the middle.
+    circulation: The open sequence is entered from the corridor; no corridor runs through it.
+    privacy: Day spaces are grouped away from bedrooms.
+    daylight: >-
+      The sequence shares one facade, so the combined space is lit along its whole length.
+    facade: A long run of windows on the facade of the open space.
+    tradeoffs:
+      - Cooking smells and noise reach the living area.
+      - Less wall space for furniture and storage.
+    limitations:
+      - Walls are removed only between rooms the specification marks open (open_to) or within
+        an open kitchen-living room; the pattern only keeps the spaces together.
+    statements:
+      - kind: principle
+        text: >-
+          Open-plan day spaces work when kitchen, dining and living form one continuous
+          sequence rather than being split by circulation.
+      - kind: heuristic
+        text: >-
+          BuildAI strongly rewards kitchen-dining and dining-living neighbours and prefers the
+          day spaces on the same (garden) band.
+    engine_support: partial
+    applicability:
+      triggers: [open_plan]
+    recipe:
+      band_preferences:
+        - { room_types: [living, dining, kitchen, open_kitchen_living], side: garden, weight: 0.6 }
+      affinities:
+        - { a: kitchen, b: dining, weight: 2.0 }
+        - { a: dining, b: living, weight: 2.0 }
+        - { a: kitchen, b: living, weight: 1.0 }
+    provenance: [*ed]
+    status: draft
+
+  - id: pattern.l_shaped_garden_wing
+    name: L-shaped plan with a private garden wing
+    intent: >-
+      Wrap part of the garden with the house: day rooms in the main bar open to the garden,
+      bedrooms in a wing set at right angles, reached by a gallery along the garden side.
+    context: >-
+      Single-storey houses with enough floor area for two volumes, whose client wants both a
+      connection to the garden and privacy for the bedrooms.
+    relationships: >-
+      Living and dining on the main bar's garden side; kitchen next to dining; bedrooms and
+      their bathrooms in the wing, away from the day rooms; the gallery joins the main corridor.
+    circulation: >-
+      The main corridor turns the corner into a gallery along the wing's inner side; the wing
+      is single-loaded, so circulation is longer than in a compact rectangle.
+    privacy: >-
+      Bedrooms are separated from the day rooms by the corridor and the corner; they face
+      outward, away from the shared garden.
+    daylight: >-
+      Day rooms face the garden; wing rooms face outward; the gallery is lit from the garden.
+    facade: >-
+      Two garden facades (the main bar and the end of the wing) frame the garden; the wing's
+      inner side is mostly gallery wall.
+    tradeoffs:
+      - More facade and corridor per floor area than a rectangle (less compact, longer walks).
+      - Needs a plot wide and deep enough for both volumes.
+    limitations:
+      - Single storey only; the wing is always on the garden side at one end of the main bar.
+      - The garden is only partly enclosed; this is not a courtyard.
+      - Pitched roofs of the two volumes overlap without valley geometry (conceptual model).
+    statements:
+      - kind: principle
+        text: >-
+          An L-shaped plan can shelter an outdoor space and separate day and night zones into
+          two volumes.
+      - kind: heuristic
+        text: >-
+          BuildAI also searches an L footprint when the request combines a garden focus with
+          privacy on one storey of at least 110 m², puts bedrooms in the wing and day rooms on
+          the garden band, and lets the L compete with rectangular layouts on the evaluation.
+    engine_support: partial
+    applicability:
+      triggers: [garden_focus]
+      required_triggers: [privacy_zoning]
+      storeys: [1]
+      min_floor_area_per_storey_m2: 110
+    recipe:
+      topology: l_shape
+      band_preferences:
+        - { room_types: [bedroom], side: wing, weight: 0.6 }
+        - { room_types: [living, dining, open_kitchen_living], side: garden, weight: 1.0 }
+      affinities:
+        - { a: kitchen, b: dining, weight: 1.5 }
+    provenance: [*ed]
+    status: draft
+
+  - id: pattern.public_private_zoning
+    name: Public / private zoning
+    intent: >-
+      Keep bedrooms (night zone) apart from the living, dining and kitchen spaces (day zone).
+    context: >-
+      Requests for privacy or for bedrooms separated from living spaces; most useful on single
+      storey houses, where both zones share a floor.
+    relationships: >-
+      Bedrooms do not share walls with living, dining or kitchen; bathrooms sit with the
+      bedrooms; the study may buffer between zones.
+    circulation: >-
+      The corridor separates the zones; bedrooms are reached without crossing day spaces.
+    privacy: Night zone away from the day zone and, where possible, away from the street.
+    daylight: Both zones keep facade access; bedrooms prefer the quieter garden side.
+    facade: No facade emphasis is implied.
+    tradeoffs:
+      - Strict separation can lengthen the corridor on one storey.
+    limitations:
+      - Separation is measured as shared walls between rooms; acoustics are not modelled.
+    statements:
+      - kind: principle
+        text: >-
+          Separating day and night zones reduces noise and keeps private rooms out of view of
+          visitors.
+      - kind: heuristic
+        text: >-
+          BuildAI penalises bedrooms sharing a wall with living, dining or kitchen spaces and
+          gives bedrooms a mild preference for the garden band.
+    engine_support: full
+    applicability:
+      triggers: [privacy_zoning]
+    recipe:
+      band_preferences:
+        - { room_types: [bedroom], side: garden, weight: 0.4 }
+      separations:
+        - { a: bedroom, b: living, weight: 1.5 }
+        - { a: bedroom, b: open_kitchen_living, weight: 1.5 }
+        - { a: bedroom, b: kitchen, weight: 1.0 }
+        - { a: bedroom, b: dining, weight: 1.0 }
+    provenance: [*ed]
+    status: draft
+
+  - id: pattern.courtyard_house
+    name: Courtyard house
+    intent: >-
+      Wrap the rooms around a private outdoor room that is enclosed on three or four sides.
+    context: Requests for a courtyard, an atrium or a private inner outdoor space.
+    relationships: >-
+      Day rooms open onto the courtyard; circulation runs along it; bedrooms in a separate wing.
+    circulation: A gallery or corridor around the courtyard.
+    privacy: The courtyard is screened from the street and neighbours by the house itself.
+    daylight: Rooms get light from the courtyard as well as the outer facades.
+    facade: Large openings to the courtyard; a more closed street facade.
+    tradeoffs:
+      - Long perimeter and circulation for the floor area.
+    limitations:
+      - The layout engine builds rectangular footprints with a double-loaded corridor and cannot
+        enclose an outdoor room; this pattern is documented only and is never applied.
+    statements:
+      - kind: principle
+        text: >-
+          An outdoor room enclosed by the house gives privacy and light to the rooms around it.
+    engine_support: none
+    applicability:
+      triggers: [courtyard]
+    usage: reference_only
+    provenance: [*ed]
+    status: draft

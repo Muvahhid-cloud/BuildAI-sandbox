@@ -1,0 +1,38 @@
+{
+  "name": "buildai-3d",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "api:install": "node scripts/uv.mjs sync --directory apps/api",
+    "dev": "concurrently -n web,api -c cyan,magenta \"pnpm dev:web\" \"pnpm dev:api\"",
+    "dev:web": "pnpm --filter @buildai/web dev",
+    "dev:api": "node scripts/uv.mjs run --directory apps/api uvicorn app.main:app --reload --port 8000",
+    "db:local": "node scripts/uv.mjs run --directory apps/api python scripts/local_db.py",
+    "schema": "node scripts/uv.mjs run --directory apps/api python -m app.modules.building.export_schema ../../packages/schema/generated && node scripts/uv.mjs run --directory apps/api python -m app.modules.ai.export_schema ../../packages/schema/generated && pnpm --filter @buildai/schema generate",
+    "fixtures": "node scripts/uv.mjs run --directory apps/api python -m app.modules.building.fixtures.demo_house ../../data/fixtures/demo-house.model.json",
+    "golden": "node scripts/uv.mjs run --directory apps/api python -m app.modules.layout.golden ../../data",
+    "knowledge:lock": "node scripts/uv.mjs run --directory apps/api python -m app.modules.catalog.lock ../../data",
+    "benchmark": "node scripts/uv.mjs run --directory apps/api python -m evals.design_benchmark",
+    "migrate": "node scripts/uv.mjs run --directory apps/api alembic upgrade head",
+    "lint": "pnpm lint:web && pnpm lint:api",
+    "lint:web": "pnpm --filter @buildai/web lint",
+    "lint:api": "node scripts/uv.mjs run --directory apps/api ruff check . && node scripts/uv.mjs run --directory apps/api ruff format --check . && node scripts/uv.mjs run --directory apps/api lint-imports",
+    "format": "pnpm --filter @buildai/web format && node scripts/uv.mjs run --directory apps/api ruff format .",
+    "typecheck": "pnpm typecheck:web && pnpm typecheck:api",
+    "typecheck:web": "pnpm -r --if-present typecheck",
+    "typecheck:api": "node scripts/uv.mjs run --directory apps/api mypy app tests evals",
+    "test": "pnpm test:web && pnpm test:api",
+    "test:web": "pnpm --filter @buildai/web test",
+    "test:api": "node scripts/uv.mjs run --directory apps/api pytest -q",
+    "build:web": "pnpm --filter @buildai/web build",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}

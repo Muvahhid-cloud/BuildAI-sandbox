@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.2.0",
+  "building_type": "single_family_house",
+  "name": "T-shaped garden bungalow",
+  "description": "Single-storey 170 m² T-shaped bungalow: day rooms on both sides of a bedroom wing that reaches into the garden, a garden terrace and a one-car garage.",
+  "targets": { "gross_floor_area_m2": 170, "storeys": 1 },
+  "style": { "architectural_style": "contemporary", "roof": { "type": "gable" }, "window_style": "standard", "facade_material": "render" },
+  "rooms": [
+    { "key": "living", "type": "living", "target_area_m2": 30, "faces": "rear" },
+    { "key": "dining", "type": "dining" },
+    { "key": "kitchen", "type": "kitchen", "adjacent_to": ["dining"] },
+    { "key": "master_bedroom", "type": "bedroom", "name": "Master bedroom", "features": ["en_suite"] },
+    { "key": "bedroom", "type": "bedroom", "count": 2 },
+    { "key": "bathroom", "type": "bathroom" }
+  ],
+  "features": { "garage": { "cars": 1 }, "terrace": { "attached_to": "living", "depth_m": 3.0 } },
+  "design": { "footprint_shape": "t_shape", "facade_color": "yellow" },
+  "requirements": [
+    { "path": "/design/footprint_shape", "priority": "must", "origin": "user_text", "quote": "a T-shaped bungalow" }
+  ]
+}

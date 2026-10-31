@@ -1,0 +1,73 @@
+# core@1 canonical glossary (docs/knowledge.md §3.3).
+#
+# Canonical, language-neutral term ids with English wording. English terms and definitions are
+# BuildAI editorial work; locale-specific wordings (e.g. Russian terms taken from a source)
+# live in scoped packs as `localized` entries that point at these ids.
+terms:
+  # Building model
+  - { id: term.building, preferred: building, class_ref: class.building, provenance: [&ed { source: buildai-editorial, supports: [term, definition] }], status: draft }
+  - { id: term.storey, preferred: storey, synonyms: [floor, level], class_ref: class.storey, definition: "One level of a building, measured floor to floor.", provenance: [*ed], status: draft }
+  - { id: term.storey_height, preferred: storey height, synonyms: [floor-to-floor height], definition: "Distance from the finished floor of a storey to the finished floor of the storey above.", provenance: [*ed], status: draft }
+  - { id: term.coordination_axis, preferred: coordination axis, synonyms: [grid line], class_ref: class.coordination_axis, definition: "Reference line locating the main load-bearing walls and columns in plan.", provenance: [*ed], status: draft }
+  - { id: term.bay, preferred: bay, synonyms: [axis spacing], definition: "Distance between two adjacent coordination axes.", provenance: [*ed], status: draft }
+  - { id: term.span, preferred: span, definition: "Distance between coordination axes in the direction the main floor or roof structure spans.", provenance: [*ed], status: draft }
+  - { id: term.basic_module, preferred: basic module, definition: "The unit on which coordinated building dimensions are based.", provenance: [*ed], status: draft }
+  - { id: term.modular_coordination, preferred: modular coordination, definition: "Coordinating the dimensions of spaces and elements as multiples of a module.", provenance: [*ed], status: draft }
+  - { id: term.construction, preferred: construction, synonyms: [building part], definition: "A part of a building with a specific function, such as a wall or a floor.", provenance: [*ed], status: draft }
+  - { id: term.building_product, preferred: building product, synonyms: [prefabricated element], definition: "An element manufactured off site and assembled into the building.", provenance: [*ed], status: draft }
+  - { id: term.node, preferred: joint detail, synonyms: [node], definition: "Place where elements meet; also its enlarged detail drawing.", provenance: [*ed], status: draft }
+
+  # Elements
+  - { id: term.wall, preferred: wall, class_ref: class.wall, provenance: [*ed], status: draft }
+  - { id: term.load_bearing_wall, preferred: load-bearing wall, synonyms: [bearing wall], class_ref: class.wall.load_bearing, provenance: [*ed], status: draft }
+  - { id: term.partition, preferred: partition, class_ref: class.wall.partition, definition: "Non-load-bearing internal wall dividing spaces.", provenance: [*ed], status: draft }
+  - { id: term.door, preferred: door, class_ref: class.door, provenance: [*ed], status: draft }
+  - { id: term.window, preferred: window, class_ref: class.window, provenance: [*ed], status: draft }
+  - { id: term.floor_slab, preferred: floor slab, synonyms: [interfloor slab], class_ref: class.slab.floor, provenance: [*ed], status: draft }
+  - { id: term.attic_floor, preferred: attic floor, class_ref: class.slab.attic_floor, provenance: [*ed], status: draft }
+  - { id: term.stair, preferred: stair, class_ref: class.stair, provenance: [*ed], status: draft }
+  - { id: term.stair_flight, preferred: stair flight, class_ref: class.stair_flight, provenance: [*ed], status: draft }
+  - { id: term.stair_landing, preferred: stair landing, class_ref: class.stair_landing, provenance: [*ed], status: draft }
+  - { id: term.stringer, preferred: stringer, class_ref: class.stringer, definition: "Inclined beam carrying the treads of a stair flight.", provenance: [*ed], status: draft }
+  - { id: term.ramp, preferred: ramp, provenance: [*ed], status: draft }
+  - { id: term.roof, preferred: roof, class_ref: class.roof, provenance: [*ed], status: draft }
+  - { id: term.railing, preferred: railing, synonyms: [guard, balustrade], class_ref: class.railing, provenance: [*ed], status: draft }
+  - { id: term.foundation, preferred: foundation, class_ref: class.foundation, provenance: [*ed], status: draft }
+  - { id: term.strip_foundation, preferred: strip foundation, class_ref: class.foundation.strip, provenance: [*ed], status: draft }
+  - { id: term.blind_area, preferred: blind area, synonyms: [perimeter apron], class_ref: class.blind_area, definition: "Paved strip around the base of a building that sheds surface water away from the walls.", provenance: [*ed], status: draft }
+  - { id: term.plinth, preferred: plinth, synonyms: [base course], class_ref: class.plinth, definition: "Lower part of an external wall above the foundation.", provenance: [*ed], status: draft }
+  - { id: term.lintel, preferred: lintel, class_ref: class.lintel, provenance: [*ed], status: draft }
+  - { id: term.column, preferred: column, class_ref: class.column, provenance: [*ed], status: draft }
+  - { id: term.beam, preferred: beam, class_ref: class.beam, provenance: [*ed], status: draft }
+  - { id: term.girder, preferred: girder, class_ref: class.girder, provenance: [*ed], status: draft }
+  - { id: term.rafter, preferred: rafter, class_ref: class.rafter, provenance: [*ed], status: draft }
+  - { id: term.roof_batten, preferred: roof batten, synonyms: [roof lathing], class_ref: class.roof_batten, provenance: [*ed], status: draft }
+  - { id: term.strut, preferred: strut, class_ref: class.strut, provenance: [*ed], status: draft }
+  - { id: term.post, preferred: post, class_ref: class.post, provenance: [*ed], status: draft }
+  - { id: term.wall_plate, preferred: wall plate, class_ref: class.wall_plate, definition: "Timber laid on top of a wall that the rafters bear on.", provenance: [*ed], status: draft }
+  - { id: term.roof_hatch, preferred: roof hatch, class_ref: class.roof_hatch, provenance: [*ed], status: draft }
+  - { id: term.attic, preferred: attic, class_ref: class.space.attic, provenance: [*ed], status: draft }
+  - { id: term.vestibule, preferred: vestibule, synonyms: [draught lobby], class_ref: class.space.vestibule, provenance: [*ed], status: draft }
+  - { id: term.room, preferred: room, synonyms: [space], class_ref: class.space, provenance: [*ed], status: draft }
+
+  # Drawings
+  - { id: term.floor_plan, preferred: floor plan, provenance: [*ed], status: draft }
+  - { id: term.section, preferred: section, synonyms: [building section], provenance: [*ed], status: draft }
+  - { id: term.facade, preferred: facade, synonyms: [elevation], provenance: [*ed], status: draft }
+  - { id: term.roof_plan, preferred: roof plan, provenance: [*ed], status: draft }
+  - { id: term.fragment, preferred: plan fragment, synonyms: [enlarged part], provenance: [*ed], status: draft }
+  - { id: term.level_mark, preferred: level mark, synonyms: [elevation mark, spot level], provenance: [*ed], status: draft }
+  - { id: term.finished_floor_level, preferred: finished floor level, synonyms: [FFL], provenance: [*ed], status: draft }
+  - { id: term.ground_level, preferred: ground level, provenance: [*ed], status: draft }
+  - { id: term.title_block, preferred: title block, provenance: [*ed], status: draft }
+  - { id: term.schedule, preferred: schedule, synonyms: [specification], provenance: [*ed], status: draft }
+  - { id: term.room_schedule, preferred: room schedule, provenance: [*ed], status: draft }
+  - { id: term.slope, preferred: slope, synonyms: [gradient, pitch], provenance: [*ed], status: draft }
+
+  # Building services
+  - { id: term.pipeline, preferred: pipeline, synonyms: [pipe run], class_ref: class.pipeline, provenance: [*ed], status: draft }
+  - { id: term.riser, preferred: riser, synonyms: [stack], class_ref: class.riser, provenance: [*ed], status: draft }
+  - { id: term.water_inlet, preferred: water service inlet, class_ref: class.water_inlet, provenance: [*ed], status: draft }
+  - { id: term.sewer_outlet, preferred: sewer outlet, synonyms: [building drain outlet], class_ref: class.sewer_outlet, provenance: [*ed], status: draft }
+  - { id: term.pipe_fitting, preferred: valve or tap, synonyms: [pipeline fitting], class_ref: class.pipe_fitting, provenance: [*ed], status: draft }
+  - { id: term.sanitary_fixture, preferred: sanitary fixture, synonyms: [plumbing fixture], class_ref: class.sanitary_fixture, provenance: [*ed], status: draft }

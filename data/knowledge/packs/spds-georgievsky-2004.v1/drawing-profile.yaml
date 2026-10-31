@@ -1,0 +1,29 @@
+# The `spds` drawing-convention profile: a versioned grouping of this pack's drawing items by
+# topic, for future documentation generation (plans, sections, facades, roof plans). It is a
+# profile, not a global standard: other drafting practices will be separate profiles.
+profiles:
+  - id: spds
+    version: 1
+    name: SPDS drafting conventions (as documented by Georgievsky 2004)
+    basis: [ESKD, SPDS]
+    era: "2004"
+    description: >-
+      Drafting conventions for construction drawings as summarised by one 2004 reference
+      handbook. Unreviewed; later editions of the cited standards are not reflected.
+    topics:
+      sets: [drawing.sets.marks, drawing.sets.designation, drawing.sets.architectural_contents]
+      sheets: [drawing.sheet.formats, drawing.sheet.title_block, drawing.general.consistency]
+      scales: [drawing.scales.standard_series, drawing.scales.by_view]
+      lines: [drawing.lines.types, drawing.lines.window_sash_opening, drawing.lines.weights_by_scale, drawing.lines.minimum_thickness]
+      fonts: [drawing.fonts.sizes]
+      hatching: [drawing.hatch.section_materials, drawing.hatch.facade_materials, drawing.hatch.rules]
+      dimensions: [drawing.dimensions.lines, drawing.slope]
+      axes: [drawing.axes.labeling, drawing.axes.secondary_and_repeating]
+      level_marks: [drawing.level_marks, drawing.level_marks.layer_leaders]
+      callouts: [drawing.callouts]
+      titles: [drawing.titles]
+      views: [drawing.plan.cut_plane, drawing.plan.contents, drawing.plan.room_schedule, drawing.plan.special_outlines, drawing.plan.repetition, drawing.plan.drawing_sequence, drawing.section_facade.contents, drawing.facade.drawing_sequence, drawing.section.kinds, drawing.roof_plan.contents]
+      symbols: [drawing.symbols.openings, drawing.symbols.stairs_ramps, drawing.symbols.sanitary, drawing.plan.ventilation_channels]
+      site: [drawing.site.general_plan, drawing.site.landscaping, drawing.site.wind_rose]
+    provenance: [{ source: georgievsky-2004, pages: [3], section: "Предисловие", supports: [existence], note: "The preface states the handbook follows ESKD and SPDS." }]
+    status: extracted

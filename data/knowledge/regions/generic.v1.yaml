@@ -1,0 +1,25 @@
+# Region profile generic@1 (docs/knowledge.md §6).
+#
+# A region profile composes region-specific choices BY REFERENCE: which rules profile, which
+# drawing-convention profile and which knowledge packs apply, plus locales and measurement
+# display. It holds no rules or knowledge itself. BuildAI stays region-independent: regional
+# practice is added as new profiles, never hard-coded.
+#
+# generic@1 is the default: the current rules profile, no drawing convention, core knowledge
+# only. The SPDS pack is deliberately NOT included — a region opts into it explicitly.
+# Nothing reads region profiles yet (K1).
+id: generic
+version: 1
+name: Generic (region-independent)
+status: draft
+description: >-
+  Default profile with no regional practice: conceptual generic residential rules, core
+  ontology and glossary, metric display, SI internally.
+region_codes: []
+locales: [en]
+measurement:
+  internal: si
+  display: metric
+rules_profile: generic-residential@1
+drawing_profile: null
+knowledge_packs: [core@1]

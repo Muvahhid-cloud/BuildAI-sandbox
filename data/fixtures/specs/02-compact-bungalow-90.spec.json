@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "building_type": "single_family_house",
+  "name": "Compact bungalow",
+  "description": "Single-storey 90 m² home with two bedrooms and an open kitchen-living room.",
+  "targets": { "gross_floor_area_m2": 90, "storeys": 1 },
+  "style": { "architectural_style": "scandinavian", "roof": { "type": "gable", "pitch_deg": 30 }, "window_style": "standard", "facade_material": "timber" },
+  "rooms": [
+    { "key": "kitchen_living", "type": "open_kitchen_living", "target_area_m2": 32 },
+    { "key": "bedroom", "type": "bedroom", "count": 2, "target_area_m2": 12 },
+    { "key": "bathroom", "type": "bathroom", "target_area_m2": 6 },
+    { "key": "storage", "type": "storage" }
+  ]
+}

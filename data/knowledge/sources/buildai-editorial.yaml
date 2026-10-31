@@ -1,0 +1,9 @@
+# Content authored by the BuildAI team: ontology structure, IFC mappings, English terms and
+# definitions, bindings to the canonical building model (docs/building-model.md).
+# Keeping it a separate source makes visible which parts of a knowledge object are ours and
+# which come from a published source.
+id: buildai-editorial
+kind: editorial
+title:
+  original: "BuildAI 3D editorial knowledge"
+language: en

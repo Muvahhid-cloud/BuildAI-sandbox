@@ -1,0 +1,18 @@
+# core@1 — region- and practice-independent knowledge foundation (docs/knowledge.md §3).
+# Ontology + canonical English glossary. Published sources may be cited here only for the
+# EXISTENCE of a concept (integrity check GLOBAL_SCOPE_BORROWS_SOURCE); source-specific
+# statements, terms and parameters live in scoped packs.
+id: core
+version: 1
+name: Core ontology and glossary
+description: >-
+  Building, storey, element, space, grid and system classes bound to the canonical
+  BuildingModel vocabulary, relationship definitions, IFC mappings and canonical English terms.
+status: draft
+scope:
+  kind: global
+sources: [buildai-editorial, georgievsky-2004]
+depends_on: []
+contents:
+  ontology: [ontology.yaml]
+  glossary: [glossary.en.yaml]

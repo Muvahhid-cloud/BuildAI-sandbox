@@ -1,0 +1,142 @@
+{
+  "engine_version": "layout@1.7.0",
+  "seed": 0,
+  "footprint_m": [
+    5.6,
+    10.9
+  ],
+  "summary": {
+    "storeys": 2,
+    "gross_floor_area_m2": 122.1,
+    "net_floor_area_m2": 84.2,
+    "rooms": 6,
+    "bedrooms": 3,
+    "bathrooms": 1,
+    "wcs": 1,
+    "garage": false,
+    "balconies": 0,
+    "terraces": 0,
+    "walls": 16,
+    "doors": 8,
+    "windows": 15,
+    "elements": 69,
+    "facade_colors": [],
+    "windows_by_facade": {
+      "front": {
+        "large": 1
+      },
+      "left": {
+        "large": 1
+      },
+      "rear": {
+        "large": 2
+      },
+      "right": {
+        "large": 1
+      }
+    },
+    "rooms_on_facade": {
+      "front": [
+        "room:bathroom",
+        "room:bedroom_3",
+        "room:hall_0",
+        "room:wc"
+      ],
+      "left": [
+        "room:bedroom_2",
+        "room:corridor_0",
+        "room:corridor_1",
+        "room:hall_0",
+        "room:kitchen_living"
+      ],
+      "rear": [
+        "room:bedroom_1",
+        "room:bedroom_2",
+        "room:kitchen_living"
+      ],
+      "right": [
+        "room:bathroom",
+        "room:bedroom_1",
+        "room:corridor_0",
+        "room:corridor_1",
+        "room:kitchen_living",
+        "room:wc"
+      ]
+    }
+  },
+  "element_counts": {
+    "door": 8,
+    "furniture": 16,
+    "railing": 1,
+    "roof": 1,
+    "room": 9,
+    "slab": 2,
+    "stair": 1,
+    "wall": 16,
+    "window": 15
+  },
+  "rooms": [
+    {
+      "level": 0,
+      "key": "room:corridor_0",
+      "type": "corridor",
+      "area_m2": 6.72
+    },
+    {
+      "level": 0,
+      "key": "room:hall_0",
+      "type": "entrance",
+      "area_m2": 17.85
+    },
+    {
+      "level": 0,
+      "key": "room:kitchen_living",
+      "type": "open_kitchen_living",
+      "area_m2": 25.76
+    },
+    {
+      "level": 0,
+      "key": "room:wc",
+      "type": "wc",
+      "area_m2": 10.71
+    },
+    {
+      "level": 1,
+      "key": "room:bathroom",
+      "type": "bathroom",
+      "area_m2": 8.16
+    },
+    {
+      "level": 1,
+      "key": "room:bedroom_1",
+      "type": "bedroom",
+      "area_m2": 12.88
+    },
+    {
+      "level": 1,
+      "key": "room:bedroom_2",
+      "type": "bedroom",
+      "area_m2": 12.88
+    },
+    {
+      "level": 1,
+      "key": "room:bedroom_3",
+      "type": "bedroom",
+      "area_m2": 13.77
+    },
+    {
+      "level": 1,
+      "key": "room:corridor_1",
+      "type": "corridor",
+      "area_m2": 6.72
+    }
+  ],
+  "warnings": [
+    "LAYOUT_AREA_DEVIATION",
+    "LAYOUT_AREA_DEVIATION",
+    "LAYOUT_AREA_DEVIATION",
+    "LAYOUT_AREA_DEVIATION"
+  ],
+  "model_sha256": "fc8553a31d97b019b1ec189c8135ecc8f572dd6b20f04c773327259a21465029",
+  "geometry_sha256": "0851b5f0bc4512f9e4124161f9f102243bb02474326833f8d7d5fbd82ca1583c"
+}

@@ -1,0 +1,14 @@
+{
+  "lock_version": 1,
+  "algorithm": "sha256",
+  "entries": {
+    "source:buildai-editorial": "919144fc37a640087c488ca40557afee702ed65d5f5c28dfdc8ea5caffbcc522",
+    "source:georgievsky-2004": "57b0624f1431271742dce1dfd6bdf7e3ab7526cd491dda3337b761d815da288d",
+    "pack:buildai-design-systems@1": "53f163c2401afe07150661eba4fccd7899045fe6c55279248d7d77b128db24ba",
+    "pack:buildai-generic-types@1": "a0dba9e1e63eda77b7e68081138bad88dbf5ddb66ae75e0f701a1c7604b0c19d",
+    "pack:buildai-layout-patterns@1": "e29c146288ea6fa862d96bf041a088460f09b0786a95466740eea21cdf145e1a",
+    "pack:core@1": "a7f9dfadd1fe258868fccc071708de5338f73922a5b029c3574a9a7c31e7bdbb",
+    "pack:spds-georgievsky-2004@1": "17aac169df0ff1c795d295e1c27a8b58fc9d2b749aeabc6795da4291be4efdf4",
+    "region:generic@1": "105bebba9d07119c64519ad6a18ff4897143bff057e70d8db0b1aa790bdf54b5"
+  }
+}

@@ -1,0 +1,28 @@
+# buildai-layout-patterns@1 — editorial layout patterns (Design Intelligence V1,
+# docs/knowledge.md §3.6).
+#
+# A layout pattern is a reusable arrangement recipe: which spaces like to be neighbours or kept
+# apart, which side of the house they should reach and which footprint proportions suit the
+# arrangement. Each record separates general design principles, source-backed rules (none yet)
+# and BuildAI's own experimental heuristics (the recipe values).
+#
+# DRAFT, team-authored, unreviewed. Not a building code, not a verified architectural standard
+# and not engineering data. The layout engine uses patterns only as SOFT heuristics that are
+# scored and reported with their status; they never create or relax a hard requirement and
+# never override a rules-profile limit.
+id: buildai-layout-patterns
+version: 1
+name: Editorial layout patterns
+description: >-
+  Seven region-neutral residential layout patterns (compact family home, garden-oriented living,
+  L-shaped garden wing, narrow plot, open-plan living, public/private zoning, courtyard house)
+  as soft recipes for the deterministic layout engine. The courtyard house is documented only
+  (no engine support).
+status: draft
+scope:
+  kind: global
+  note: Region-neutral arrangement heuristics; regional practice belongs in scoped packs.
+sources: [buildai-editorial]
+depends_on: [core@1]
+contents:
+  patterns: [patterns.yaml]

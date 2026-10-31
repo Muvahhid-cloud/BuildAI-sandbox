@@ -1,0 +1,271 @@
+# core@1 ontology (docs/knowledge.md §3.2).
+#
+# `parent` is an is-a link. `model_binding` points at the canonical Pydantic vocabulary
+# (apps/api/app/modules/building): every element type, room type, building type and the
+# level are bound by exactly one primary class (integrity check ONTOLOGY_COVERAGE), so this
+# ontology follows the model and never replaces it. Unbound classes are concepts the model
+# does not represent yet (no new element types are introduced by K1).
+# IFC mappings are BuildAI editorial work (IFC4 entity / predefined type names), not taken
+# from any published source; `ifc: null` where no mapping has been decided.
+# Book citations support only the existence of a concept (global pack).
+
+classes:
+  # --- Buildings -------------------------------------------------------------------------
+  - id: class.building
+    label: building
+    kind: building
+    ifc: { entity: IfcBuilding }
+    provenance: [&ed { source: buildai-editorial, supports: [mapping] }]
+    status: draft
+  - id: class.building.civil
+    label: civil building
+    kind: building
+    parent: class.building
+    provenance:
+      - &book_classes { source: georgievsky-2004, pages: [6], section: "2.1", supports: [existence] }
+      - *ed
+    status: extracted
+  - id: class.building.residential
+    label: residential building
+    kind: building
+    parent: class.building.civil
+    provenance: [*book_classes, *ed]
+    status: extracted
+  - id: class.building.public
+    label: public building
+    kind: building
+    parent: class.building.civil
+    in_scope_v1: false
+    provenance: [*book_classes, *ed]
+    status: extracted
+  - id: class.building.industrial
+    label: industrial building
+    kind: building
+    parent: class.building
+    in_scope_v1: false
+    provenance: [*book_classes, *ed]
+    status: extracted
+  - id: class.building.agricultural
+    label: agricultural building
+    kind: building
+    parent: class.building
+    in_scope_v1: false
+    provenance: [*book_classes, *ed]
+    status: extracted
+  - id: class.engineering_structure
+    label: engineering structure
+    kind: building
+    parent: class.building
+    in_scope_v1: false
+    provenance: [*book_classes, *ed]
+    status: extracted
+  - id: class.building.single_family_house
+    label: single-family house
+    kind: building
+    parent: class.building.residential
+    model_binding: { building_type: single_family_house }
+    ifc: { entity: IfcBuilding }
+    provenance: [*ed]
+    status: draft
+
+  # --- Storey and grid -------------------------------------------------------------------
+  - id: class.storey
+    label: storey
+    kind: storey
+    model_binding: { level: true }
+    ifc: { entity: IfcBuildingStorey }
+    provenance:
+      - { source: georgievsky-2004, pages: [10], section: "2.4", figures: ["Рис. 4"], supports: [existence] }
+      - *ed
+    status: extracted
+  - id: class.coordination_axis
+    label: coordination axis
+    kind: grid
+    ifc: { entity: IfcGridAxis }
+    provenance:
+      - { source: georgievsky-2004, pages: [9, 10, 43], section: "2.4; 4.1", supports: [existence] }
+      - *ed
+    status: extracted
+
+  # --- Elements (bound to the model) -----------------------------------------------------
+  - id: class.building_element
+    label: building element
+    kind: element
+    ifc: { entity: IfcBuildingElement }
+    provenance: [*ed]
+    status: draft
+  - id: class.wall
+    label: wall
+    kind: element
+    parent: class.building_element
+    model_binding: { element_type: wall }
+    ifc: { entity: IfcWall }
+    provenance: [&fig1 { source: georgievsky-2004, pages: [8], section: "2.3", figures: ["Рис. 1"], supports: [existence] }, *ed]
+    status: extracted
+  - id: class.wall.load_bearing
+    label: load-bearing wall
+    kind: element
+    parent: class.wall
+    model_binding: { element_type: wall, discriminator: load_bearing, value: true }
+    ifc: { entity: IfcWall }
+    provenance: [*fig1, *ed]
+    status: extracted
+  - id: class.wall.partition
+    label: partition
+    kind: element
+    parent: class.wall
+    model_binding: { element_type: wall, discriminator: wall_kind, value: partition }
+    ifc: { entity: IfcWall, predefined_type: PARTITIONING }
+    provenance: [*fig1, *ed]
+    status: extracted
+  - id: class.door
+    label: door
+    kind: element
+    parent: class.building_element
+    model_binding: { element_type: door }
+    ifc: { entity: IfcDoor }
+    provenance: [&openings { source: georgievsky-2004, pages: [52], tables: ["Табл. 9"], supports: [existence] }, *ed]
+    status: extracted
+  - id: class.window
+    label: window
+    kind: element
+    parent: class.building_element
+    model_binding: { element_type: window }
+    ifc: { entity: IfcWindow }
+    provenance: [*openings, *ed]
+    status: extracted
+  - id: class.slab
+    label: slab
+    kind: element
+    parent: class.building_element
+    model_binding: { element_type: slab }
+    ifc: { entity: IfcSlab }
+    provenance: [*fig1, *ed]
+    status: extracted
+  - id: class.slab.floor
+    label: floor slab
+    kind: element
+    parent: class.slab
+    model_binding: { element_type: slab, discriminator: slab_kind, value: floor }
+    ifc: { entity: IfcSlab, predefined_type: FLOOR }
+    provenance: [*fig1, *ed]
+    status: extracted
+  - id: class.slab.attic_floor
+    label: attic floor
+    kind: element
+    parent: class.slab
+    ifc: { entity: IfcSlab, predefined_type: FLOOR }
+    provenance: [*fig1, *ed]
+    status: extracted
+  - id: class.stair
+    label: stair
+    kind: element
+    parent: class.building_element
+    model_binding: { element_type: stair }
+    ifc: { entity: IfcStair }
+    provenance: [*fig1, *ed]
+    status: extracted
+  - id: class.roof
+    label: roof
+    kind: element
+    parent: class.building_element
+    model_binding: { element_type: roof }
+    ifc: { entity: IfcRoof }
+    provenance: [*fig1, *ed]
+    status: extracted
+  - id: class.railing
+    label: railing
+    kind: element
+    parent: class.building_element
+    model_binding: { element_type: railing }
+    ifc: { entity: IfcRailing }
+    provenance: [&codes { source: georgievsky-2004, pages: [134], section: "Прил. 4", supports: [existence] }, *ed]
+    status: extracted
+  - id: class.furniture
+    label: furniture
+    kind: element
+    model_binding: { element_type: furniture }
+    ifc: { entity: IfcFurniture }
+    provenance: [*ed]
+    status: draft
+
+  # --- Elements the model does not represent (vocabulary only; no element types in K1) ---
+  - { id: class.foundation, label: foundation, kind: element, parent: class.building_element, ifc: { entity: IfcFooting }, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.foundation.strip, label: strip foundation, kind: element, parent: class.foundation, ifc: { entity: IfcFooting, predefined_type: STRIP_FOOTING }, provenance: [*codes, *ed], status: extracted }
+  - { id: class.foundation.pad, label: pad foundation, kind: element, parent: class.foundation, ifc: { entity: IfcFooting, predefined_type: PAD_FOOTING }, provenance: [*codes, *ed], status: extracted }
+  - { id: class.pile, label: pile, kind: element, parent: class.building_element, ifc: { entity: IfcPile }, provenance: [*codes, *ed], status: extracted }
+  - { id: class.blind_area, label: blind area (perimeter apron), kind: element, parent: class.building_element, ifc: null, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.plinth, label: plinth (base course of the wall), kind: element, parent: class.building_element, ifc: null, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.lintel, label: lintel, kind: element, parent: class.building_element, ifc: { entity: IfcBeam, predefined_type: LINTEL }, provenance: [*fig1, *codes, *ed], status: extracted }
+  - { id: class.column, label: column, kind: element, parent: class.building_element, ifc: { entity: IfcColumn }, provenance: [*codes, *ed], status: extracted }
+  - { id: class.beam, label: beam, kind: element, parent: class.building_element, ifc: { entity: IfcBeam }, provenance: [*codes, *ed], status: extracted }
+  - { id: class.girder, label: girder, kind: element, parent: class.beam, ifc: { entity: IfcBeam }, provenance: [*codes, *ed], status: extracted }
+  - { id: class.stair_flight, label: stair flight, kind: element, parent: class.building_element, ifc: { entity: IfcStairFlight }, provenance: [*fig1, *codes, *ed], status: extracted }
+  - { id: class.stair_landing, label: stair landing, kind: element, parent: class.slab, ifc: { entity: IfcSlab, predefined_type: LANDING }, provenance: [*fig1, *codes, *ed], status: extracted }
+  - { id: class.stringer, label: stringer, kind: element, parent: class.building_element, ifc: { entity: IfcMember, predefined_type: STRINGER }, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.rafter, label: rafter, kind: element, parent: class.building_element, ifc: { entity: IfcMember, predefined_type: RAFTER }, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.roof_batten, label: roof batten, kind: element, parent: class.building_element, ifc: null, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.strut, label: strut, kind: element, parent: class.building_element, ifc: { entity: IfcMember, predefined_type: STRUT }, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.post, label: post, kind: element, parent: class.building_element, ifc: { entity: IfcMember, predefined_type: POST }, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.wall_plate, label: wall plate, kind: element, parent: class.building_element, ifc: { entity: IfcMember, predefined_type: PLATE }, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.roof_hatch, label: roof hatch, kind: element, parent: class.building_element, ifc: null, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.parapet, label: parapet, kind: element, parent: class.wall, ifc: { entity: IfcWall, predefined_type: PARAPET }, provenance: [{ source: georgievsky-2004, pages: [79], section: "6.4", supports: [existence] }, *ed], status: extracted }
+
+  # --- Spaces ----------------------------------------------------------------------------
+  - id: class.space
+    label: space (room)
+    kind: space
+    model_binding: { element_type: room }
+    ifc: { entity: IfcSpace }
+    provenance: [{ source: georgievsky-2004, pages: [70, 71], section: "6.2", supports: [existence] }, *ed]
+    status: extracted
+  - { id: class.space.entrance, label: entrance hall, kind: space, parent: class.space, model_binding: { room_type: entrance }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.hall, label: hall, kind: space, parent: class.space, model_binding: { room_type: hall }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.corridor, label: corridor, kind: space, parent: class.space, model_binding: { room_type: corridor }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.staircase, label: staircase, kind: space, parent: class.space, model_binding: { room_type: staircase }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.living, label: living room, kind: space, parent: class.space, model_binding: { room_type: living }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.dining, label: dining room, kind: space, parent: class.space, model_binding: { room_type: dining }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.kitchen, label: kitchen, kind: space, parent: class.space, model_binding: { room_type: kitchen }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.open_kitchen_living, label: open kitchen and living, kind: space, parent: class.space, model_binding: { room_type: open_kitchen_living }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.bedroom, label: bedroom, kind: space, parent: class.space, model_binding: { room_type: bedroom }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.bathroom, label: bathroom, kind: space, parent: class.space, model_binding: { room_type: bathroom }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.wc, label: WC, kind: space, parent: class.space, model_binding: { room_type: wc }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.en_suite, label: en-suite bathroom, kind: space, parent: class.space, model_binding: { room_type: en_suite }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.study, label: study, kind: space, parent: class.space, model_binding: { room_type: study }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.laundry, label: laundry, kind: space, parent: class.space, model_binding: { room_type: laundry }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.utility, label: utility room, kind: space, parent: class.space, model_binding: { room_type: utility }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.storage, label: storage, kind: space, parent: class.space, model_binding: { room_type: storage }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.walk_in_closet, label: walk-in closet, kind: space, parent: class.space, model_binding: { room_type: walk_in_closet }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.garage, label: garage, kind: space, parent: class.space, model_binding: { room_type: garage }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.plant_room, label: plant room, kind: space, parent: class.space, model_binding: { room_type: plant_room }, ifc: { entity: IfcSpace }, provenance: [*ed], status: draft }
+  - { id: class.space.balcony, label: balcony, kind: space, parent: class.space, model_binding: { room_type: balcony }, ifc: { entity: IfcSpace, predefined_type: EXTERNAL }, provenance: [*ed], status: draft }
+  - { id: class.space.terrace, label: terrace, kind: space, parent: class.space, model_binding: { room_type: terrace }, ifc: { entity: IfcSpace, predefined_type: EXTERNAL }, provenance: [*ed], status: draft }
+  - { id: class.space.vestibule, label: vestibule (draught lobby), kind: space, parent: class.space, ifc: { entity: IfcSpace }, provenance: [*fig1, *ed], status: extracted }
+  - { id: class.space.attic, label: attic, kind: space, parent: class.space, ifc: { entity: IfcSpace }, provenance: [*fig1, *ed], status: extracted }
+
+  # --- Building services (reserved for Phase 6; no MEP elements exist yet) ---------------
+  - { id: class.mep_system, label: building services system, kind: system, ifc: { entity: IfcDistributionSystem }, provenance: [&systems { source: georgievsky-2004, pages: [93], section: "9.1", supports: [existence] }, *ed], status: extracted }
+  - { id: class.mep_element, label: building services element, kind: element, ifc: { entity: IfcDistributionElement }, provenance: [*systems, *ed], status: extracted }
+  - { id: class.pipeline, label: pipeline, kind: element, parent: class.mep_element, ifc: { entity: IfcPipeSegment }, provenance: [*systems, *ed], status: extracted }
+  - { id: class.riser, label: riser, kind: element, parent: class.pipeline, ifc: null, provenance: [&desig { source: georgievsky-2004, pages: [95], section: "9.2", supports: [existence] }, *ed], status: extracted }
+  - { id: class.water_inlet, label: water service inlet, kind: element, parent: class.pipeline, ifc: null, provenance: [*desig, *ed], status: extracted }
+  - { id: class.sewer_outlet, label: sewer outlet, kind: element, parent: class.pipeline, ifc: null, provenance: [*desig, *ed], status: extracted }
+  - { id: class.pipe_fitting, label: valve or tap (pipeline fitting), kind: element, parent: class.mep_element, ifc: { entity: IfcValve }, provenance: [*systems, *ed], status: extracted }
+  - { id: class.sanitary_fixture, label: sanitary fixture, kind: element, parent: class.mep_element, ifc: { entity: IfcSanitaryTerminal }, provenance: [*systems, *ed], status: extracted }
+  - { id: class.mep_equipment, label: building services equipment, kind: element, parent: class.mep_element, ifc: null, provenance: [*systems, *ed], status: extracted }
+  - { id: class.ventilation_channel, label: ventilation channel, kind: element, parent: class.mep_element, ifc: { entity: IfcDuctSegment }, provenance: [&vent { source: georgievsky-2004, pages: [74], section: "6.2", tables: ["Табл. 17"], supports: [existence] }, *ed], status: extracted }
+  - { id: class.smoke_flue, label: smoke flue, kind: element, parent: class.mep_element, ifc: { entity: IfcChimney }, provenance: [*vent, *ed], status: extracted }
+  - { id: class.roof_drain, label: roof drain funnel, kind: element, parent: class.mep_element, ifc: { entity: IfcWasteTerminal, predefined_type: ROOFDRAIN }, provenance: [{ source: georgievsky-2004, pages: [79, 104], supports: [existence] }, *ed], status: extracted }
+
+# Relationship kinds of the canonical model (docs/building-model.md §3.4). Source/target
+# classes include their subclasses.
+relationships:
+  - { id: rel.hosted_by, label: hosted by, model_binding: hosted_by, source_classes: [class.door, class.window], target_classes: [class.wall], per_source: { min: 1, max: 1 }, provenance: [*ed], status: draft }
+  - { id: rel.bounds, label: bounds, model_binding: bounds, source_classes: [class.wall], target_classes: [class.space], per_source: { min: 0 }, provenance: [*ed], status: draft }
+  - { id: rel.adjacent_to, label: adjacent to, model_binding: adjacent_to, source_classes: [class.space], target_classes: [class.space], per_source: { min: 0 }, provenance: [*ed], status: draft }
+  - { id: rel.connects, label: connects, model_binding: connects, source_classes: [class.door], target_classes: [class.space], per_source: { min: 1, max: 2 }, provenance: [*ed], status: draft }
+  - { id: rel.supports, label: supports, model_binding: supports, source_classes: [class.wall, class.column, class.beam], target_classes: [class.slab, class.roof], per_source: { min: 0 }, provenance: [*ed], status: draft }
+  - { id: rel.located_in, label: located in, model_binding: located_in, source_classes: [class.furniture, class.stair, class.railing], target_classes: [class.space], per_source: { min: 0, max: 1 }, provenance: [*ed], status: draft }
+  - { id: rel.serves, label: serves, model_binding: serves, source_classes: [class.mep_element], target_classes: [class.space], per_source: { min: 0 }, reserved: true, provenance: [*ed], status: draft }
+  - { id: rel.connected_to, label: connected to, model_binding: connected_to, source_classes: [class.mep_element], target_classes: [class.mep_element], per_source: { min: 0 }, reserved: true, provenance: [*ed], status: draft }
+  - { id: rel.part_of_system, label: part of system, model_binding: part_of_system, source_classes: [class.mep_element], target_classes: [class.mep_system], per_source: { min: 0, max: 1 }, reserved: true, provenance: [*ed], status: draft }

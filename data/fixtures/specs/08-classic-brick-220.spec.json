@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "building_type": "single_family_house",
+  "name": "Classic brick house",
+  "description": "Two-storey 220 m² brick house with a hip roof, four bedrooms and a one-car garage.",
+  "targets": { "gross_floor_area_m2": 220, "storeys": 2 },
+  "style": { "architectural_style": "classic", "interior_style": "classic", "roof": { "type": "hip", "pitch_deg": 30 }, "window_style": "standard", "facade_material": "brick" },
+  "rooms": [
+    { "key": "living", "type": "living", "target_area_m2": 28, "level": 0 },
+    { "key": "dining", "type": "dining", "target_area_m2": 14, "level": 0, "adjacent_to": ["kitchen", "living"] },
+    { "key": "kitchen", "type": "kitchen", "target_area_m2": 13, "level": 0 },
+    { "key": "wc", "type": "wc", "level": 0 },
+    { "key": "storage", "type": "storage", "level": 0 },
+    { "key": "bedroom", "type": "bedroom", "count": 4, "target_area_m2": 13, "level": 1 },
+    { "key": "bathroom", "type": "bathroom", "count": 2, "level": 1 }
+  ],
+  "features": { "garage": { "cars": 1 } }
+}

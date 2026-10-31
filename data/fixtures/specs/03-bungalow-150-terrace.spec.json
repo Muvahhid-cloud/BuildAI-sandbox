@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "building_type": "single_family_house",
+  "name": "Garden bungalow",
+  "description": "Single-storey 150 m² bungalow with three bedrooms, a garden terrace and a one-car garage.",
+  "targets": { "gross_floor_area_m2": 150, "storeys": 1 },
+  "style": { "architectural_style": "contemporary", "roof": { "type": "hip" }, "window_style": "large", "facade_material": "render" },
+  "rooms": [
+    { "key": "living", "type": "living", "target_area_m2": 30, "adjacent_to": ["dining"] },
+    { "key": "dining", "type": "dining", "target_area_m2": 14, "open_to": ["kitchen"] },
+    { "key": "kitchen", "type": "kitchen", "target_area_m2": 14 },
+    { "key": "master_bedroom", "type": "bedroom", "name": "Master bedroom", "target_area_m2": 16, "features": ["en_suite"] },
+    { "key": "bedroom", "type": "bedroom", "count": 2, "target_area_m2": 12 },
+    { "key": "bathroom", "type": "bathroom" },
+    { "key": "laundry", "type": "laundry" }
+  ],
+  "features": { "garage": { "cars": 1 }, "terrace": { "attached_to": "living", "depth_m": 3.5 } }
+}

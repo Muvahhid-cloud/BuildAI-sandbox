@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.2.0",
+  "building_type": "single_family_house",
+  "name": "L-shaped garden bungalow",
+  "description": "Single-storey 160 m² L-shaped bungalow: day rooms on the garden, a bedroom wing, a garden terrace and a one-car garage.",
+  "targets": { "gross_floor_area_m2": 160, "storeys": 1 },
+  "style": { "architectural_style": "contemporary", "roof": { "type": "hip" }, "window_style": "standard", "facade_material": "render" },
+  "rooms": [
+    { "key": "living", "type": "living", "target_area_m2": 30, "faces": "rear" },
+    { "key": "dining", "type": "dining", "target_area_m2": 14, "faces": "rear" },
+    { "key": "kitchen", "type": "kitchen", "target_area_m2": 14, "adjacent_to": ["dining"] },
+    { "key": "master_bedroom", "type": "bedroom", "name": "Master bedroom", "target_area_m2": 16, "features": ["en_suite"] },
+    { "key": "bedroom", "type": "bedroom", "count": 2, "target_area_m2": 12 },
+    { "key": "bathroom", "type": "bathroom" }
+  ],
+  "features": { "garage": { "cars": 1 }, "terrace": { "attached_to": "living", "depth_m": 3.0 } },
+  "design": { "footprint_shape": "l_shape", "windows": { "emphasis": "large", "preferred_facades": ["rear"] } },
+  "requirements": [
+    { "path": "/design/footprint_shape", "priority": "must", "origin": "user_text", "quote": "an L-shaped bungalow" }
+  ]
+}

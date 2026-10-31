@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "id": "295df507-19a6-41ff-aadd-f7afa569494a",
+      "project_id": "e9400998-be7d-46c3-a45c-da54460c249e",
+      "status": "completed",
+      "stage": "done",
+      "prompt": "Create a modern two-story family house of approximately 280 square meters with four bedrooms, three bathrooms, a large living room connected to the kitchen, a two-car garage, a balcony on the second floor, large windows and minimalist interior design.",
+      "provider": "mock",
+      "model": "mock-interpreter@1",
+      "understanding": "A 2-storey modern family house of about 280 m² with 4 bedrooms, 3 bathrooms, a 2-car garage and a balcony.",
+      "version_id": "01718c88-4a6a-41b2-bca2-f29bc25956b2",
+      "version_number": 1,
+      "clarification_questions": [],
+      "error": null,
+      "repair_count": 0,
+      "duration_ms": 1265,
+      "created_at": "2026-09-28T07:17:07.931496Z",
+      "finished_at": "2026-09-28T07:17:09.229063Z"
+    }
+  ]
+}

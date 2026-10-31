@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "building_type": "single_family_house",
+  "name": "Small two-storey house",
+  "description": "Two-storey 120 m² house for a family of four.",
+  "targets": { "gross_floor_area_m2": 120, "storeys": 2, "floor_to_floor_height_m": 2.9 },
+  "style": { "architectural_style": "modern", "roof": { "type": "gable", "pitch_deg": 35 }, "window_style": "large", "facade_material": "render", "interior_finish_level": "economy" },
+  "rooms": [
+    { "key": "kitchen_living", "type": "open_kitchen_living", "target_area_m2": 30, "level": 0 },
+    { "key": "wc", "type": "wc", "level": 0 },
+    { "key": "bedroom", "type": "bedroom", "count": 3, "target_area_m2": 11, "level": 1 },
+    { "key": "bathroom", "type": "bathroom", "level": 1 }
+  ]
+}

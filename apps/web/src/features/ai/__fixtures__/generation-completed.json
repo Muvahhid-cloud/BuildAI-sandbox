@@ -1,0 +1,361 @@
+{
+  "id": "5cbc13bc-6d44-4b87-92c5-e90f266a804f",
+  "project_id": "acea0b98-4afd-46e6-b9f1-6deec9352c29",
+  "status": "completed",
+  "stage": "done",
+  "prompt": "Create a modern two-story family house of approximately 280 square meters with four bedrooms, three bathrooms, a large living room connected to the kitchen, a two-car garage, a balcony on the second floor, large windows and minimalist interior design.",
+  "provider": "mock",
+  "model": "mock-interpreter@1",
+  "understanding": "A 2-storey modern family house of about 280 m² with 4 bedrooms, 3 bathrooms, a 2-car garage and a balcony.",
+  "version_id": "e0476c8b-8575-4cdd-a39c-64a401647303",
+  "version_number": 1,
+  "clarification_questions": [],
+  "error": null,
+  "repair_count": 0,
+  "duration_ms": 1299,
+  "created_at": "2026-10-26T08:37:19.777740Z",
+  "finished_at": "2026-10-26T08:37:21.107343Z",
+  "options": {
+    "gross_floor_area_m2": null,
+    "storeys": null,
+    "architectural_style": null,
+    "budget": null,
+    "region_code": null,
+    "seed": 0
+  },
+  "prompt_version": "building-generation@4",
+  "seed": 0,
+  "rules_profile": "generic-residential@1",
+  "engine_version": "layout@1.5.0",
+  "specification": {
+    "schema_version": "1.2.0",
+    "building_type": "single_family_house",
+    "name": "Modern family house",
+    "description": "A 2-storey modern family house of about 280 m² with 4 bedrooms, 3 bathrooms, a 2-car garage and a balcony.",
+    "targets": {
+      "gross_floor_area_m2": 280.0,
+      "storeys": 2,
+      "floor_to_floor_height_m": 3.0,
+      "max_footprint_width_m": null,
+      "max_footprint_depth_m": null
+    },
+    "site": null,
+    "style": {
+      "architectural_style": "modern",
+      "interior_style": "minimalist",
+      "roof": {
+        "type": "flat",
+        "pitch_deg": null
+      },
+      "window_style": "large",
+      "facade_material": "render",
+      "interior_finish_level": "standard",
+      "design_system": null
+    },
+    "rooms": [
+      {
+        "key": "living",
+        "type": "living",
+        "name": "Living room",
+        "count": 1,
+        "target_area_m2": 40.0,
+        "min_area_m2": null,
+        "max_area_m2": null,
+        "level": 0,
+        "adjacent_to": [],
+        "open_to": ["kitchen"],
+        "features": [],
+        "faces": null,
+        "separate_from": []
+      },
+      {
+        "key": "kitchen",
+        "type": "kitchen",
+        "name": "Kitchen",
+        "count": 1,
+        "target_area_m2": null,
+        "min_area_m2": null,
+        "max_area_m2": null,
+        "level": 0,
+        "adjacent_to": [],
+        "open_to": [],
+        "features": [],
+        "faces": null,
+        "separate_from": []
+      },
+      {
+        "key": "dining",
+        "type": "dining",
+        "name": "Dining area",
+        "count": 1,
+        "target_area_m2": null,
+        "min_area_m2": null,
+        "max_area_m2": null,
+        "level": 0,
+        "adjacent_to": [],
+        "open_to": [],
+        "features": [],
+        "faces": null,
+        "separate_from": []
+      },
+      {
+        "key": "master_bedroom",
+        "type": "bedroom",
+        "name": "Master bedroom",
+        "count": 1,
+        "target_area_m2": null,
+        "min_area_m2": null,
+        "max_area_m2": null,
+        "level": 1,
+        "adjacent_to": [],
+        "open_to": [],
+        "features": ["en_suite"],
+        "faces": null,
+        "separate_from": []
+      },
+      {
+        "key": "bedroom",
+        "type": "bedroom",
+        "name": null,
+        "count": 3,
+        "target_area_m2": null,
+        "min_area_m2": null,
+        "max_area_m2": null,
+        "level": 1,
+        "adjacent_to": [],
+        "open_to": [],
+        "features": [],
+        "faces": null,
+        "separate_from": []
+      },
+      {
+        "key": "bathroom",
+        "type": "bathroom",
+        "name": null,
+        "count": 2,
+        "target_area_m2": null,
+        "min_area_m2": null,
+        "max_area_m2": null,
+        "level": null,
+        "adjacent_to": [],
+        "open_to": [],
+        "features": [],
+        "faces": null,
+        "separate_from": []
+      }
+    ],
+    "features": {
+      "garage": {
+        "cars": 2
+      },
+      "balconies": [
+        {
+          "level": 1,
+          "attached_to": "master_bedroom",
+          "side": "garden",
+          "width_m": null,
+          "depth_m": 1.5
+        }
+      ],
+      "terrace": null
+    },
+    "design": {
+      "facade_color": null,
+      "windows": null,
+      "priorities": [],
+      "footprint_shape": null
+    },
+    "budget": null,
+    "requirements": [],
+    "assumptions": [
+      {
+        "path": "/rooms/0/target_area_m2",
+        "value": 40.0,
+        "reason": "“Large living room” read as about 40 m²."
+      },
+      {
+        "path": "/rooms",
+        "value": "dining",
+        "reason": "A dining area is part of a standard family program."
+      },
+      {
+        "path": "/rooms",
+        "value": "en_suite",
+        "reason": "One of the 3 bathrooms is an en-suite to the master bedroom."
+      },
+      {
+        "path": "/rooms",
+        "value": 1,
+        "reason": "Living spaces on the ground floor, bedrooms upstairs."
+      },
+      {
+        "path": "/style/roof/type",
+        "value": "flat",
+        "reason": "Roof not specified; typical for modern."
+      },
+      {
+        "path": "/style/facade_material",
+        "value": "render",
+        "reason": "Facade material not specified."
+      },
+      {
+        "path": "/targets/floor_to_floor_height_m",
+        "value": 3.0,
+        "reason": "Not specified; residential default of 3.0 m."
+      }
+    ],
+    "open_questions": []
+  },
+  "assumptions": [
+    {
+      "path": "/rooms/0/target_area_m2",
+      "value": 40.0,
+      "reason": "“Large living room” read as about 40 m²."
+    },
+    {
+      "path": "/rooms",
+      "value": "dining",
+      "reason": "A dining area is part of a standard family program."
+    },
+    {
+      "path": "/rooms",
+      "value": "en_suite",
+      "reason": "One of the 3 bathrooms is an en-suite to the master bedroom."
+    },
+    {
+      "path": "/rooms",
+      "value": 1,
+      "reason": "Living spaces on the ground floor, bedrooms upstairs."
+    },
+    {
+      "path": "/style/roof/type",
+      "value": "flat",
+      "reason": "Roof not specified; typical for modern."
+    },
+    {
+      "path": "/style/facade_material",
+      "value": "render",
+      "reason": "Facade material not specified."
+    },
+    {
+      "path": "/targets/floor_to_floor_height_m",
+      "value": 3.0,
+      "reason": "Not specified; residential default of 3.0 m."
+    }
+  ],
+  "warnings": [],
+  "summary": {
+    "storeys": 2,
+    "gross_floor_area_m2": 279.7,
+    "net_floor_area_m2": 228.7,
+    "rooms": 10,
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "wcs": 0,
+    "garage": true,
+    "balconies": 1,
+    "terraces": 0,
+    "walls": 26,
+    "doors": 15,
+    "windows": 21,
+    "elements": 118,
+    "facade_colors": [],
+    "windows_by_facade": {
+      "left": {
+        "large": 2
+      },
+      "rear": {
+        "large": 4
+      },
+      "front": {
+        "large": 3
+      },
+      "right": {
+        "large": 4
+      }
+    },
+    "rooms_on_facade": {
+      "left": [
+        "room:bathroom_2",
+        "room:bedroom_2",
+        "room:corridor_0",
+        "room:corridor_1",
+        "room:garage",
+        "room:living",
+        "room:master_bedroom",
+        "room:master_bedroom_en_suite"
+      ],
+      "rear": [
+        "room:balcony_0",
+        "room:bedroom_3",
+        "room:garage",
+        "room:kitchen",
+        "room:living",
+        "room:master_bedroom"
+      ],
+      "front": [
+        "room:bathroom_2",
+        "room:bedroom_1",
+        "room:bedroom_2",
+        "room:dining",
+        "room:garage",
+        "room:hall_0"
+      ],
+      "right": [
+        "room:bedroom_1",
+        "room:bedroom_3",
+        "room:corridor_0",
+        "room:corridor_1",
+        "room:dining",
+        "room:kitchen"
+      ]
+    }
+  },
+  "checks": [
+    {
+      "key": "storeys",
+      "label": "Floors",
+      "requested": "2",
+      "delivered": "2",
+      "met": true
+    },
+    {
+      "key": "gross_floor_area_m2",
+      "label": "Floor area",
+      "requested": "280 m²",
+      "delivered": "279.7 m²",
+      "met": true
+    },
+    {
+      "key": "bedrooms",
+      "label": "Bedrooms",
+      "requested": "4",
+      "delivered": "4",
+      "met": true
+    },
+    {
+      "key": "bathrooms",
+      "label": "Bathrooms",
+      "requested": "3",
+      "delivered": "3",
+      "met": true
+    },
+    {
+      "key": "balconies",
+      "label": "Balconies",
+      "requested": "1",
+      "delivered": "1",
+      "met": true
+    },
+    {
+      "key": "garage",
+      "label": "Garage",
+      "requested": "2 cars",
+      "delivered": "built",
+      "met": true
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "started_at": "2026-10-26T08:37:19.808146Z"
+}

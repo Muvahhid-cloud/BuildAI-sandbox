@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "building_type": "single_family_house",
+  "name": "Modern family house",
+  "description": "Two-storey family house of about 280 m² with four bedrooms, three bathrooms, a large living room open to the kitchen, a two-car garage and a balcony on the upper floor.",
+  "targets": { "gross_floor_area_m2": 280, "storeys": 2 },
+  "style": {
+    "architectural_style": "modern",
+    "interior_style": "minimalist",
+    "roof": { "type": "flat" },
+    "window_style": "large",
+    "facade_material": "render"
+  },
+  "rooms": [
+    { "key": "living", "type": "living", "name": "Living room", "target_area_m2": 45, "level": 0, "open_to": ["kitchen"] },
+    { "key": "kitchen", "type": "kitchen", "target_area_m2": 20, "level": 0, "adjacent_to": ["dining"] },
+    { "key": "dining", "type": "dining", "target_area_m2": 18, "level": 0 },
+    { "key": "study", "type": "study", "target_area_m2": 12, "level": 0 },
+    { "key": "wc", "type": "wc", "name": "Guest WC", "level": 0 },
+    { "key": "laundry", "type": "laundry", "level": 0 },
+    { "key": "master_bedroom", "type": "bedroom", "name": "Master bedroom", "target_area_m2": 22, "level": 1, "features": ["en_suite"] },
+    { "key": "bedroom", "type": "bedroom", "count": 3, "target_area_m2": 16, "level": 1 },
+    { "key": "bathroom", "type": "bathroom", "count": 2 }
+  ],
+  "features": {
+    "garage": { "cars": 2 },
+    "balconies": [{ "level": 1, "attached_to": "master_bedroom" }]
+  }
+}

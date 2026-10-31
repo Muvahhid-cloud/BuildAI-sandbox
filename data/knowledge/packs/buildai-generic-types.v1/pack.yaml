@@ -1,0 +1,24 @@
+# buildai-generic-types@1 — the layout engine's existing construction defaults as component
+# records (Phase 3.5 K2, docs/knowledge.md §3.4).
+#
+# Every value is MIGRATED from LayoutConfig (apps/api/app/modules/layout/config.py) and the
+# material ids the engine already writes (layout/build.py); nothing is new construction data
+# and nothing comes from a published source. Structural materials are left unspecified and
+# assemblies have one structural layer: real build-ups need a reviewed source.
+# A test asserts that these records reproduce LayoutConfig exactly.
+#
+# Draft until a person reviews it: the resolver only uses APPROVED records, so until then
+# generation stays untyped (geometry is identical either way).
+id: buildai-generic-types
+version: 1
+name: Generic component types (migrated layout defaults)
+description: >-
+  Wall, slab, roof, door, window, stair and railing types and single-layer assemblies that
+  mirror the layout engine's current defaults, plus the generic role mapping.
+status: draft
+scope:
+  kind: global
+sources: [buildai-editorial]
+depends_on: [core@1]
+contents:
+  components: [components.yaml]

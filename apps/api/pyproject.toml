@@ -1,0 +1,160 @@
+[project]
+name = "buildai-api"
+version = "0.1.0"
+description = "BuildAI 3D API (FastAPI modular monolith)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.8",
+    "pydantic-settings>=2.4",
+    "email-validator>=2.2",
+    "sqlalchemy[asyncio]>=2.0.32",
+    "asyncpg>=0.29",
+    "alembic>=1.13",
+    "argon2-cffi>=23.1",
+    "pyjwt>=2.9",
+    "shapely>=2.1",
+    # Rules profiles are human-edited YAML data files (data/rules-profiles).
+    "pyyaml>=6.0",
+    # First real AI provider; imported only by app/modules/ai/providers/anthropic.py.
+    "anthropic>=1.0",
+    # OpenRouter provider (OpenAI-compatible HTTP API) uses plain httpx instead of a vendor SDK.
+    "httpx>=0.27",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.27",
+    "hypothesis>=6.112",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "import-linter>=2.1",
+    # Embedded PostgreSQL for local tests/dev when Docker is unavailable (not used in CI/Docker).
+    "pgserver>=0.1.4",
+    "types-shapely>=2.1",
+    "types-pyyaml>=6.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF", "ASYNC", "S"]
+ignore = ["B008"]  # FastAPI Depends() in defaults
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]
+known-third-party = ["alembic"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S107"]
+# Authoring scripts use short UPPERCASE aliases to keep data tables readable.
+"app/modules/building/fixtures/**" = ["N806"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+strict = true
+warn_unreachable = true
+exclude = ["alembic/versions/"]
+
+[[tool.mypy.overrides]]
+module = ["pgserver.*", "asyncpg.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+filterwarnings = ["error::DeprecationWarning:app.*"]
+
+[tool.importlinter]
+root_package = "app"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Domain modules stay pure (no web, persistence or AI imports)"
+type = "forbidden"
+source_modules = [
+    "app.modules.building",
+    "app.modules.rules",
+    "app.modules.layout",
+    "app.modules.mep",
+    "app.modules.quantities",
+    "app.modules.costing.domain",
+    "app.modules.catalog",
+]
+forbidden_modules = [
+    "fastapi",
+    "sqlalchemy",
+    "app.core.db",
+    "app.modules.ai",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Knowledge catalog depends only on the building schemas (docs/knowledge.md)"
+type = "forbidden"
+source_modules = ["app.modules.catalog"]
+forbidden_modules = [
+    "app.modules.rules",
+    "app.modules.layout",
+    "app.modules.mep",
+    "app.modules.quantities",
+    "app.modules.costing",
+    "app.modules.generation",
+    "app.modules.versions",
+    "app.modules.projects",
+    "app.modules.jobs",
+    "app.modules.demo",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+# Knowledge is consumed only by the generation pipeline (K2: approved component types via
+# catalog.resolver). Engines receive plain building.types data and never read the catalog.
+name = "Only the generation pipeline consumes the knowledge catalog"
+type = "forbidden"
+source_modules = [
+    "app.core",
+    "app.shared",
+    "app.modules.auth",
+    "app.modules.projects",
+    "app.modules.versions",
+    "app.modules.building",
+    "app.modules.rules",
+    "app.modules.layout",
+    "app.modules.mep",
+    "app.modules.quantities",
+    "app.modules.costing",
+    "app.modules.ai",
+    "app.modules.jobs",
+    "app.modules.demo",
+    "app.modules.editing",
+    "app.modules.health",
+]
+forbidden_modules = ["app.modules.catalog"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Core does not depend on feature modules"
+type = "forbidden"
+source_modules = ["app.core"]
+forbidden_modules = ["app.modules"]
+
+[[tool.importlinter.contracts]]
+name = "Vendor AI SDKs are imported only by their provider adapter (CLAUDE.md rule 13)"
+type = "forbidden"
+source_modules = ["app"]
+forbidden_modules = ["anthropic"]
+ignore_imports = ["app.modules.ai.providers.anthropic -> anthropic"]
+allow_indirect_imports = true

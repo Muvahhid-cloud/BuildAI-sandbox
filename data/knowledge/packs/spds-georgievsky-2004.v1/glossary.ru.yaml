@@ -1,0 +1,65 @@
+# Russian wordings of canonical core@1 terms, as used by the book. Only terms the book uses
+# are listed; the English wording and any definitions are editorial and live in core@1.
+localized:
+  - { term_id: term.coordination_axis, locale: ru, preferred: координационная ось, provenance: [{ source: georgievsky-2004, pages: [9, 43], supports: [term] }], status: extracted }
+  - { term_id: term.bay, locale: ru, preferred: шаг, provenance: [&p9 { source: georgievsky-2004, pages: [9], section: "2.4", supports: [term] }], status: extracted }
+  - { term_id: term.span, locale: ru, preferred: пролет, provenance: [*p9], status: extracted }
+  - { term_id: term.storey, locale: ru, preferred: этаж, provenance: [&p10 { source: georgievsky-2004, pages: [10], section: "2.4", supports: [term] }], status: extracted }
+  - { term_id: term.storey_height, locale: ru, preferred: высота этажа, provenance: [*p10], status: extracted }
+  - { term_id: term.basic_module, locale: ru, preferred: основной модуль, abbreviations: [M], provenance: [*p9], status: extracted }
+  - { term_id: term.modular_coordination, locale: ru, preferred: единая модульная система, abbreviations: [ЕМС], provenance: [*p9], status: extracted }
+  - { term_id: term.construction, locale: ru, preferred: конструкция, synonyms: [строительная конструкция], provenance: [&p8 { source: georgievsky-2004, pages: [8, 16], supports: [term] }], status: extracted }
+  - { term_id: term.building_product, locale: ru, preferred: строительное изделие, provenance: [*p8], status: extracted }
+  - { term_id: term.node, locale: ru, preferred: узел, provenance: [*p8], status: extracted }
+
+  - { term_id: term.wall, locale: ru, preferred: стена, provenance: [&fig1 { source: georgievsky-2004, pages: [8], figures: ["Рис. 1"], supports: [term] }], status: extracted }
+  - { term_id: term.load_bearing_wall, locale: ru, preferred: несущая стена, provenance: [*fig1], status: extracted }
+  - { term_id: term.partition, locale: ru, preferred: перегородка, provenance: [*fig1], status: extracted }
+  - { term_id: term.door, locale: ru, preferred: дверь, codes: { spds_letter: "Д" }, provenance: [&codes { source: georgievsky-2004, pages: [52, 134], supports: [term] }], status: extracted }
+  - { term_id: term.window, locale: ru, preferred: окно, codes: { spds_letter: "ОК" }, provenance: [*codes], status: extracted }
+  - { term_id: term.floor_slab, locale: ru, preferred: междуэтажное перекрытие, synonyms: [перекрытие], provenance: [*fig1], status: extracted }
+  - { term_id: term.attic_floor, locale: ru, preferred: чердачное перекрытие, provenance: [*fig1], status: extracted }
+  - { term_id: term.stair, locale: ru, preferred: лестница, codes: { spds_letter: "Л" }, provenance: [{ source: georgievsky-2004, pages: [50, 134], supports: [term] }], status: extracted }
+  - { term_id: term.stair_flight, locale: ru, preferred: лестничный марш, codes: { spds_letter: "ЛМ" }, provenance: [{ source: georgievsky-2004, pages: [8, 134], supports: [term] }], status: extracted }
+  - { term_id: term.stair_landing, locale: ru, preferred: лестничная площадка, codes: { spds_letter: "ЛП" }, provenance: [{ source: georgievsky-2004, pages: [8, 134], supports: [term] }], status: extracted }
+  - { term_id: term.stringer, locale: ru, preferred: косоур, provenance: [*fig1], status: extracted }
+  - { term_id: term.ramp, locale: ru, preferred: пандус, provenance: [{ source: georgievsky-2004, pages: [51], supports: [term] }], status: extracted }
+  - { term_id: term.roof, locale: ru, preferred: крыша, provenance: [{ source: georgievsky-2004, pages: [68], supports: [term] }], status: extracted }
+  - { term_id: term.railing, locale: ru, preferred: ограждение, codes: { spds_letter: "ОГ" }, provenance: [{ source: georgievsky-2004, pages: [134], supports: [term] }], status: extracted }
+  - { term_id: term.foundation, locale: ru, preferred: фундамент, provenance: [*fig1], status: extracted }
+  - { term_id: term.strip_foundation, locale: ru, preferred: ленточный фундамент, codes: { spds_letter: "ФЛ" }, provenance: [{ source: georgievsky-2004, pages: [34, 134], supports: [term] }], status: extracted }
+  - { term_id: term.blind_area, locale: ru, preferred: отмостка, provenance: [{ source: georgievsky-2004, pages: [8, 51], supports: [term] }], status: extracted }
+  - { term_id: term.plinth, locale: ru, preferred: цоколь, provenance: [*fig1], status: extracted }
+  - { term_id: term.lintel, locale: ru, preferred: перемычка, codes: { spds_letter: "ПР" }, provenance: [{ source: georgievsky-2004, pages: [8, 134], supports: [term] }], status: extracted }
+  - { term_id: term.column, locale: ru, preferred: колонна, codes: { spds_letter: "К" }, provenance: [{ source: georgievsky-2004, pages: [9, 134], supports: [term] }], status: extracted }
+  - { term_id: term.beam, locale: ru, preferred: балка, codes: { spds_letter: "Б" }, provenance: [{ source: georgievsky-2004, pages: [134], supports: [term] }], status: extracted }
+  - { term_id: term.girder, locale: ru, preferred: ригель, codes: { spds_letter: "Р" }, provenance: [{ source: georgievsky-2004, pages: [134], supports: [term] }], status: extracted }
+  - { term_id: term.rafter, locale: ru, preferred: стропила, synonyms: [наслонные стропила], provenance: [*fig1], status: extracted }
+  - { term_id: term.roof_batten, locale: ru, preferred: обрешетка, provenance: [*fig1], status: extracted }
+  - { term_id: term.strut, locale: ru, preferred: подкос, provenance: [*fig1], status: extracted }
+  - { term_id: term.post, locale: ru, preferred: стойка, provenance: [*fig1], status: extracted }
+  - { term_id: term.wall_plate, locale: ru, preferred: мауэрлат, provenance: [*fig1], status: extracted }
+  - { term_id: term.roof_hatch, locale: ru, preferred: люк, provenance: [*fig1], status: extracted }
+  - { term_id: term.attic, locale: ru, preferred: чердак, provenance: [*fig1], status: extracted }
+  - { term_id: term.vestibule, locale: ru, preferred: тамбур, provenance: [*fig1], status: extracted }
+  - { term_id: term.room, locale: ru, preferred: помещение, provenance: [{ source: georgievsky-2004, pages: [70, 71], supports: [term] }], status: extracted }
+
+  - { term_id: term.floor_plan, locale: ru, preferred: план этажа, provenance: [&views { source: georgievsky-2004, pages: [48, 49, 68], supports: [term] }], status: extracted }
+  - { term_id: term.section, locale: ru, preferred: разрез, provenance: [*views], status: extracted }
+  - { term_id: term.facade, locale: ru, preferred: фасад, provenance: [*views], status: extracted }
+  - { term_id: term.roof_plan, locale: ru, preferred: план кровли, synonyms: [план крыши], provenance: [{ source: georgievsky-2004, pages: [68, 79], supports: [term] }], status: extracted }
+  - { term_id: term.fragment, locale: ru, preferred: фрагмент, provenance: [{ source: georgievsky-2004, pages: [45], supports: [term] }], status: extracted }
+  - { term_id: term.level_mark, locale: ru, preferred: отметка, abbreviations: ["отм."], provenance: [&marks { source: georgievsky-2004, pages: [45, 133], supports: [term] }], status: extracted }
+  - { term_id: term.finished_floor_level, locale: ru, preferred: уровень чистого пола, abbreviations: ["Ур.ч.п."], provenance: [*marks], status: extracted }
+  - { term_id: term.ground_level, locale: ru, preferred: уровень земли, abbreviations: ["Ур.з."], provenance: [*marks], status: extracted }
+  - { term_id: term.title_block, locale: ru, preferred: основная надпись, provenance: [{ source: georgievsky-2004, pages: [18], supports: [term] }], status: extracted }
+  - { term_id: term.schedule, locale: ru, preferred: спецификация, provenance: [{ source: georgievsky-2004, pages: [84], supports: [term] }], status: extracted }
+  - { term_id: term.room_schedule, locale: ru, preferred: экспликация помещений, provenance: [{ source: georgievsky-2004, pages: [71], supports: [term] }], status: extracted }
+  - { term_id: term.slope, locale: ru, preferred: уклон, provenance: [{ source: georgievsky-2004, pages: [39], supports: [term] }], status: extracted }
+
+  - { term_id: term.pipeline, locale: ru, preferred: трубопровод, provenance: [&mep { source: georgievsky-2004, pages: [93, 95], supports: [term] }], status: extracted }
+  - { term_id: term.riser, locale: ru, preferred: стояк, abbreviations: ["Ст."], provenance: [*mep], status: extracted }
+  - { term_id: term.water_inlet, locale: ru, preferred: ввод, provenance: [*mep], status: extracted }
+  - { term_id: term.sewer_outlet, locale: ru, preferred: выпуск, provenance: [*mep], status: extracted }
+  - { term_id: term.pipe_fitting, locale: ru, preferred: арматура, provenance: [*mep], status: extracted }
+  - { term_id: term.sanitary_fixture, locale: ru, preferred: санитарный прибор, provenance: [{ source: georgievsky-2004, pages: [93, 104], supports: [term] }], status: extracted }

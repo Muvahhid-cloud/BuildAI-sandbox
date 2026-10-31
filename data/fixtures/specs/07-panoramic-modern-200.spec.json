@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "building_type": "single_family_house",
+  "name": "Panoramic modern house",
+  "description": "Two-storey 200 m² modern house with panoramic glazing, a flat roof and a street-side balcony.",
+  "targets": { "gross_floor_area_m2": 200, "storeys": 2, "floor_to_floor_height_m": 3.0 },
+  "style": { "architectural_style": "minimalist", "interior_style": "minimalist", "roof": { "type": "flat" }, "window_style": "panoramic", "facade_material": "concrete" },
+  "rooms": [
+    { "key": "kitchen_living", "type": "open_kitchen_living", "target_area_m2": 50, "level": 0 },
+    { "key": "study", "type": "study", "target_area_m2": 10, "level": 0 },
+    { "key": "wc", "type": "wc", "level": 0 },
+    { "key": "master_bedroom", "type": "bedroom", "name": "Master bedroom", "target_area_m2": 18, "level": 1, "features": ["en_suite"] },
+    { "key": "bedroom", "type": "bedroom", "count": 2, "target_area_m2": 13, "level": 1 },
+    { "key": "bathroom", "type": "bathroom", "level": 1 }
+  ],
+  "features": { "balconies": [{ "level": 1, "side": "street", "width_m": 3.5 }] }
+}

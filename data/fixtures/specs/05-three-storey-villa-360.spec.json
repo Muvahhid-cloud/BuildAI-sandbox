@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "building_type": "single_family_house",
+  "name": "Three-storey villa",
+  "description": "Three-storey 360 m² villa with five bedrooms, a two-car garage, a top-floor balcony and a garden terrace.",
+  "targets": { "gross_floor_area_m2": 360, "storeys": 3, "floor_to_floor_height_m": 3.0 },
+  "style": { "architectural_style": "luxury", "interior_style": "luxury", "roof": { "type": "hip", "pitch_deg": 22 }, "window_style": "large", "facade_material": "concrete", "interior_finish_level": "premium" },
+  "rooms": [
+    { "key": "living", "type": "living", "target_area_m2": 42, "level": 0, "adjacent_to": ["dining"] },
+    { "key": "dining", "type": "dining", "target_area_m2": 18, "level": 0, "open_to": ["kitchen"] },
+    { "key": "kitchen", "type": "kitchen", "target_area_m2": 18, "level": 0 },
+    { "key": "wc", "type": "wc", "level": 0 },
+    { "key": "laundry", "type": "laundry", "level": 0 },
+    { "key": "study", "type": "study", "target_area_m2": 12 },
+    { "key": "master_bedroom", "type": "bedroom", "name": "Master bedroom", "target_area_m2": 22, "level": 2, "features": ["en_suite", "walk_in_closet"] },
+    { "key": "bedroom", "type": "bedroom", "count": 4, "target_area_m2": 14 },
+    { "key": "bathroom", "type": "bathroom", "count": 3 },
+    { "key": "storage", "type": "storage" }
+  ],
+  "features": {
+    "garage": { "cars": 2 },
+    "balconies": [{ "level": 2, "attached_to": "master_bedroom", "depth_m": 1.8 }],
+    "terrace": { "attached_to": "living" }
+  }
+}

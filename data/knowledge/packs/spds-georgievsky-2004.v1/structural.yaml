@@ -1,0 +1,142 @@
+# Structural-drawing knowledge (category structural_drawing). Reference only: there is no
+# structural phase yet (K6 structural elements are out of K1's scope), so none of this is a
+# runtime candidate.
+items:
+  - id: structural.set_contents
+    kind: content_list
+    category: structural_drawing
+    concept: contents of a structural working-drawing set
+    statement: >-
+      A basic set of structural working drawings contains general data, arrangement schemes and
+      specifications; monolithic reinforced concrete adds reinforcement schemes and a statement
+      of steel consumption. General data also record loads, soil and groundwater conditions,
+      corrosion protection and winter works.
+    provenance: [{ source: georgievsky-2004, pages: [80], section: "7.1" }]
+    confidence: high
+    usage: reference_only
+    status: extracted
+
+  - id: structural.arrangement_schemes
+    kind: convention
+    category: structural_drawing
+    concept: arrangement schemes of elements
+    statement: >-
+      Arrangement schemes show simplified elements and their links, one scheme per group of
+      elements erected together (foundations and foundation beams, basement wall blocks,
+      columns and bracing, trusses and beams, wall and partition panels), drawn as plans,
+      facades or sections; monolithic elements get position marks.
+    provenance: [{ source: georgievsky-2004, pages: [80, 81, 83], section: "7.1", figures: ["Рис. 90", "Рис. 95", "Рис. 96"] }]
+    confidence: high
+    usage: reference_only
+    status: extracted
+
+  - id: structural.reinforcement_simplification
+    kind: convention
+    category: structural_drawing
+    concept: simplified reinforcement drawing
+    statement: >-
+      Cages and meshes may be drawn as outlines; asymmetric ones by their characteristic
+      features; unnormalised bar counts are given in brackets; reinforcement of intersecting
+      elements is usually omitted; equal bars at equal spacing are drawn only at the ends and
+      where the spacing changes, with the spacing on the leader.
+    provenance: [{ source: georgievsky-2004, pages: [81, 82, 83], section: "7.1", figures: ["Рис. 91", "Рис. 92", "Рис. 93", "Рис. 94"] }]
+    confidence: high
+    usage: reference_only
+    status: extracted
+
+  - id: structural.schedule_forms
+    kind: dimension_table
+    category: structural_drawing
+    concept: specification forms for arrangement schemes
+    statement: >-
+      Arrangement schemes carry a specification listing position, name, quantity and unit mass;
+      group specifications add product mark, part position and product mass.
+    params:
+      specification_columns: [position, name, quantity, unit_mass_kg]
+      specification_column_widths_paper_mm: [10, 60, 10, 15]
+      group_columns: [product_mark, part_position, name, quantity, part_mass_kg, product_mass_kg]
+      group_column_widths_paper_mm: [15, 10, 60, 10, 15, 15]
+    provenance: [{ source: georgievsky-2004, pages: [84], section: "7.2", figures: ["Рис. 97", "Рис. 98"], cites: ["ГОСТ 21.501-93"], supports: [statement, params] }]
+    confidence: medium
+    usage: reference_only
+    status: extracted
+
+  - id: structural.rebar_symbols
+    kind: symbol_set
+    category: structural_drawing
+    concept: reinforcement symbols
+    statement: >-
+      Reinforcing bars (side view and section, with hooks or bends), prestressed bars and
+      tendons, anchorages, removable and fixed connections, and flat cages or meshes (full,
+      simplified, several identical) have their own symbols; reinforcement is drawn with a very
+      thick solid line.
+    provenance: [{ source: georgievsky-2004, pages: [60, 62], section: "5.3", tables: ["Табл. 14"], cites: ["ГОСТ 21.501-93"] }]
+    confidence: medium
+    usage: reference_only
+    status: extracted
+
+  - id: structural.steel_notation
+    kind: convention
+    category: structural_drawing
+    concept: rolled steel profile notation
+    statement: >-
+      Rolled profiles are drawn as outlines without fillets or flange slopes and labelled with
+      their size or profile number to the right, with the count in front when several identical
+      profiles are used. Views are arranged with the top view above the main view, the bottom
+      view below and side views beside it, each labelled by a letter.
+    provenance: [{ source: georgievsky-2004, pages: [53, 54, 55], section: "5.2", figures: ["Рис. 35"], cites: ["ГОСТ 2.410-68"] }]
+    confidence: high
+    usage: reference_only
+    status: extracted
+
+  - id: structural.truss_terms
+    kind: definition
+    category: structural_drawing
+    concept: truss elements and geometric scheme
+    statement: >-
+      A truss consists of top and bottom chords and a web of posts and diagonals joined by
+      gusset plates; trusses spanning the building and bearing on columns or walls are rafter
+      trusses. Their geometric scheme is a single-line drawing at 1:200, 1:400 or smaller with
+      distances between centroid-line intersections.
+    params: { scheme_scales: ["1:200", "1:400"] }
+    provenance: [{ source: georgievsky-2004, pages: [54, 57, 58, 59], section: "5.2", figures: ["Рис. 63", "Рис. 66", "Рис. 67"] }]
+    confidence: high
+    usage: reference_only
+    status: extracted
+
+  - id: structural.welds
+    kind: symbol_set
+    category: structural_drawing
+    concept: weld symbols
+    statement: >-
+      Factory and site welds (continuous or intermittent butt and fillet welds, spot and
+      electro-rivet welds) have distinct symbols, and weld sizes and welding methods are marked
+      on metal-structure drawings.
+    provenance: [{ source: georgievsky-2004, pages: [55, 56, 57], section: "5.2", tables: ["Табл. 11", "Табл. 12"], cites: ["ГОСТ 5264-80", "ГОСТ 14806-80"] }]
+    confidence: medium
+    usage: reference_only
+    status: extracted
+
+  - id: structural.timber_connections
+    kind: symbol_set
+    category: structural_drawing
+    concept: timber connection symbols
+    statement: >-
+      Timber connections on keys, brackets, connectors, plate or round dowels and washers have
+      their own symbols; fasteners and welds follow the general fastener and weld standards.
+    provenance: [{ source: georgievsky-2004, pages: [63], section: "5.4", tables: ["Табл. 15"], cites: ["ГОСТ 2.315", "ГОСТ 2.312"] }]
+    confidence: medium
+    usage: reference_only
+    status: extracted
+
+  - id: structural.assembly_sections
+    kind: convention
+    category: structural_drawing
+    concept: schematic sections of prefabricated buildings
+    statement: >-
+      Sections of industrially built buildings are drawn schematically, with references to node
+      drawings and stacked leaders listing the layers of each construction.
+    provenance: [{ source: georgievsky-2004, pages: [64], section: "5.5" }]
+    confidence: high
+    usage: reference_only
+    status: extracted

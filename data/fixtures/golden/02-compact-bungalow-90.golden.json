@@ -1,0 +1,114 @@
+{
+  "engine_version": "layout@1.7.0",
+  "seed": 0,
+  "footprint_m": [
+    9.5,
+    9.45
+  ],
+  "summary": {
+    "storeys": 1,
+    "gross_floor_area_m2": 89.8,
+    "net_floor_area_m2": 70.7,
+    "rooms": 5,
+    "bedrooms": 2,
+    "bathrooms": 1,
+    "wcs": 0,
+    "garage": false,
+    "balconies": 0,
+    "terraces": 0,
+    "walls": 11,
+    "doors": 7,
+    "windows": 7,
+    "elements": 47,
+    "facade_colors": [],
+    "windows_by_facade": {
+      "front": {
+        "standard": 1
+      },
+      "left": {
+        "standard": 2
+      },
+      "rear": {
+        "standard": 1
+      }
+    },
+    "rooms_on_facade": {
+      "front": [
+        "room:bathroom",
+        "room:bedroom_2",
+        "room:hall_0",
+        "room:storage"
+      ],
+      "left": [
+        "room:bedroom_1",
+        "room:bedroom_2",
+        "room:corridor_0"
+      ],
+      "rear": [
+        "room:bedroom_1",
+        "room:kitchen_living"
+      ],
+      "right": [
+        "room:corridor_0",
+        "room:kitchen_living",
+        "room:storage"
+      ]
+    }
+  },
+  "element_counts": {
+    "door": 7,
+    "furniture": 13,
+    "roof": 1,
+    "room": 7,
+    "slab": 1,
+    "wall": 11,
+    "window": 7
+  },
+  "rooms": [
+    {
+      "level": 0,
+      "key": "room:bathroom",
+      "type": "bathroom",
+      "area_m2": 6.12
+    },
+    {
+      "level": 0,
+      "key": "room:bedroom_1",
+      "type": "bedroom",
+      "area_m2": 12.82
+    },
+    {
+      "level": 0,
+      "key": "room:bedroom_2",
+      "type": "bedroom",
+      "area_m2": 12.95
+    },
+    {
+      "level": 0,
+      "key": "room:corridor_0",
+      "type": "corridor",
+      "area_m2": 11.4
+    },
+    {
+      "level": 0,
+      "key": "room:hall_0",
+      "type": "entrance",
+      "area_m2": 7.7
+    },
+    {
+      "level": 0,
+      "key": "room:kitchen_living",
+      "type": "open_kitchen_living",
+      "area_m2": 32.3
+    },
+    {
+      "level": 0,
+      "key": "room:storage",
+      "type": "storage",
+      "area_m2": 6.47
+    }
+  ],
+  "warnings": [],
+  "model_sha256": "202dc27a1de7155fb3f8949e0a2634521fced9c2cbb43dc234f6c05d861b0f4c",
+  "geometry_sha256": "bd3b956196a7724d1b7e308fa7f758fcd9a8c1af03a55b24ffa3c3077eb39686"
+}

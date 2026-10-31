@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "building_type": "single_family_house",
+  "name": "Starter family home",
+  "description": "Two storeys, three bedrooms; no floor area specified.",
+  "targets": { "storeys": 2 },
+  "rooms": [
+    { "key": "kitchen_living", "type": "open_kitchen_living" },
+    { "key": "wc", "type": "wc" },
+    { "key": "bedroom", "type": "bedroom", "count": 3 },
+    { "key": "bathroom", "type": "bathroom" }
+  ]
+}

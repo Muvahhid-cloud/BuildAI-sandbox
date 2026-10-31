@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "description": "Material library shared by the API (validation; costing from Phase 4) and the web renderer. Colors are sRGB hex. Add item_code/waste_factor in Phase 4.",
+  "materials": [
+    { "id": "concrete", "name": "Concrete", "category": "structure", "color": "#b8b4ad", "roughness": 0.92, "metalness": 0 },
+    { "id": "brick", "name": "Brick", "category": "masonry", "color": "#9a5038", "roughness": 0.88, "metalness": 0 },
+    { "id": "exterior_wall", "name": "Exterior render (white)", "category": "facade_finish", "color": "#efece5", "roughness": 0.9, "metalness": 0 },
+    { "id": "interior_wall", "name": "Interior plaster (white)", "category": "wall_finish", "color": "#f6f4f0", "roughness": 0.95, "metalness": 0 },
+    { "id": "tile", "name": "Ceramic wall tile", "category": "wall_finish", "color": "#dfe6ea", "roughness": 0.35, "metalness": 0 },
+    { "id": "floor", "name": "Porcelain floor tile", "category": "floor_finish", "color": "#cfc8bd", "roughness": 0.6, "metalness": 0 },
+    { "id": "parquet", "name": "Oak parquet", "category": "floor_finish", "color": "#c59a68", "roughness": 0.55, "metalness": 0 },
+    { "id": "decking", "name": "Timber decking", "category": "floor_finish", "color": "#8b6948", "roughness": 0.8, "metalness": 0 },
+    { "id": "roof", "name": "Roof tiles (anthracite)", "category": "roofing", "color": "#3d4148", "roughness": 0.75, "metalness": 0 },
+    { "id": "glass", "name": "Clear glass", "category": "glazing", "color": "#9cc3d5", "roughness": 0.05, "metalness": 0.1, "opacity": 0.35 },
+    { "id": "window_frame", "name": "Aluminium frame (anthracite)", "category": "frames", "color": "#34373c", "roughness": 0.45, "metalness": 0.4 },
+    { "id": "wood", "name": "Oak wood", "category": "wood", "color": "#b98a58", "roughness": 0.6, "metalness": 0 },
+    { "id": "wood_dark", "name": "Walnut wood", "category": "wood", "color": "#5a3b27", "roughness": 0.6, "metalness": 0 },
+    { "id": "metal", "name": "Brushed steel", "category": "metal", "color": "#a3a9ae", "roughness": 0.35, "metalness": 0.8 },
+    { "id": "fabric", "name": "Upholstery (grey)", "category": "textile", "color": "#7e8691", "roughness": 1, "metalness": 0 },
+    { "id": "fabric_light", "name": "Linen (light)", "category": "textile", "color": "#e9e3d7", "roughness": 1, "metalness": 0 },
+    { "id": "ceramic", "name": "Sanitary ceramic", "category": "sanitary", "color": "#f8f8f6", "roughness": 0.2, "metalness": 0 },
+    { "id": "countertop", "name": "Stone countertop", "category": "kitchen", "color": "#34353a", "roughness": 0.35, "metalness": 0 },
+    { "id": "screen", "name": "Screen (black glass)", "category": "appliance", "color": "#16181b", "roughness": 0.15, "metalness": 0.2 },
+    { "id": "cabinet", "name": "Cabinet (matte white)", "category": "kitchen", "color": "#eeebe4", "roughness": 0.6, "metalness": 0 },
+    { "id": "window_frame_white", "name": "Window frame (white)", "category": "frames", "color": "#f1efe9", "roughness": 0.5, "metalness": 0.1 },
+    { "id": "oak_light", "name": "Light oak (floor, furniture)", "category": "wood", "color": "#d8bc8f", "roughness": 0.55, "metalness": 0 },
+    { "id": "stone_tile", "name": "Stone-look tile (warm grey)", "category": "floor_finish", "color": "#b9b3a8", "roughness": 0.5, "metalness": 0 },
+    { "id": "wall_warm", "name": "Interior paint (warm white)", "category": "wall_finish", "color": "#efe6d6", "roughness": 0.95, "metalness": 0 },
+    { "id": "fabric_warm", "name": "Upholstery (warm terracotta)", "category": "textile", "color": "#a4735a", "roughness": 1, "metalness": 0 }
+  ]
+}

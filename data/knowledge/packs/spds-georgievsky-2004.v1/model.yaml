@@ -1,0 +1,230 @@
+# Building-model knowledge (category building_model). Paraphrased; printed pages.
+# Building sizes are SI meters; the source's millimetre values are converted (100 mm -> 0.1).
+items:
+  - id: model.modular.basic_module
+    kind: principle
+    category: building_model
+    concept: basic module of modular coordination
+    statement: >-
+      Modular coordination is based on a basic module M of 100 mm; dimensions of space-planning
+      and structural elements are coordinated as multiples of it.
+    params: { module_m: 0.1 }
+    provenance: [{ source: georgievsky-2004, pages: [9], section: "2.4", supports: [statement, params] }]
+    confidence: high
+    intended_use: [layout.grid_hint, validation.modularity]
+    related: [term.basic_module, term.modular_coordination]
+    status: extracted
+
+  - id: model.modular.derived_modules
+    kind: principle
+    category: building_model
+    concept: enlarged and fractional modules
+    statement: >-
+      Enlarged modules of 60M, 30M, 15M, 12M, 6M, 3M and 2M and fractional modules of 1/2M down
+      to 1/100M are derived from the basic module.
+    params:
+      enlarged_modules_m: { "60M": 6.0, "30M": 3.0, "15M": 1.5, "12M": 1.2, "6M": 0.6, "3M": 0.3, "2M": 0.2 }
+      fractional_modules_m: { "1/2M": 0.05, "1/5M": 0.02, "1/10M": 0.01, "1/20M": 0.005, "1/50M": 0.002, "1/100M": 0.001 }
+    provenance: [{ source: georgievsky-2004, pages: [9], section: "2.4", supports: [statement, params] }]
+    confidence: high
+    intended_use: [layout.grid_hint]
+    status: extracted
+
+  - id: model.modular.grid_dimensions
+    kind: principle
+    category: building_model
+    concept: modular grid dimensions
+    statement: >-
+      Bays, spans and storey heights are chosen from the enlarged modules, and the sizes of
+      structural elements are multiples of the basic module.
+    provenance: [{ source: georgievsky-2004, pages: [10], section: "2.4" }]
+    confidence: high
+    intended_use: [layout.grid_hint, validation.modularity]
+    related: [term.bay, term.span, term.storey_height]
+    status: extracted
+
+  - id: model.axes.definition
+    kind: definition
+    category: building_model
+    concept: coordination axes, bay and span
+    statement: >-
+      Coordination axes divide the plan and locate the main load-bearing walls and columns. The
+      distance between axes is the bay; the distance between axes in the direction the main
+      floor or roof structure spans is the span.
+    provenance: [{ source: georgievsky-2004, pages: [9, 10], section: "2.4", supports: [statement, existence] }]
+    confidence: high
+    intended_use: [model.grid_axes, documentation.plan.axes]
+    related: [class.coordination_axis, term.bay, term.span]
+    status: extracted
+
+  - id: model.storey_height
+    kind: definition
+    category: building_model
+    concept: storey height
+    statement: >-
+      Storey height runs from the floor level of a storey to the floor level of the storey above;
+      for the top storey the attic floor is counted as if it had the thickness of an interfloor
+      slab.
+    provenance: [{ source: georgievsky-2004, pages: [10], section: "2.4", figures: ["Рис. 4"] }]
+    confidence: high
+    intended_use: [model.level_height]
+    related: [class.storey, term.storey_height]
+    status: extracted
+
+  - id: model.space_planning_element
+    kind: definition
+    category: building_model
+    concept: space-planning and planning elements
+    statement: >-
+      A space-planning element is a part of the building volume sized by storey height, span and
+      bay; its horizontal projection is a planning element.
+    provenance: [{ source: georgievsky-2004, pages: [13], section: "2.4", figures: ["Рис. 5", "Рис. 6"] }]
+    confidence: high
+    intended_use: [model.grid_axes]
+    status: extracted
+
+  - id: model.size_kinds
+    kind: definition
+    category: building_model
+    concept: coordination, nominal, constructive and actual sizes
+    statement: >-
+      Four kinds of size are distinguished: coordination sizes between axes and storey heights;
+      nominal sizes of products including the normalised joint gap; constructive sizes of the
+      element itself; and actual sizes, which differ from constructive ones within tolerances.
+    provenance: [{ source: georgievsky-2004, pages: [13, 14], section: "2.5" }]
+    confidence: high
+    intended_use: [catalog.types.size_fields]
+    status: extracted
+
+  - id: model.wall_axis_binding
+    kind: convention
+    category: building_model
+    concept: position of walls relative to coordination axes
+    statement: >-
+      Internal load-bearing walls are centred on their axis. External load-bearing walls are
+      placed with the inner face offset from the axis by a set distance. Self-supporting and
+      curtain walls are placed with a face on the axis or offset from it.
+    provenance: [{ source: georgievsky-2004, pages: [14], section: "2.5", figures: ["Рис. 9", "Рис. 10"] }]
+    confidence: medium
+    inferences: [The offset value itself depends on the construction and is not tabulated in the book.]
+    intended_use: [model.grid_axes]
+    related: [class.coordination_axis, class.wall.load_bearing]
+    status: extracted
+
+  - id: model.structural_elements
+    kind: definition
+    category: building_model
+    concept: structural elements of a load-bearing-wall house
+    statement: >-
+      A load-bearing-wall house is described as foundation, blind area, plinth, bearing walls,
+      interfloor and attic floors, partitions, rafters with battens, struts and posts, roof
+      hatch, attic, wall plate, lintels, stair flights with stringers and landings, and a
+      vestibule.
+    params:
+      element_classes: [class.foundation, class.blind_area, class.plinth, class.wall.load_bearing, class.slab.floor, class.slab.attic_floor, class.wall.partition, class.rafter, class.roof_batten, class.strut, class.post, class.roof_hatch, class.space.attic, class.wall_plate, class.lintel, class.stair_flight, class.stringer, class.stair_landing, class.space.vestibule]
+    provenance: [{ source: georgievsky-2004, pages: [8], section: "2.3", figures: ["Рис. 1"], supports: [statement, existence] }]
+    confidence: high
+    intended_use: [ontology.element_classes]
+    related: [class.foundation, class.lintel, class.wall_plate]
+    status: extracted
+
+  - id: model.construction_vs_product
+    kind: definition
+    category: building_model
+    concept: construction, product and node
+    statement: >-
+      A construction is an independent part of a building with a function (wall, floor, roof); a
+      building product is manufactured off site (column, slab, panel). Constructions are precast
+      or monolithic; a node is the place where elements are joined.
+    provenance: [{ source: georgievsky-2004, pages: [8, 16], section: "2.3; 2.6" }]
+    confidence: high
+    intended_use: [ontology.element_classes]
+    related: [term.construction, term.building_product, term.node]
+    status: extracted
+
+  - id: model.building_classes
+    kind: definition
+    category: building_model
+    concept: groups of buildings
+    statement: >-
+      Buildings and structures fall into four groups: civil (residential and public),
+      industrial, agricultural, and engineering structures.
+    provenance: [{ source: georgievsky-2004, pages: [6], section: "2.1" }]
+    confidence: high
+    intended_use: [ontology.building_classes]
+    related: [class.building.civil, class.building.industrial, class.building.agricultural, class.engineering_structure]
+    status: extracted
+
+  - id: model.zero_level
+    kind: convention
+    category: building_model
+    concept: reference zero level
+    statement: >-
+      Heights are measured from a conventional zero level, usually a surface of the building
+      near the planning ground level; levels above it are positive and levels below negative.
+    provenance: [{ source: georgievsky-2004, pages: [45], section: "4.2" }]
+    confidence: high
+    intended_use: [model.level_elevation]
+    related: [term.level_mark, term.finished_floor_level]
+    status: extracted
+
+  - id: model.element_letter_codes
+    kind: code_list
+    category: building_model
+    concept: letter codes of building elements
+    statement: >-
+      Building elements carry letter codes in schedules and marks, for example windows,
+      doors, stair flights and landings, lintels, columns, girders and foundations.
+    params:
+      codes:
+        - { code: "А", en: arches }
+        - { code: "Б", en: beams, class_ref: class.beam }
+        - { code: "В", en: gates }
+        - { code: "Д", en: doors, class_ref: class.door }
+        - { code: "К", en: columns, class_ref: class.column }
+        - { code: "Л", en: stairs, class_ref: class.stair }
+        - { code: "ЛМ", en: stair flights, class_ref: class.stair_flight }
+        - { code: "ЛП", en: stair landings, class_ref: class.stair_landing }
+        - { code: "ЛС", en: steps }
+        - { code: "ОБ", en: shells }
+        - { code: "ОГ", en: railings and fences, class_ref: class.railing }
+        - { code: "ОК", en: windows, class_ref: class.window }
+        - { code: "ПС", en: wall panels }
+        - { code: "Р", en: girders, class_ref: class.girder }
+        - { code: "СБ", en: wall blocks }
+        - { code: "СБЦ", en: plinth wall blocks }
+        - { code: "СВ", en: piles, class_ref: class.pile }
+        - { code: "С", en: reinforcement meshes }
+        - { code: "ФП", en: sub-rafter trusses }
+        - { code: "ФА", en: aeration lanterns }
+        - { code: "ФР", en: transoms }
+        - { code: "Ф", en: pad foundations, class_ref: class.foundation.pad }
+        - { code: "ФЛ", en: strip foundations, class_ref: class.foundation.strip }
+        - { code: "ПР", en: lintels, class_ref: class.lintel }
+        - { code: "ПК", en: cornice slabs }
+    provenance: [{ source: georgievsky-2004, pages: [134], section: "Прил. 4", supports: [statement, params] }]
+    confidence: high
+    intended_use: [documentation.schedules.marks]
+    status: extracted
+
+  - id: model.masonry_units
+    kind: dimension_table
+    category: building_model
+    concept: masonry unit sizes shown in the book
+    statement: >-
+      The standard building brick is 250 x 120 x 65 mm and the thickened ceramic stone
+      250 x 120 x 138 mm; lightweight-concrete stones are 390 x 190 x 188 and 390 x 90 x 188 mm;
+      masonry joints are 10 mm, so a two-brick wall is 510 mm thick.
+    params:
+      units_m:
+        - { unit: standard_brick, length_m: 0.25, width_m: 0.12, height_m: 0.065 }
+        - { unit: ceramic_stone, length_m: 0.25, width_m: 0.12, height_m: 0.138 }
+        - { unit: lightweight_concrete_stone, length_m: 0.39, width_m: 0.19, height_m: 0.188 }
+        - { unit: lightweight_concrete_half_stone, length_m: 0.39, width_m: 0.09, height_m: 0.188 }
+      joint_m: 0.01
+      two_brick_wall_m: 0.51
+    provenance: [{ source: georgievsky-2004, pages: [64, 65], section: "5.5", figures: ["Рис. 71", "Рис. 72"], supports: [statement, params] }]
+    confidence: medium
+    inferences: [The unit names are BuildAI labels; the book shows the units in figures.]
+    intended_use: [catalog.assemblies.masonry, quantities.masonry]
+    status: extracted

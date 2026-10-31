@@ -1,0 +1,24 @@
+# buildai-design-systems@1 — editorial design systems (Phase 3.5 K3, docs/knowledge.md §3.5).
+#
+# A design system is an aesthetic grouping of compatible choices (component types through a
+# role mapping, roofs, window sizes, facade materials and colors, interior finishes, a furniture
+# palette) as allow-lists plus defaults. It is region-neutral and editorial: NOT a building
+# code, NOT engineering data and NOT a claim of architectural correctness. No construction
+# build-ups are defined here; every type reuses the generic families and assemblies and differs
+# only in visible material choices (frame, leaf, railing kind).
+#
+# Draft until a person reviews it: the resolver only uses APPROVED design systems whose role
+# mapping, types, families and assemblies are all approved (docs/knowledge.md §3.5).
+id: buildai-design-systems
+version: 1
+name: Editorial design systems
+description: >-
+  Four region-neutral design systems (modern-minimal, contemporary-warm, classic-brick,
+  scandinavian-timber) with their role mappings and a few visual type variants.
+status: draft
+scope:
+  kind: global
+sources: [buildai-editorial]
+depends_on: [core@1, buildai-generic-types@1]
+contents:
+  components: [design-systems.yaml]

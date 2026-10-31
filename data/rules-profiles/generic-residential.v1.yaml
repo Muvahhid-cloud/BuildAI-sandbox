@@ -1,0 +1,80 @@
+# BuildingRulesProfile generic-residential@1 (docs/building-model.md §10).
+#
+# Conceptual rules only. They are NOT a statement of compliance with any building code
+# (including Kazakhstan SN/SP RK) and do not replace licensed architectural, structural, MEP or
+# regulatory review. Profiles are immutable once used by a version: change values by adding a
+# new version file (generic-residential.v2.yaml), never by editing this one.
+id: generic-residential
+version: 1
+name: Generic residential (conceptual)
+extends: null
+disclaimer: Conceptual rules only. Not a building-code compliance check.
+units: m
+
+# Per room type; types not listed fall back to "default".
+rooms:
+  default:             { min_area_m2: 4.0,  min_width_m: 1.5 }
+  bedroom:             { min_area_m2: 9.0,  min_width_m: 2.7, requires_window: true }
+  living:              { min_area_m2: 16.0, min_width_m: 3.6, requires_window: true }
+  dining:              { min_area_m2: 8.0,  min_width_m: 2.7, requires_window: true }
+  kitchen:             { min_area_m2: 6.0,  min_width_m: 2.2, requires_window: true }
+  open_kitchen_living: { min_area_m2: 25.0, min_width_m: 4.0, requires_window: true }
+  study:               { min_area_m2: 6.0,  min_width_m: 2.2, requires_window: true }
+  bathroom:            { min_area_m2: 3.5,  min_width_m: 1.6 }
+  en_suite:            { min_area_m2: 3.0,  min_width_m: 1.5 }
+  wc:                  { min_area_m2: 1.2,  min_width_m: 0.9 }
+  laundry:             { min_area_m2: 3.0,  min_width_m: 1.5 }
+  utility:             { min_area_m2: 3.0,  min_width_m: 1.5 }
+  storage:             { min_area_m2: 1.5,  min_width_m: 1.0 }
+  walk_in_closet:      { min_area_m2: 2.5,  min_width_m: 1.2 }
+  plant_room:          { min_area_m2: 3.0,  min_width_m: 1.5 }
+  entrance:            { min_area_m2: 3.0,  min_width_m: 1.5 }
+  hall:                { min_area_m2: 2.0,  min_width_m: 1.2 }
+  corridor:            { min_area_m2: 0.0,  min_width_m: 1.0 }
+  staircase:           { min_area_m2: 0.0,  min_width_m: 0.9 }
+  garage:              { min_area_m2: 18.0, min_width_m: 3.0, per_car_area_m2: 18.0 }
+  balcony:             { min_area_m2: 1.5,  min_width_m: 0.9 }
+  terrace:             { min_area_m2: 3.0,  min_width_m: 1.5 }
+
+ceiling:
+  min_clear_height_m: 2.5           # habitable rooms
+  min_clear_height_service_m: 2.2   # storage, garage, wc, corridor
+
+corridors:
+  min_width_m: 1.0
+  min_width_accessible_m: 1.2
+
+doors:
+  entrance: { min_width_m: 0.9, min_height_m: 2.1 }
+  interior: { min_width_m: 0.8, min_height_m: 2.0 }
+  bathroom: { min_width_m: 0.7, min_height_m: 2.0 }
+  garage:   { min_width_per_car_m: 2.5, min_height_m: 2.1 }
+
+windows:
+  min_glazing_to_floor_ratio: 0.125  # habitable rooms (1:8)
+  min_sill_height_m: 0.0             # panoramic allowed
+  guard_required_below_sill_m: 0.9   # upper floors: sills lower than this need a guard/railing
+  min_width_m: 0.6
+  min_height_m: 0.6
+
+openings:                            # placing doors/windows in the plan editor (Phase 3.6 D2.3)
+  min_clearance_m: 0.1               # solid wall to a corner/joining wall, wall end or next opening
+
+stairs:
+  min_width_m: 0.9
+  riser_m: { min: 0.15, max: 0.19 }
+  tread_m: { min: 0.25, max: 0.32 }
+  comfort_rule: { formula: "2R+T", min: 0.60, max: 0.65 }
+  min_headroom_m: 2.0
+  max_risers_per_flight: 16
+  landing_min_depth_m: 0.9
+
+railings:
+  min_height_m: 0.9
+  balcony_min_height_m: 1.0
+
+accessibility:                       # basic geometry checks, reported as warnings (not evaluated yet)
+  enabled: false
+  step_free_entrance: warning
+  turning_circle_diameter_m: 1.5
+  accessible_door_clear_width_m: 0.85

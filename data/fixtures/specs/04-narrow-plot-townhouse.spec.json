@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "building_type": "single_family_house",
+  "name": "Narrow-plot townhouse",
+  "description": "Two-storey 160 m² house on a 12 m wide plot.",
+  "targets": { "gross_floor_area_m2": 160, "storeys": 2 },
+  "site": { "plot_width_m": 12, "plot_depth_m": 30, "setback_front_m": 5, "setback_rear_m": 6, "setback_side_m": 1.5 },
+  "style": { "architectural_style": "traditional", "roof": { "type": "gable" }, "window_style": "standard", "facade_material": "brick" },
+  "rooms": [
+    { "key": "kitchen_living", "type": "open_kitchen_living", "target_area_m2": 40, "level": 0 },
+    { "key": "wc", "type": "wc", "level": 0 },
+    { "key": "study", "type": "study", "target_area_m2": 9, "level": 0 },
+    { "key": "bedroom", "type": "bedroom", "count": 3, "target_area_m2": 13, "level": 1 },
+    { "key": "bathroom", "type": "bathroom", "level": 1 }
+  ]
+}

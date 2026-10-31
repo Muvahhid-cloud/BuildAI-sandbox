@@ -60,6 +60,19 @@ describe("geometry builders on the demo house", () => {
     expect(win.max.z).toBeCloseTo(0.95 + 1.3, 3);
   });
 
+  it("lines window reveals with the host wall's face finishes, inside the wall", () => {
+    const winEl = bySemanticKey(index.model, "window:kitchen_s");
+    const host = index.hostOf.get(winEl.id)!;
+    if (host.type !== "wall") throw new Error("fixture");
+    const body = scene.byElement.get(winEl.id)!.find((d) => d.part === "body")!;
+    const finishes = [host.properties.finish_left_id, host.properties.finish_right_id];
+    for (const f of finishes) expect(body.materials, f ?? "").toContain(f);
+    // The linings stay within the wall thickness (sill board aside).
+    const win = bounds("window:kitchen_s");
+    const wall = elementBounds(scene, host.id)!;
+    expect(win.max.y).toBeLessThanOrEqual(wall.max.y + 1e-6);
+  });
+
   it("places upper-floor elements at the level elevation", () => {
     expect(bounds("room:master").min.z).toBeCloseTo(3.004, 3);
     expect(bounds("slab:floor_f").max.z).toBeCloseTo(3.0, 3);

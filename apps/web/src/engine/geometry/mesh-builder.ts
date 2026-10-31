@@ -3,7 +3,7 @@
 // Every face is given with an OUTWARD normal hint; the builder fixes the winding to match, so
 // callers never reason about vertex order. Faces are grouped by material key, producing one
 // BufferGeometry (with one group per material) per element part. Normals are flat, UVs are
-// planar in meters (1 UV unit = 1 m) so textures tile consistently later.
+// planar in meters (1 UV unit = 1 m): texture repeat = 1 / the library's tile_size_m.
 import {
   BufferGeometry,
   Float32BufferAttribute,
@@ -41,6 +41,8 @@ interface GroupData {
 }
 
 const IDENTITY = new Matrix4();
+/** |normal.z| above this = a horizontal face (floor, slab, flat roof); below = vertical/sloped. */
+const HORIZONTAL_FACE = 0.9999;
 
 export class MeshBuilder {
   private readonly groups = new Map<string, GroupData>();
@@ -229,9 +231,13 @@ function newellNormal(pts: Vector3[]): Vector3 {
   return n.lengthSq() > 0 ? n.normalize() : n;
 }
 
-/** Two orthonormal in-plane axes for planar UV projection. */
-function planeAxes(normal: Vector3): { u: Vector3; v: Vector3 } {
-  const ref = Math.abs(normal.z) > 0.9 ? new Vector3(1, 0, 0) : new Vector3(0, 0, 1);
+/**
+ * Two orthonormal in-plane axes for planar UV projection (UVs in meters). Horizontal faces use
+ * the plan axes; every other face (walls, roof slopes, stair soffits) gets u horizontal along
+ * the face and v up the face, so texture rows (bricks, roof tiles) run level, parallel to eaves.
+ */
+export function planeAxes(normal: Vector3): { u: Vector3; v: Vector3 } {
+  const ref = Math.abs(normal.z) > HORIZONTAL_FACE ? new Vector3(1, 0, 0) : new Vector3(0, 0, 1);
   const u = new Vector3().crossVectors(ref, normal).normalize();
   const v = new Vector3().crossVectors(normal, u).normalize();
   return { u, v };

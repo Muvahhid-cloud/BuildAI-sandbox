@@ -22,7 +22,7 @@ Initial market: **Kazakhstan (KZT)**. Costing (planned) is currency-agnostic.
 | Title (EN) | Development and Implementation of an Intelligent BIM-Based 3D Platform for AI-Assisted Generative Building Design |
 | Title (RU) | «Разработка и внедрение интеллектуальной BIM-ориентированной 3D-платформы BuildAI 3D для генеративного проектирования зданий с применением искусственного интеллекта» |
 | Team | SE-2406 |
-| Students | Турсуналиев Зайниддин Хайдаралиевич · Усманов Эсанжон Амонджонович |
+| Students | Турсуналиев Зайниддин Хайдаралиевич · Усманов |
 | Supervisor | Танырбергенова Камила Ислямовна |
 
 BuildAI 3D is an early-stage conceptual design and visualization prototype. It doesn't produce construction-ready or professionally certified designs (see [Disclaimer](#disclaimer)).

@@ -7,7 +7,8 @@ import sys
 
 import pytest
 
-from app.modules.building.elements import Furniture, Room
+from app.modules.building.elements import Furniture, Room, Slab
+from app.modules.building.enums import SlabKind
 from app.modules.building.fingerprint import geometry_sha256
 from app.modules.building.types import TypeSet
 from app.modules.building.validation import validate_model
@@ -45,7 +46,7 @@ def _replace_type(type_set: TypeSet, type_id: str, **params: object) -> TypeSet:
 
 
 def test_engine_version() -> None:
-    assert ENGINE_VERSION == "layout@1.7.0"
+    assert ENGINE_VERSION == "layout@1.8.0"
 
 
 def test_generic_types_reproduce_layout_config_exactly() -> None:
@@ -100,14 +101,19 @@ def test_typed_generation_keeps_geometry_identical(name: str) -> None:
     assert not [i for i in issues if i.code == "SNAPSHOT_UNUSED"]
     typed = [el for el in model.elements if el.type_ref is not None]
     untyped = [el for el in model.elements if el.type_ref is None]
-    assert typed and all(isinstance(el, Room | Furniture) for el in untyped)
+    # Rooms, furniture and (V3, BuildingModel 1.3.0) entrance canopies have no type role.
+    assert typed and all(
+        isinstance(el, Room | Furniture)
+        or (isinstance(el, Slab) and el.properties.slab_kind == SlabKind.CANOPY)
+        for el in untyped
+    )
     assert {t.id for t in model.types} == {el.type_ref for el in typed}
     assert model.metadata.generator.endswith("types buildai-generic-types@1 mapping.generic")
 
 
 def test_untyped_generation_carries_no_types() -> None:
     model = reference(NAMES[0]).model
-    assert model.schema_version == "1.2.0" and model.engine_version == "layout@1.7.0"
+    assert model.schema_version == "1.3.0" and model.engine_version == "layout@1.8.0"
     assert model.design is None  # no design system, no intent: nothing recorded
     assert model.types == [] and model.assemblies == []
     assert all(el.type_ref is None for el in model.elements)

@@ -1,6 +1,6 @@
 # 3D Engine
 
-Status: **Implemented for Phase 2 (v0.4)**; rendering V1 (§21), furniture and site V2 (§22) · Last updated: 2026-11-01
+Status: **Implemented for Phase 2 (v0.4)**; rendering V1 (§21), furniture and site V2 (§22), architectural design quality V3 (§16.13, §23) · Last updated: 2026-11-01
 
 The "3D engine" is four parts with hard boundaries:
 
@@ -104,7 +104,7 @@ Outline + holes (e.g. the stair void) extruded **downward** from the slab's top 
 | Type | Implementation |
 |---|---|
 | `flat` | Outline prism + parapet boxes along each edge (inside the outline) |
-| `gable` | Rectangle; ridge along `ridge_axis` at `(span/2)·tan(pitch)`; two slopes, underside, eave + verge bands. **No gable-end wall infill yet** (see limitations) |
+| `gable` | Rectangle; ridge along `ridge_axis` at `(span/2)·tan(pitch)`; two slopes, underside, eave + verge bands; since V3 the gable ends are closed (infill triangle in the supporting wall's finishes, §23.1) |
 | `hip` | Rectangle; closed-form skeleton (ridge inset by half the span from each end), four faces, underside, fascia |
 
 The demo uses a 25° hip roof whose underside meets the wall tops at the outer face (computed in the fixture).
@@ -219,7 +219,7 @@ stores/ (Zustand, one concern each)
 
 ## 15. Known limitations (Phase 1)
 
-- Gable roofs have no gable-end wall infill (the demo uses a hip roof); shed roofs are not implemented.
+- Shed roofs are not implemented. (Gable-end infill exists since V3, §23.1.)
 - Walls are single solids with face finishes; build-up layers (insulation, block, plaster) are not modelled or rendered yet.
 - Door leaves are always drawn closed; no swing arcs. Windows have one pane behind the mullions.
 - No room labels, ceilings, skirting, stair nosings or stair stringers.
@@ -474,6 +474,17 @@ One vocabulary (`SHAPE_WORDS`: "L-shaped", "L shape", "L designed", "an L house"
 **T topology** (`Skeleton.topology = "t"`, `wing_x0`): the main bar plus one wing from the middle of its garden facade (`wing_x0` centred), its rooms on the `wing_side` half, the gallery beside them; garden bands `N` and `N2` on both sides (`Skeleton.garden_ranges`), each ≥ `t_min_side_frontage`; main-bar ratios `t_main_aspects` (longer than an L's: the wing takes the middle). Envelope: 8 walls `S, E, N:E, wing:E, wing:N, wing:W, N:W, W`, two inside corners (same renderer join rule as the L); slabs and roofs as for the L (flat: one 8-cornered outline; pitched: main + wing roof). Corridor dead ends are cut at both main-bar ends; the wing's last room takes the gallery's end. The part of the wing band inside the main bar has no outside wall: a habitable wing room must reach `t_min_wing_facade` beyond the garden facade (`_t_wing_rooms_lit`), and a service unit is put first in the wing (`service_first_in_t_wing`, pulled from another band if the wing has none). `measure_footprint` classifies 8 corners / 2 inside as `t_shape` (inside corners on one line, the stem between them), `u_shape` (adjacent inside corners) or `other`, and one enclosed hole as `courtyard`. Reference spec 12 (`12-t-shaped-bungalow-170.spec.json`, golden + `generated-t-house.model.json`, web 3D-engine test).
 
 Benchmark set `v1.3` (8 requests): rectangular, the reported yellow L (exact words) and its paraphrase, a T villa, U and courtyard (refused; their geometry recorded as known gaps), an L preference, and the 12 m plot that used to be infeasible. The v1 courtyard case now expects an honest refusal; the v1.1 infeasible-plot case uses a 9.3 m plot (12 m now fits an L).
+
+### 16.13 Architectural design quality (layout@1.8.0, V3)
+
+BuildingModel 1.3.0. Details and rationale: §23. In the engine:
+
+- **Roof coverings** per roof type (`LayoutConfig.roof_materials`): flat roofs (incl. garage roofs) `roof_membrane`, pitched `roof`. The roof type itself still comes from `style.roof` (or the design system default) — never random.
+- **Facade finishes** (`facade_finishes`, `facade_zoning`, `build.facade_zones`): the wall core keeps `facade_materials[style.facade_material]` (the benchmark checks it); the right-face finish is the facade's look — timber reads as `cladding_timber`, and per architectural style (an approved design system's first style tag first) a **plinth** finish on the ground storey of multi-storey houses and an **accent** finish on the garage volume. No zoning when a facade colour applies (it covers the whole facade) or where a zone equals the main finish. Reported as a design-report note ("Facade zoning (contemporary): …").
+- **Entrance canopy** (`entrance_canopy`, `canopy_materials`, `build._canopies`): a `slab_kind: canopy` slab per entrance door, `clearance` above the door head, `depth` out from the outer face, `side` beyond each jamb but stopping 5 cm short of any window whose head it would cut; skipped if it would not fit under the next level or would enter another wall. Untyped (`element_role` → None). Validated by `slab.canopy` (building-model.md §4.1); canopies are not floor slabs for `slab.no_overlap`, `wall.on_slab` or stair checks.
+- **Window axes** (`_windows` → `WallPlan.place(center=…)`): on upper storeys a window is centred on the axis of a window below on the same facade line when one fits its room's facade segment (reusing a slightly wider window's width, or narrowing to ≥ 70 % and ≥ the rules' minimum width; the remaining glazing goes to the room's next window). Ground-storey placement is unchanged. Upper exterior windows on an axis below, reference specs 01 and 04–09: 33/84 before, 41/84 after.
+
+Golden files: every reference spec changes (a canopy each; garage/flat roof coverings; zoning; axes) — rooms, areas, counts and warnings unchanged except one window fewer in spec 05 (an aligned, narrower window met the room's glazing without its second window).
 
 ### 16.5 Limitations (layout@1.0.0)
 
@@ -864,3 +875,52 @@ trees are simplified to ~40k triangles (from ~2M) and shrubs to ~11k; all textur
 - Site placement is generic (street assumed south, no plot boundary from the spec, no terrain).
 - Trees are heavily simplified (thinner crowns than the originals).
 - No ceilings until the model assigns ceiling assemblies.
+
+## 23. Architectural design quality — V3 (2026-11-01)
+
+Generated houses get roofs, facades and entrances that read as designed rather than as boxes.
+Model and layout parts: §16.13 and building-model.md (schema 1.3.0). Renderer parts (engine@4):
+
+### 23.1 Roofs
+
+- **Gable-end infill** (`roof.ts gableEnds`): the triangle between the gable wall's top and the
+  roof underside, at the wall's outer face (the verge overhangs it by `overhang`), as thick as
+  the wall, in the finishes of the roof's supporting walls (`roofEnclosure`: exterior walls with
+  a `supports` relationship to the roof, lowest id). The model's walls stop at the eaves line;
+  like wall joins, the infill is derived, not stored.
+- **Parapets** of flat roofs carry the facade finish of the supporting walls and a `roof_trim`
+  coping (overhanging both faces 3 cm); flat-roof edges and soffits are `roof_trim`.
+- **Fascia, verge and soffit** of pitched roofs: `roof_trim` (anthracite metal); the covering
+  keeps the roof's material (`roof`, flat roofs `roof_membrane`, §16.13).
+- In the plan (§19) roofs are not drawn (above the cut plane); the entrance canopy is (below).
+
+### 23.2 Facades and entrance
+
+- Facade zoning and window axes are model data (§16.13): every wall face shows its
+  `finish_right_id`, window reveals line with it (§22.1), gable infill and parapets continue it.
+- The entrance canopy is an ordinary slab to the renderer (prism from its top face down) and is
+  drawn **dashed** on its level's plan as an overhead element (`plan.ts`).
+
+### 23.3 Design systems
+
+Design systems (K3) are editorial drafts, and generation only uses approved ones, so today the
+architectural style of the spec drives zoning and canopy material. When a system is approved
+and selected, its first style tag takes over (tested with an approved copy of the catalog).
+Design-system records do not carry zoning yet (next step: a `facade.zones` field in a new pack
+version, docs/knowledge.md §3.5).
+
+### 23.4 Tests
+
+`layout/test_architecture_quality.py` (zoning by style and by design system, colour disables
+zoning, timber cladding on a timber core, roof coverings, one valid canopy per reference house,
+a misplaced canopy is reported), `building/test_migrations.py` (1.2.0 → 1.3.0), web
+`builders/roof.test.ts` (gable infill, parapet coping, determinism) and
+`scene/canopy.test.ts` (canopy above the door head, dashed on the plan).
+
+### 23.5 Limitations (V3)
+
+- Window axes align only where an upper room's facade segment contains an axis of the storey
+  below; a full facade grid needs the planner to coordinate room widths across storeys.
+- One canopy shape (flat, rectangular); no recessed porch (it would change the room plan).
+- Zoning is per architectural style in `LayoutConfig`; design systems do not define it yet.
+- Gable infill takes one wall's finishes for both gable ends.

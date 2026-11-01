@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2.0",
+  "schema_version": "1.3.0",
   "id": "2d9c2530-8d73-5426-8270-a67494f1b003",
   "building": {
     "name": "Modern family house",
@@ -7,7 +7,7 @@
     "description": "Two-storey family house of about 280 m² with four bedrooms, three bathrooms, a large living room open to the kitchen, a two-car garage and a balcony on the upper floor."
   },
   "units": "m",
-  "engine_version": "layout@1.7.0",
+  "engine_version": "layout@1.8.0",
   "seed": 0,
   "levels": [
     {
@@ -1495,7 +1495,7 @@
         "alignment": "center",
         "load_bearing": true,
         "finish_left_id": "interior_wall",
-        "finish_right_id": "exterior_wall",
+        "finish_right_id": "cladding_timber",
         "finish_left_color": null,
         "finish_right_color": null
       }
@@ -1541,7 +1541,7 @@
         "alignment": "center",
         "load_bearing": true,
         "finish_left_id": "interior_wall",
-        "finish_right_id": "exterior_wall",
+        "finish_right_id": "cladding_timber",
         "finish_left_color": null,
         "finish_right_color": null
       }
@@ -1587,7 +1587,7 @@
         "alignment": "center",
         "load_bearing": true,
         "finish_left_id": "interior_wall",
-        "finish_right_id": "exterior_wall",
+        "finish_right_id": "cladding_timber",
         "finish_left_color": null,
         "finish_right_color": null
       }
@@ -4056,7 +4056,7 @@
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
-        "x": 3.7,
+        "x": 3.8,
         "y": 0.0,
         "z": 0.9
       },
@@ -4078,7 +4078,7 @@
       "type_ref": null,
       "type": "window",
       "dimensions": {
-        "width": 2.2,
+        "width": 2.1,
         "height": 1.7
       },
       "properties": {
@@ -4618,7 +4618,7 @@
         "y": 0.0,
         "z": 0.0
       },
-      "material_id": "roof",
+      "material_id": "roof_membrane",
       "relationships": [],
       "origin": "generated",
       "locked": false,
@@ -4669,7 +4669,7 @@
         "y": 0.0,
         "z": 0.0
       },
-      "material_id": "roof",
+      "material_id": "roof_membrane",
       "relationships": [],
       "origin": "generated",
       "locked": false,
@@ -4703,6 +4703,55 @@
         "pitch_deg": 0.0,
         "ridge_axis": "x",
         "parapet_height": 0.21
+      }
+    },
+    {
+      "id": "bc5ccb6a-5f7b-5368-89ce-b42dcc2f819c",
+      "name": "Entrance canopy",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 0.15,
+        "y": -1.35,
+        "z": 2.57
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "roof_trim",
+      "relationships": [],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "slab:canopy",
+      "type_ref": null,
+      "type": "slab",
+      "dimensions": {
+        "thickness": 0.12,
+        "area": 2.28
+      },
+      "properties": {
+        "slab_kind": "canopy",
+        "outline": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 1.9,
+            "y": 0.0
+          },
+          {
+            "x": 1.9,
+            "y": 1.2
+          },
+          {
+            "x": 0.0,
+            "y": 1.2
+          }
+        ],
+        "holes": []
       }
     },
     {
@@ -5929,7 +5978,7 @@
   ],
   "metadata": {
     "source": "layout",
-    "generator": "layout@1.7.0 · rules generic-residential@1"
+    "generator": "layout@1.8.0 · rules generic-residential@1"
   },
   "types": [],
   "assemblies": [],

@@ -259,7 +259,7 @@ async def test_legacy_1_0_0_version_is_upgraded_on_read_without_rewriting(client
     resp = await client.get(f"/api/v1/projects/{pid}/versions/{created['id']}", headers=h)
     assert resp.status_code == 200, resp.text
     body = resp.json()
-    assert body["model"]["schema_version"] == "1.2.0"
+    assert body["model"]["schema_version"] == "1.3.0"
     assert body["model"]["design"] is None
     assert body["model"]["types"] == [] and body["model"]["assemblies"] == []
     assert all(el["type_ref"] is None for el in body["model"]["elements"])

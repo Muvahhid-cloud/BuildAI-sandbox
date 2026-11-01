@@ -48,7 +48,7 @@ async def test_design_intent_reaches_the_generated_model(client: Any) -> None:
     ).json()
     model = version["model"]
     assert version["issues"] == []
-    assert model["schema_version"] == "1.2.0"
+    assert model["schema_version"] == "1.3.0"
     assert model["design"]["facade_color"] == {
         "hex": PALETTE["yellow"],
         "name": "yellow",

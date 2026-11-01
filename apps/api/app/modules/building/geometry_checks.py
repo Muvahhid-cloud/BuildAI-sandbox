@@ -35,7 +35,14 @@ from app.modules.building.elements import (
     Wall,
     Window,
 )
-from app.modules.building.enums import RelationshipKind, RoofType, WallKind, Zone
+from app.modules.building.enums import (
+    DoorKind,
+    RelationshipKind,
+    RoofType,
+    SlabKind,
+    WallKind,
+    Zone,
+)
 from app.modules.building.geometry import (
     DERIVED_TOLERANCE,
     OVERLAP_AREA_TOLERANCE,
@@ -107,12 +114,18 @@ class _GeometryChecker:
                 if poly is not None:
                     self.room_polys[el.id] = (el, poly)
         self.slab_polys: dict[uuid.UUID, tuple[Slab, ShapelyPolygon]] = {}
+        # Entrance canopies (1.3.0) hang above the floor: never part of a level's floor slabs.
+        self.canopy_polys: dict[uuid.UUID, tuple[Slab, ShapelyPolygon]] = {}
         for el in model.elements:
             if isinstance(el, Slab):
                 outline = to_absolute(el.properties.outline, el.position, el.rotation)
                 holes = [to_absolute(h, el.position, el.rotation) for h in el.properties.holes]
                 poly = _poly(outline, holes)
-                if poly is not None:
+                if poly is None:
+                    continue
+                if el.properties.slab_kind == SlabKind.CANOPY:
+                    self.canopy_polys[el.id] = (el, poly)
+                else:
                     self.slab_polys[el.id] = (el, poly)
         self.types = {t.id: t for t in model.types}
 
@@ -802,6 +815,51 @@ class _GeometryChecker:
                         ),
                     )
 
+    def canopies(self) -> None:
+        """slab.canopy: each canopy hangs from the outer face of an exterior wall of its level,
+        outside the walls, over an entrance door, between the door head and the next level."""
+        for canopy, poly in sorted(self.canopy_polys.values(), key=lambda c: str(c[0].id)):
+            level = self.levels.get(canopy.level_id) if canopy.level_id else None
+            walls = self.walls_on(canopy.level_id)
+            problems: list[str] = []
+            inside = sum(poly.intersection(self.bodies[w.id]).area for w in walls)
+            if inside > OVERLAP_AREA_TOLERANCE:
+                problems.append(f"{inside:.2f} m² of it lies inside walls")
+            top = canopy.position.z
+            underside = top - canopy.dimensions.thickness
+            if level is not None and top > level.height + DERIVED_TOLERANCE:
+                problems.append(f"its top ({top:.2f} m) is above the next level")
+            served = False
+            for w in walls:
+                if w.properties.wall_kind != WallKind.EXTERIOR:
+                    continue
+                f = self.frames[w.id]
+                for o in self.by_id.values():
+                    if not isinstance(o, Door) or o.properties.door_kind != DoorKind.ENTRANCE:
+                        continue
+                    host = self.host_of(o)
+                    if host is None or host.id != w.id:
+                        continue
+                    centre = o.position.x + o.dimensions.width / 2
+                    outside = ShapelyPoint(f.at(centre, f.v0 - 0.05))
+                    if poly.buffer(EPS).contains(outside):
+                        served = True
+                        head = o.position.z + o.dimensions.height
+                        if underside < head - DERIVED_TOLERANCE:
+                            problems.append(
+                                f"its underside ({underside:.2f} m) is below the head of "
+                                f"{o.name} ({head:.2f} m)"
+                            )
+            if not served:
+                problems.append("it is not over an entrance door on an exterior wall")
+            for problem in problems:
+                self.add(
+                    "slab.canopy",
+                    canopy,
+                    f"{canopy.name}: {problem}",
+                    path=self.path(canopy, "/properties/outline"),
+                )
+
     def _wall_top(self, w: Wall) -> float | None:
         z = self.elevation(w.level_id)
         return None if z is None else z + w.position.z + w.dimensions.height
@@ -912,5 +970,6 @@ def check_geometry(model: BuildingModel) -> list[Issue]:
     checker.relationships()
     checker.levels_and_stairs()
     checker.slabs()
+    checker.canopies()
     checker.roofs()
     return checker.issues

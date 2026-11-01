@@ -56,7 +56,10 @@ describe("generated BuildingModel through the 3D engine", () => {
     expect(walls.length).toBeGreaterThan(0);
     for (const wall of walls) {
       const materials = colored.byElement.get(wall.id)![0]!.materials;
-      expect(materials, wall.name).toContain("exterior_wall@#e8c547");
+      if (wall.type !== "wall") continue;
+      // The colour tints the wall's own exterior finish (render, or a zone's finish).
+      const finish = wall.properties.finish_right_id ?? wall.material_id;
+      expect(materials, wall.name).toContain(`${finish}@#e8c547`);
       expect(materials, wall.name).toContain("interior_wall"); // inside face unchanged
     }
     // Without a color (the committed fixture) nothing is tinted.

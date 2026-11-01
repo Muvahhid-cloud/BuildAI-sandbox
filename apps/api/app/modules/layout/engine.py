@@ -37,7 +37,7 @@ from app.modules.building.specification import BuildingSpecification, FacadeSide
 from app.modules.building.summary import summarize
 from app.modules.building.types import TypeSet
 from app.modules.building.validation import errors, validate_model
-from app.modules.layout.build import BuildError, build_model
+from app.modules.layout.build import BuildError, build_model, facade_zones
 from app.modules.layout.config import DEFAULT_CONFIG, LayoutConfig
 from app.modules.layout.constraints import opening_fit_issues
 from app.modules.layout.patterns import AppliedPattern, select_patterns
@@ -405,6 +405,17 @@ def generate_layout(
     cand, model = best.candidate, best.model
     topology = _topology_report(choice, best, valid, by_topology, inp, config)
     notes.append(f"Footprint: {topology.generated.replace('_', '-')} — {topology.explanation}")
+    system = design.design_system if design is not None else None
+    color = design.facade_color if design is not None else None
+    zones = facade_zones(
+        spec, system, config, spec.targets.storeys, color.hex if color is not None else None
+    )
+    has_garage = any(
+        isinstance(el, Room) and el.properties.room_type == RoomType.GARAGE for el in model.elements
+    )
+    zoning_note = zones.describe(has_garage)
+    if zoning_note:
+        notes.append(zoning_note)
     warnings = _deviations(cand, program, spec, gfa, best.evaluation)
     if choice.requested is not None and topology.generated != choice.requested:
         wanted = capability(FootprintShape(choice.requested)).an_label

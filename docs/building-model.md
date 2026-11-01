@@ -1,6 +1,6 @@
 # Building Model
 
-Status: **Implemented for Phase 3.5 K2 (v0.6)** · Canonical code: `apps/api/app/modules/building/` · Generated: `packages/schema/`
+Status: **Implemented for Phase 3.5 K2 (v0.6)**; schema 1.3.0 (V3 entrance canopy) · Canonical code: `apps/api/app/modules/building/` · Generated: `packages/schema/`
 
 There are **two** schemas, deliberately separated:
 
@@ -154,11 +154,11 @@ Every issue has the same shape (`building/issues.py`): `{ severity, code, path (
 
 ## 3. BuildingModel (resolved)
 
-Implemented in `apps/api/app/modules/building/{primitives,enums,elements,types,design,model}.py` (schema_version **1.2.0**; 1.0.0 and 1.1.0 documents are upgraded on read, §8). JSON Schema, TS types and the Zod validator in `packages/schema` are generated from these classes (`pnpm schema`).
+Implemented in `apps/api/app/modules/building/{primitives,enums,elements,types,design,model}.py` (schema_version **1.3.0**; 1.0.0, 1.1.0 and 1.2.0 documents are upgraded on read, §8). JSON Schema, TS types and the Zod validator in `packages/schema` are generated from these classes (`pnpm schema`).
 
 ```jsonc
 {
-  "schema_version": "1.2.0",
+  "schema_version": "1.3.0",
   "id": "uuid",                       // the "building" object id
   "building": { "name": "Demo family house", "building_type": "single_family_house", "description": "…" },
   "units": "m",
@@ -215,7 +215,7 @@ Absolute elevation = `level.elevation + position.z`. Polygon properties (room bo
 | `door` | architecture | host-wall-local: x = offset of the start edge, z = 0 | `width, height, thickness` | `door_kind` (entrance/interior/sliding/garage), `swing` (left/right/double/sliding), `frame_material_id` |
 | `window` | architecture | host-wall-local: x = offset, z = sill height | `width, height` | `window_kind` (fixed/casement/sliding/panoramic), `frame_material_id`, `mullions`, `size_class` (1.2.0: standard/large/panoramic for main windows of habitable rooms; null for service/stair windows and older models) |
 | `room` | architecture | boundary origin | `area, perimeter, height` (validated against the boundary) | `room_type`, `zone`, `boundary` (CCW, rectilinear, wall centerlines), `floor_material_id` |
-| `slab` | structure | outline origin; **top face** at `position.z` | `thickness, area` (outline − holes) | `slab_kind` (ground/floor/balcony), `outline`, `holes` |
+| `slab` | structure (a canopy: architecture) | outline origin; **top face** at `position.z` | `thickness, area` (outline − holes) | `slab_kind` (ground/floor/balcony; **canopy** since 1.3.0: an entrance canopy cantilevered from the facade over an entrance door, top face above the door head and below the next level — not a floor, carries nothing, no `supports` relationship and no type; constraint `slab.canopy`, §4.1), `outline`, `holes` |
 | `stair` | structure | bottom corner at the first riser; flight along local +x, width along local +y | `width, run_length, rise_total` | `stair_type` (straight), `risers`, `riser_height`, `tread_depth`, `from_level_id`, `to_level_id` |
 | `roof` | architecture | outline origin; `position.z` = top of covering at the eaves | `thickness, overhang` | `roof_type` (flat/gable/hip), `outline` (eaves, rectangle for pitched), `pitch_deg`, `ridge_axis`, `parapet_height` |
 | `railing` | architecture | start of the base line; runs along local +x | `length, height` | `railing_kind` (glass/bars), `rise` (0 = level, > 0 = sloped/stair), `post_spacing` |
@@ -345,7 +345,8 @@ A geometric constraint never contains a dimensional requirement (no minimum pier
 | `stair.clear_of_walls` | `STAIR_INTERSECTS_WALL` | error | The flight does not intersect a wall of its starting level |
 | `stair.access` | `STAIR_ACCESS_INVALID` | error | It starts from a room and arrives in a room of the arrival level |
 | `stair.slab_opening` | `STAIR_SLAB_CONFLICT` | error | Where treads rise above the arrival slab's underside, they pass through a slab opening |
-| `slab.no_overlap` | `SLABS_OVERLAP` | error | Slabs of one level do not overlap |
+| `slab.no_overlap` | `SLABS_OVERLAP` | error | Slabs of one level do not overlap (canopies hang above and are exempt) |
+| `slab.canopy` | `CANOPY_PLACEMENT_INVALID` | error | An entrance canopy (1.3.0) hangs from the outer face of an exterior wall of its level over an entrance door: outside the walls, spanning the door, underside above the door head, top below the next level |
 | `support.slab` | `SLAB_RELATIONSHIP_INVALID` | error | A wall that `supports` a slab lies under it and its top meets the slab's underside |
 | `roof.shape` | `ROOF_GEOMETRY_INVALID` | error | Flat: no pitch; pitched: a pitch and no parapet; untilted |
 | `roof.covers_supports` | `ROOF_FOOTPRINT_INVALID` | error | The outline covers the walls that support the roof |
@@ -584,8 +585,8 @@ Element ids are `uuid5(id_namespace, semantic_key)`. The generation service uses
 ## 8. Schema evolution
 
 - `schema_version` follows semver. Additive optional fields → minor. Anything else → major with a migration function in `building/migrations/` (`v1_to_v2(doc: dict) -> dict`).
-- Stored documents are upgraded on read; tests keep one fixture per historical version (`data/fixtures/historical/*.v1.0.0.model.json`, `generated-house.v1.1.0.model.json` = main before K3).
-- **Every read of a stored or file-based model goes through `building.migrations.load_model`** (version rows, AI tools, demo fixture): it applies the pure, idempotent upgrade steps (`v1_0_0_to_v1_1_0.upgrade`: explicit empty `types`/`assemblies`, `type_ref: null`, `ceiling_assembly_ref: null`; `v1_1_0_to_v1_2_0.upgrade`: `design: null`, wall `finish_*_color: null`, window `size_class: null` — nothing is inferred) and validates. Stored rows are never rewritten: their JSON, `schema_version` column and `model_hash` stay as written (versions are immutable); the API serves the current schema. The web therefore only ever sees 1.2.0 (its validator uses the serialization schema, where defaulted fields are required).
+- Stored documents are upgraded on read; tests keep one fixture per historical version (`data/fixtures/historical/*.v1.0.0.model.json`, `generated-house.v1.1.0.model.json` = main before K3, `*.v1.2.0.model.json` = main before V3).
+- **Every read of a stored or file-based model goes through `building.migrations.load_model`** (version rows, AI tools, demo fixture): it applies the pure, idempotent upgrade steps (`v1_0_0_to_v1_1_0.upgrade`: explicit empty `types`/`assemblies`, `type_ref: null`, `ceiling_assembly_ref: null`; `v1_1_0_to_v1_2_0.upgrade`: `design: null`, wall `finish_*_color: null`, window `size_class: null`; `v1_2_0_to_v1_3_0.upgrade`: the version only — 1.3.0 adds `slab_kind: canopy` — nothing is inferred) and validates. Stored rows are never rewritten: their JSON, `schema_version` column and `model_hash` stay as written (versions are immutable); the API serves the current schema. The web therefore only ever sees 1.3.0 (its validator uses the serialization schema, where defaulted fields are required).
 - Specifications: 1.1.0 (K3) is additive; `schema_version` accepts "1.0.0" and "1.1.0" and a 1.0.0 document keeps its meaning (every new field is optional and null).
 
 ### 8.1 Geometry fingerprint

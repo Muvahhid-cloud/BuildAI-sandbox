@@ -21,10 +21,9 @@ from app.modules.building.model import BuildingModel
 from app.modules.building.primitives import EPS
 from app.modules.building.specification import BuildingSpecification
 from app.modules.building.validation import errors, validate_model
-from app.modules.layout.build import envelope
 from app.modules.layout.config import DEFAULT_CONFIG
 from app.modules.layout.engine import LayoutError, LayoutResult
-from app.modules.layout.plan import Skeleton
+from app.modules.layout.plan import Skeleton, envelope
 from app.modules.layout.planner import SearchInput, l_skeletons, search
 from app.modules.layout.program import expand_program
 from app.modules.rules.spec_checks import check_spec

@@ -522,6 +522,50 @@ rhythm. No schema change; `LayoutConfig.facade_grid_snap` (1.2 m; 0 = layout@1.8
   Next steps: a bay grid chosen per facade before the rooms (rooms then take whole bays),
   narrower garden doors as a design choice, stair windows on the core axis.
 
+### 16.15 Facade bay grid (layout@1.10.0–1.11.0, V5)
+
+Every facade line of the house (its `wall:ext` walls on one line, all storeys) is divided into
+equal **bays** before windows are placed (`layout/bays.py`, pure): the bay count gives a width in
+`LayoutConfig.bay_min_m`..`bay_max_m` (3.0–4.2 m) nearest the middle of that range (nearest fit
+when none fits, e.g. 8.45 m → 2 × 4.225 m); window axes stand at the bay centres. No schema
+change; `facade_bays = False` reproduces layout@1.9.0 exactly (test against main's geometry
+fingerprints).
+
+- **Windows on bay axes (build, step 1).** One window width per facade line and storey: the
+  widest a habitable room on it needs to meet its glazing on the axes of its main facade
+  (5 cm up, at least the rules' minimum width, at most `bay_window_share` of a bay). Required
+  glazing goes onto free axes first — an axis another storey already glazes first — and any
+  remainder is placed as before (V3/V4). Service windows stand on an axis where one takes
+  them. A storey follows a window of another storey already standing off the axes in its
+  segment (stacking first). Stair, hall and corridor windows keep the V4 axis rule
+  (`bay_circulation_windows` off: on bays they lost their stack over short halls). Garden and
+  terrace doors stand on the bay axis an upper habitable room's window will take.
+- **Rooms on whole bays (planner + engine, step 2).** The search never sees the bays (which
+  candidates are built and ranked is unchanged). After the engine chose its design,
+  `planner.rebay` lays the chosen candidate's bands out again with the bay boundaries as grid
+  lines (the V4 snap: every room keeps its minimum width and area and its permitted area range,
+  MUST and SHOULD), and `engine._on_bays` keeps that variant only if it is valid, meets every
+  MUST the original meets, scores at least as well on the design evaluation and adds no area
+  deviation. On the reference specs only 11 (L bungalow) takes it (design score 0.710 → 0.769);
+  elsewhere bands are packed at their minimum widths (nothing can move) or the snapped variant
+  scored lower (03, 05).
+- **Side facades (step 3, layout@1.11.0).** After its required glazing, a habitable room takes a
+  window on every free bay axis of its side facades (not its main facade), one width per side
+  line and storey (`bay_side_window_share` of a bay, at least the rules' minimum width). Never on
+  a facade the spec's window intent excludes, and not at all when `privacy` is a design
+  priority (the rules profile has no privacy rule; the spec's intent is honoured).
+- **Measured on the model** (`tests/layout/test_bay_grid.py`, bays recomputed from the stored
+  walls): exterior windows on a bay axis, all 12 reference specs: 12/202 (layout@1.9.0) → 57/203
+  (step 2) → 102/245 (step 3); multi-storey specs 01, 04–09: 8/149 → 71/181 (step 3). Upper windows on a window
+  below (01, 04–09): 58/86 → 58/87 (step 2) → 75/105 (step 3). Design scores equal on every
+  reference spec except 11 (higher); benchmark unchanged (hard 147/147, soft 26/33, known gaps
+  0/3). Screenshots (front, rear, east side): `docs/visual/v5/`.
+- **Limits / next steps.** Rooms rarely take whole bays: bands are sized to their rooms' areas
+  at minimum widths; a bay-aware search (bay count chosen with the band widths) would be needed.
+  A rhythm window can land beside an existing narrow window (a cluster instead of one bay);
+  circulation windows are not on bays; widths per facade and storey still vary where service and
+  stair windows share the facade (average 2.3 widths per facade line and storey on 01, 04–09).
+
 ### 16.5 Limitations (layout@1.0.0)
 
 - One plan type (double-loaded corridor, street on the south) plus, since layout@1.5.0, a single-storey L (§16.10) and since 1.7.0 a single-storey T (§16.12); no U-shapes or courtyards (refused with the reason), no sloped sites, no basements.

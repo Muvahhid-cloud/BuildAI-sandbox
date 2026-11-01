@@ -21,9 +21,9 @@ from app.modules.building.geometry import wall_axis
 from app.modules.building.geometry_checks import check_geometry
 from app.modules.building.specification import BuildingSpecification
 from app.modules.building.validation import errors, validate_model
-from app.modules.layout.build import envelope
 from app.modules.layout.config import DEFAULT_CONFIG
 from app.modules.layout.engine import LayoutError, LayoutResult
+from app.modules.layout.plan import envelope
 from app.modules.rules.spec_checks import check_spec
 from tests.building.helpers import DATA_DIR, material_ids
 from tests.layout.helpers import PROFILE, reference

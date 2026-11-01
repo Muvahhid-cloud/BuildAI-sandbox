@@ -1,5 +1,5 @@
 {
-  "engine_version": "layout@1.9.0",
+  "engine_version": "layout@1.11.0",
   "seed": 0,
   "footprint_m": [
     13.6,
@@ -8,7 +8,7 @@
   "summary": {
     "storeys": 1,
     "gross_floor_area_m2": 159.8,
-    "net_floor_area_m2": 125.8,
+    "net_floor_area_m2": 125.9,
     "rooms": 8,
     "bedrooms": 3,
     "bathrooms": 2,
@@ -18,15 +18,15 @@
     "terraces": 1,
     "walls": 24,
     "doors": 12,
-    "windows": 13,
-    "elements": 93,
+    "windows": 17,
+    "elements": 99,
     "facade_colors": [],
     "windows_by_facade": {
       "front": {
-        "standard": 2
+        "standard": 4
       },
       "left": {
-        "standard": 2
+        "standard": 4
       },
       "rear": {
         "large": 3
@@ -68,12 +68,12 @@
   },
   "element_counts": {
     "door": 12,
-    "furniture": 26,
+    "furniture": 28,
     "roof": 3,
     "room": 12,
     "slab": 3,
     "wall": 24,
-    "window": 13
+    "window": 17
   },
   "rooms": [
     {
@@ -98,13 +98,13 @@
       "level": 0,
       "key": "room:corridor_0",
       "type": "corridor",
-      "area_m2": 26.76
+      "area_m2": 26.58
     },
     {
       "level": 0,
       "key": "room:dining",
       "type": "dining",
-      "area_m2": 16.13
+      "area_m2": 17.05
     },
     {
       "level": 0,
@@ -128,7 +128,7 @@
       "level": 0,
       "key": "room:living",
       "type": "living",
-      "area_m2": 30.38
+      "area_m2": 29.64
     },
     {
       "level": 0,
@@ -146,7 +146,7 @@
       "level": 0,
       "key": "room:terrace",
       "type": "terrace",
-      "area_m2": 18.15
+      "area_m2": 17.7
     }
   ],
   "warnings": [
@@ -154,6 +154,6 @@
     "LAYOUT_AREA_DEVIATION",
     "LAYOUT_AREA_DEVIATION"
   ],
-  "model_sha256": "d0e698efbbaced2887d0e9d9084894b16291cd829b1f28529c0d8275f0633c47",
-  "geometry_sha256": "4ad013ba7df5b5c2cabe012c7d3e02c29d7baa7294fb7621c992df2daf26ef54"
+  "model_sha256": "fbd98dfc7093437ee0f4fee8369c694a1bd70e62ac7f57774f0a0e4f479e37fc",
+  "geometry_sha256": "e7bcb40e06e51ca7c5680083b00012664238469441550b9ad25219b4a24bca13"
 }

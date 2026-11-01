@@ -11,7 +11,10 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.modules.building.enums import RoofType, RoomType
 from app.modules.building.specification import ArchitecturalStyle, FacadeMaterial, WindowStyle
 
-ENGINE_VERSION = "layout@1.8.0"  # 1.8.0: architectural design quality (V3): BuildingModel
+ENGINE_VERSION = "layout@1.9.0"  # 1.9.0: facade grid (V4): partitions of the storeys snap to
+# each other's facade grid, windows are placed top storey first and stack on shared axes,
+# garden/terrace doors stand on an upper window axis, rhythm windows below upper axes.
+# 1.8.0: architectural design quality (V3): BuildingModel
 # 1.3.0 with an entrance canopy (slab_kind "canopy") over the front door; roof covering per
 # roof type (flat roofs: gravel membrane), facade finish per facade material (timber: cladding
 # boards), facade zoning per architectural style (plinth storey, accent cladding on the garage;
@@ -161,6 +164,10 @@ class LayoutConfig(_Config):
     service_window: tuple[float, float, float] = (0.8, 0.6, 1.5)  # width, height, sill
     stair_window: tuple[float, float] = (1.2, 1.0)  # height, sill
     window_margin: float = 0.3
+    # Facade grid (V4, docs/3d-engine.md §16.14): an upper storey's room partitions on a facade
+    # snap to the partitions of the storey below when they are at most this far off, so the
+    # rooms (and the windows centred in them) stack. 0 switches it off.
+    facade_grid_snap: float = 1.2
     lintel_min: float = 0.2  # wall above the highest opening
 
     # Garage, balconies, terraces

@@ -670,24 +670,98 @@ def frontage(room: RoomRequest, config: LayoutConfig) -> float:
     return max(room.min_width, door[0] + 2 * config.door_margin)
 
 
-def layout_strip(strip: Strip, units: list[Unit], config: LayoutConfig) -> StripLayout | None:
+def facade_line(strip: Strip) -> tuple[str, float]:
+    """The facade line a band's rooms face: ("h", y) for bands along x, ("v", x) for the wing."""
+    if strip.axis == "x":
+        return ("h", strip.y1 if strip.side == "north" else strip.y0)
+    return ("v", strip.x0 if strip.corridor_low is False else strip.x1)
+
+
+def _facade_key(c: Column) -> str:
+    """The room a column shows on the facade (a tuck sits against the corridor: its owner)."""
+    return c.owner.key if c.kind == "tuck" and c.owner is not None else c.room.key
+
+
+def facade_partitions(layout: StripLayout) -> list[float]:
+    """Plan coordinates along the band where the room on the facade changes."""
+    out: list[float] = []
+    at = layout.strip.start
+    cols = layout.columns
+    for a, b in itertools.pairwise(cols):
+        at += a.width
+        if _facade_key(a) != _facade_key(b):
+            out.append(rnd(at))
+    return out
+
+
+def facade_grid(levels: Sequence[LevelLayout]) -> dict[tuple[str, float], list[float]]:
+    """Grid lines per facade line from the storeys laid out so far: band ends and the
+    partitions of rooms on the facade (V4 facade grid)."""
+    grid: dict[tuple[str, float], set[float]] = {}
+    for lvl in levels:
+        for lay in lvl.strips:
+            line = facade_line(lay.strip)
+            lines = grid.setdefault((line[0], rnd(line[1])), set())
+            lines.update((rnd(lay.strip.start), rnd(lay.strip.start + lay.strip.length)))
+            lines.update(facade_partitions(lay))
+    return {k: sorted(v) for k, v in grid.items()}
+
+
+def _ground_on_upper_grid(
+    sk: Skeleton,
+    levels: list[LevelLayout],
+    ordered: dict[str, list[Unit]],
+    config: LayoutConfig,
+    zoning: Zoning,
+) -> LevelLayout:
+    """Facade grid (V4), second pass: the ground floor's larger rooms have the slack the
+    packed upper storeys lack, so its bands are laid out again with the upper storeys'
+    partitions as grid lines (same rooms, same order; a band that cannot snap keeps its
+    first layout). Rooms then share spans with the rooms above and their windows stack."""
+    ground = levels[0]
+    grid = facade_grid(levels[1:])
+    layouts: list[StripLayout] = []
+    for lay in ground.strips:
+        line = facade_line(lay.strip)
+        lines = grid.get((line[0], rnd(line[1])), ())
+        again = layout_strip(lay.strip, ordered[lay.strip.name], config, lines) if lines else None
+        layouts.append(again if again is not None else lay)
+    cuts = corridor_cuts(sk, layouts, zoning, config)
+    return LevelLayout(0, layouts, ground.merged_strips, cuts)
+
+
+def layout_strip(
+    strip: Strip,
+    units: list[Unit],
+    config: LayoutConfig,
+    grid: Sequence[float] = (),
+) -> StripLayout | None:
     """Columns with widths for `units` in order, filling the strip exactly. None = infeasible.
 
     Attached service rooms are tucked against the corridor where possible; if the strip is too
     short for that, they become narrow full-depth columns next to their room instead. Where the
     band allows it (the L wing), its last room wraps across the end of the corridor beside it
-    whenever it is wide enough to (V1.2): less corridor for the same rooms."""
+    whenever it is wide enough to (V1.2): less corridor for the same rooms.
+
+    `grid`: facade grid lines of the storeys below (V4); the band's facade partitions snap to
+    them where the rooms keep their minimums and permitted areas."""
     wraps = (True, False) if strip.end_wrap_depth > EPS else (False,)
     for allow_tucks in (True, False):
         for wrap in wraps:
-            lay = _layout_strip(strip, units, config, allow_tucks=allow_tucks, wrap=wrap)
+            lay = _layout_strip(strip, units, config, allow_tucks=allow_tucks, wrap=wrap, grid=grid)
             if lay is not None:
                 return lay
     return None
 
 
 def _layout_strip(
-    strip: Strip, units: list[Unit], config: LayoutConfig, *, allow_tucks: bool, wrap: bool
+    strip: Strip,
+    units: list[Unit],
+    config: LayoutConfig,
+    *,
+    allow_tucks: bool,
+    wrap: bool,
+    grid: Sequence[float] = (),
 ) -> StripLayout | None:
     d = strip.depth
     g = config.grid
@@ -808,12 +882,99 @@ def _layout_strip(
             return None
         ints[i] -= 1
         diff += 1
+    if grid and config.facade_grid_snap > EPS:
+        _snap_to_grid(strip, parts, ints, min_units, grid, config, wrap_from)
     columns = []
     for i, p in enumerate(parts):
         if not p.fixed:
             p.column.width = rnd(ints[i] * g)
         columns.append(p.column)
     return StripLayout(strip, columns, wrap_from)
+
+
+def _snap_to_grid(
+    strip: Strip,
+    parts: list[_Part],
+    ints: dict[int, int],
+    min_units: dict[int, int],
+    grid: Sequence[float],
+    config: LayoutConfig,
+    wrap_from: float,
+) -> None:
+    """Facade grid (V4): move each facade partition of the band (where the room on the facade
+    changes) onto the nearest grid line of the storeys below within `facade_grid_snap`, by
+    widening one column of the room on one side and narrowing one on the other. A move is
+    kept only if both rooms keep their minimum width and area and stay inside their permitted
+    area range (never relaxing a requirement). Integer grid units throughout: deterministic."""
+    g = config.grid
+    d = strip.depth
+    n = len(parts)
+    width = {i: ints[i] if i in ints else _grid_units(parts[i].natural, g) for i in range(n)}
+    keys = [_facade_key(p.column) for p in parts]
+    origin = _grid_units(strip.start, g)
+    lines = sorted({_grid_units(v, g) for v in grid})
+    reach = _grid_units(config.facade_grid_snap, g)
+    last = n - 1 if wrap_from > 0.0 else None  # the wrapped room's area depends on the wrap
+
+    def area_ok(i: int, units: int) -> bool:
+        p = parts[i]
+        room = p.column.room
+        tucks = room.target_area - p.area[0]  # facade-side remainder of its tucked rooms
+        area = units * g * d + tucks
+        if area < room.min_area - EPS:
+            return False
+        if room.area_low is not None and area < room.area_low - EPS:
+            return False
+        return not (room.area_high is not None and area > room.area_high + EPS)
+
+    def ok(i: int, units: int) -> bool:
+        return units >= min_units[i] and area_ok(i, units)
+
+    groups: list[list[int]] = []  # consecutive parts showing one room on the facade
+    for i in range(n):
+        if groups and keys[groups[-1][-1]] == keys[i]:
+            groups[-1].append(i)
+        else:
+            groups.append([i])
+
+    # Boundary gi lies after groups[gi]. A boundary on a grid line is pinned; a move takes its
+    # width from columns between the neighbouring pinned boundaries only, so it never shifts a
+    # partition already on the grid (rooms in between slide).
+    def pos(gi: int) -> int:
+        return origin + sum(width[i] for i in range(groups[gi][-1] + 1))
+
+    line_set = set(lines)
+    pinned = [pos(gi) in line_set for gi in range(len(groups) - 1)]
+    for gi in range(len(groups) - 1):
+        if pinned[gi]:
+            continue
+        lo = max((k + 1 for k in range(gi) if pinned[k]), default=0)
+        hi = min((k for k in range(gi + 1, len(groups) - 1) if pinned[k]), default=len(groups) - 1)
+        left = [
+            i
+            for grp in reversed(groups[lo : gi + 1])
+            for i in reversed(grp)
+            if not parts[i].fixed and i != last
+        ]
+        right = [
+            i for grp in groups[gi + 1 : hi + 1] for i in grp if not parts[i].fixed and i != last
+        ]
+        if not left or not right:
+            continue
+        at = pos(gi)
+        options = sorted((abs(v - at), v) for v in lines if 0 < abs(v - at) <= reach)
+        for _, v in options:
+            delta = v - at
+            a = next((i for i in left if ok(i, width[i] + delta)), None)
+            b = next((i for i in right if ok(i, width[i] - delta)), None)
+            if a is None or b is None:
+                continue
+            width[a] += delta
+            width[b] -= delta
+            ints[a] = width[a]
+            ints[b] = width[b]
+            pinned[gi] = True
+            break
 
 
 def strip_areas(layout: StripLayout) -> dict[str, float]:
@@ -1594,9 +1755,11 @@ def search(inp: SearchInput, config: LayoutConfig, seed: int) -> list[Candidate]
             # Seeded, local PRNG: the only source of variation (determinism, not security).
             rng = random.Random(f"{seed}:{sk_index}:{variant}")  # noqa: S311
             levels: list[LevelLayout] = []
+            orders: list[dict[str, list[Unit]]] = []
             ok = True
             for lv in range(storeys):
                 strips = level_strips(sk, lv)
+                grid = facade_grid(levels)  # V4: the storeys below set the facade grid
                 assign = assign_strips(units_by_level[lv], strips, lv, rng, config, zoning)
                 if assign is None:
                     ok = False
@@ -1622,7 +1785,10 @@ def search(inp: SearchInput, config: LayoutConfig, seed: int) -> list[Candidate]
                             break
                         merged.append(s)
                         continue
-                    lay = layout_strip(s, ordered[s.name], config)
+                    line = facade_line(s)
+                    lay = layout_strip(
+                        s, ordered[s.name], config, grid.get((line[0], rnd(line[1])), ())
+                    )
                     if lay is None:
                         ok = False
                         band = {"north": "garden-side", "south": "street-side"}.get(s.side, "wing")
@@ -1642,8 +1808,11 @@ def search(inp: SearchInput, config: LayoutConfig, seed: int) -> list[Candidate]
                     break
                 cuts = corridor_cuts(sk, layouts, zoning, config)
                 levels.append(LevelLayout(lv, layouts, merged, cuts))
+                orders.append(ordered)
             if not ok:
                 continue
+            if storeys > 1 and config.facade_grid_snap > EPS:
+                levels[0] = _ground_on_upper_grid(sk, levels, orders[0], config, zoning)
             score, areas = score_candidate(
                 levels, inp.program, sk, target, zoning, config.l_wing_ratio
             )

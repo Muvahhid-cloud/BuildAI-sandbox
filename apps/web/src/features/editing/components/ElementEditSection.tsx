@@ -6,6 +6,7 @@ import type { ModelIndex } from "@/engine/model/model-index";
 import { parseBuildingModel } from "@/engine/model/parse";
 import type { BuildingElement, Opening, Room, RoomType, Wall } from "@/engine/model/types";
 import type { EditOperation, EditPreview, Issue } from "@/lib/api/schemas";
+import { MATERIAL_PRESETS, materialName } from "@/engine/materials/library";
 import { useSelectionStore } from "@/stores/selection-store";
 
 import { useEditStore } from "../store";
@@ -41,7 +42,8 @@ const round3 = (v: number) => Math.round(v * 1000) / 1000;
 
 /**
  * Editing controls for the selected element, shown in the properties panel while a version is
- * open for editing: a door or window's size, an interior wall's removal, a room's name and type.
+ * open for editing: a door or window's size, a wall's thickness, finish and height (D2.5) and an
+ * interior wall's removal, a room's name and type.
  * Every change is a typed operation checked live by the server and applied to the editing
  * session (undo, redo, discard and save in the plan's edit bar).
  */
@@ -58,8 +60,15 @@ export function ElementEditSection({
   if (element.type === "door" || element.type === "window") {
     const host = index.hostOf.get(element.id);
     if (host) body = <OpeningSizeForm key={element.id} opening={element} host={host} />;
-  } else if (element.type === "wall" && element.properties.wall_kind !== "exterior") {
-    body = <WallRemoval key={element.id} wall={element} index={index} />;
+  } else if (element.type === "wall") {
+    body = (
+      <div className="flex flex-col gap-2.5">
+        <WallProperties key={element.id} wall={element} index={index} />
+        {element.properties.wall_kind !== "exterior" && (
+          <WallRemoval key={`${element.id}:remove`} wall={element} index={index} />
+        )}
+      </div>
+    );
   } else if (element.type === "room") {
     body = <RoomEdit key={element.id} room={element} />;
   }
@@ -190,6 +199,242 @@ function OpeningSizeForm({ opening, host }: { opening: Opening; host: Wall }) {
 }
 
 // --- interior wall removal -----------------------------------------------------------------
+
+// --- wall thickness, finish and height (D2.5) ------------------------------------------------
+
+/** Library categories a wall face can be finished with. */
+const FINISH_CATEGORIES = new Set(["facade_finish", "wall_finish", "masonry", "structure"]);
+export const WALL_FINISHES = [...MATERIAL_PRESETS.values()]
+  .filter((m) => FINISH_CATEGORIES.has(m.category))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+function WallProperties({ wall, index }: { wall: Wall; index: ModelIndex }) {
+  const exterior = wall.properties.wall_kind === "exterior";
+  const structural = wall.relationships.some((r) => r.kind === "supports");
+  return (
+    <div className="flex flex-col gap-2">
+      {exterior && (
+        <p className="text-[11px] text-neutral-500">
+          Exterior wall: moving it (drag on the plan) or changing its thickness changes the whole
+          facade on every storey; the slabs and the roof follow.
+        </p>
+      )}
+      <WallThicknessForm wall={wall} />
+      <WallFinishForm wall={wall} exterior={exterior} />
+      {!structural && <WallHeightForm wall={wall} index={index} />}
+    </div>
+  );
+}
+
+function NumberField({
+  label,
+  value,
+  onChange,
+  onEnter,
+  step,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  onEnter: () => void;
+  step: number;
+}) {
+  return (
+    <label className="flex flex-col gap-0.5 text-[11px] text-neutral-600 dark:text-neutral-400">
+      {label}
+      <input
+        type="number"
+        aria-label={`${label} in meters`}
+        min={0.05}
+        max={10}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") onEnter();
+        }}
+        className="w-full rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-xs tabular-nums dark:border-neutral-700 dark:bg-neutral-900"
+      />
+    </label>
+  );
+}
+
+function WallThicknessForm({ wall }: { wall: Wall }) {
+  const busy = useEditStore((s) => s.busy);
+  const current = wall.dimensions.thickness.toFixed(3);
+  const [typed, setTyped] = useState<{ key: string; value: string } | null>(null);
+  const value = typed?.key === current ? typed.value : current;
+  const t = Number(value);
+  const changed = Number.isFinite(t) && t > 0 && round3(t) !== round3(wall.dimensions.thickness);
+  const op: EditOperation | null = changed
+    ? { op: "set_wall_thickness", wall_id: wall.id, thickness_m: round3(t) }
+    : null;
+  const check = useDraftCheck(op);
+  const apply = () => {
+    if (!op || !check.preview?.valid) return;
+    void useEditStore
+      .getState()
+      .apply(op, check.preview)
+      .then((ok) => {
+        if (ok) setTyped(null);
+      });
+  };
+  return (
+    <div>
+      <div className="flex items-end gap-1.5">
+        <div className="w-28">
+          <NumberField
+            label="Thickness"
+            value={value}
+            step={0.01}
+            onChange={(v) => setTyped({ key: current, value: v })}
+            onEnter={apply}
+          />
+        </div>
+        <EditButton onClick={apply} disabled={busy || !op || !check.preview?.valid} primary>
+          Apply
+        </EditButton>
+      </div>
+      <Verdict
+        check={check}
+        idle={null}
+        valid={op && check.preview?.valid ? `${round3(t).toFixed(3)} m fits` : null}
+      />
+    </div>
+  );
+}
+
+type Face = "left" | "right" | "both";
+
+function WallFinishForm({ wall, exterior }: { wall: Wall; exterior: boolean }) {
+  const busy = useEditStore((s) => s.busy);
+  const [face, setFace] = useState<Face>(exterior ? "right" : "both");
+  const currentId =
+    face === "left" ? wall.properties.finish_left_id : wall.properties.finish_right_id;
+  const [material, setMaterial] = useState<{ key: string; id: string } | null>(null);
+  const key = `${wall.id}:${face}:${currentId ?? ""}`;
+  const chosen = material?.key === key ? material.id : (currentId ?? "");
+  const same =
+    face === "both"
+      ? wall.properties.finish_left_id === chosen && wall.properties.finish_right_id === chosen
+      : currentId === chosen;
+  const op: EditOperation | null =
+    chosen && !same ? { op: "set_wall_finish", wall_id: wall.id, face, material_id: chosen } : null;
+  const check = useDraftCheck(op);
+  const apply = () => {
+    if (!op || !check.preview?.valid) return;
+    void useEditStore
+      .getState()
+      .apply(op, check.preview)
+      .then((ok) => {
+        if (ok) setMaterial(null);
+      });
+  };
+  const faces: [Face, string][] = exterior
+    ? [
+        ["right", "Facade (outside)"],
+        ["left", "Inside"],
+        ["both", "Both faces"],
+      ]
+    : [
+        ["left", "Left face"],
+        ["right", "Right face"],
+        ["both", "Both faces"],
+      ];
+  return (
+    <div>
+      <div className="flex flex-wrap items-end gap-1.5">
+        <label className="flex flex-col gap-0.5 text-[11px] text-neutral-600 dark:text-neutral-400">
+          Finish of
+          <select
+            aria-label="Wall face"
+            value={face}
+            onChange={(e) => setFace(e.target.value as Face)}
+            className="rounded border border-neutral-300 bg-white px-1 py-0.5 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+          >
+            {faces.map(([f, label]) => (
+              <option key={f} value={f}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex min-w-0 flex-1 flex-col gap-0.5 text-[11px] text-neutral-600 dark:text-neutral-400">
+          Material
+          <select
+            aria-label="Finish material"
+            value={chosen}
+            onChange={(e) => setMaterial({ key, id: e.target.value })}
+            className="rounded border border-neutral-300 bg-white px-1 py-0.5 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+          >
+            {!WALL_FINISHES.some((m) => m.id === chosen) && (
+              <option value={chosen}>{materialName(chosen || null)}</option>
+            )}
+            {WALL_FINISHES.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <EditButton onClick={apply} disabled={busy || !op || !check.preview?.valid} primary>
+          Apply
+        </EditButton>
+      </div>
+      <Verdict
+        check={check}
+        idle={null}
+        valid={op && check.preview?.valid ? `${materialName(chosen)} can be applied` : null}
+      />
+    </div>
+  );
+}
+
+function WallHeightForm({ wall, index }: { wall: Wall; index: ModelIndex }) {
+  const busy = useEditStore((s) => s.busy);
+  const current = wall.dimensions.height.toFixed(2);
+  const [typed, setTyped] = useState<{ key: string; value: string } | null>(null);
+  const value = typed?.key === current ? typed.value : current;
+  const h = Number(value);
+  const changed = Number.isFinite(h) && h > 0 && round3(h) !== round3(wall.dimensions.height);
+  const op: EditOperation | null = changed
+    ? { op: "set_wall_height", wall_id: wall.id, height_m: round3(h) }
+    : null;
+  const check = useDraftCheck(op);
+  const level = wall.level_id ? index.levelsById.get(wall.level_id) : undefined;
+  const apply = () => {
+    if (!op || !check.preview?.valid) return;
+    void useEditStore
+      .getState()
+      .apply(op, check.preview)
+      .then((ok) => {
+        if (ok) setTyped(null);
+      });
+  };
+  return (
+    <div>
+      <div className="flex items-end gap-1.5">
+        <div className="w-28">
+          <NumberField
+            label="Height"
+            value={value}
+            step={0.05}
+            onChange={(v) => setTyped({ key: current, value: v })}
+            onEnter={apply}
+          />
+        </div>
+        <EditButton onClick={apply} disabled={busy || !op || !check.preview?.valid} primary>
+          Apply
+        </EditButton>
+      </div>
+      <Verdict
+        check={check}
+        idle={level ? `Up to the storey's walls on ${level.name}.` : null}
+        valid={op && check.preview?.valid ? `${round3(h).toFixed(2)} m high fits` : null}
+      />
+    </div>
+  );
+}
 
 function WallRemoval({ wall, index }: { wall: Wall; index: ModelIndex }) {
   const busy = useEditStore((s) => s.busy);

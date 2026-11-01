@@ -9,7 +9,10 @@ import { EPS, type Room, type Wall } from "../model/types";
 import type { Compass } from "./wall-edit";
 import { roomOutline } from "./symbols";
 
-/** movable: interior walls over the whole side; the others are refused by the server. */
+/**
+ * movable: interior walls over the whole side; exterior: a facade (D2.5: resizing moves the
+ * whole facade); open / partly: refused by the server.
+ */
 export type SideKind = "movable" | "exterior" | "open" | "partly";
 
 export interface RoomSide {
@@ -20,6 +23,8 @@ export interface RoomSide {
   outward: P2;
   walls: Wall[];
   kind: SideKind;
+  /** Whether the side can be dragged (the server re-checks; see `sideRefusal`). */
+  resizable: boolean;
   compass: Compass;
   length: number;
 }
@@ -82,6 +87,7 @@ export function roomSides(index: ModelIndex, room: Room): RoomSide[] {
       outward,
       walls: along,
       kind,
+      resizable: sideRefusalOf(room, kind, along, compassOf(outward)) === null,
       compass: compassOf(outward),
       length,
     };
@@ -90,12 +96,22 @@ export function roomSides(index: ModelIndex, room: Room): RoomSide[] {
 
 /** Why a side cannot be resized (the server gives the same reasons), or null. */
 export function sideRefusal(room: Room, side: RoomSide): string | null {
-  const where = `The ${side.compass} side of ${room.name}`;
-  switch (side.kind) {
+  return sideRefusalOf(room, side.kind, side.walls, side.compass);
+}
+
+const OUTDOOR = new Set(["balcony", "terrace"]);
+
+function sideRefusalOf(room: Room, kind: SideKind, walls: Wall[], compass: Compass): string | null {
+  const where = `The ${compass} side of ${room.name}`;
+  switch (kind) {
     case "movable":
       return null;
     case "exterior":
-      return `${where} is an exterior wall; rooms can be resized at interior walls for now.`;
+      if (OUTDOOR.has(room.properties.room_type))
+        return `${where} is the facade it hangs on; the ${room.properties.room_type} moves with its facade.`;
+      if (walls.length > 1)
+        return `${where} runs along several walls including the facade; move the facade itself.`;
+      return null; // moves the whole facade (D2.5)
     case "open":
       return `${where} is an open boundary without a wall; resizing it is not supported yet.`;
     case "partly":

@@ -620,7 +620,7 @@ features/drawing/components PlanView (drag + live preview), PlanEditBar (undo/re
   an undo drops the redo branch. "Save version" posts the applied operations; the new version
   (source `manual`) opens and a new session starts on it. Unsaved edits are guarded on version
   switch and on leaving the page.
-- **Gesture.** Select an interior wall, then drag it (or use ↑↓/←→, Shift ×5, or the distance
+- **Gesture.** Select a wall (D2.5: exterior walls too, see below), then drag it (or use ↑↓/←→, Shift ×5, or the distance
   field and compass buttons). The drag is projected on the wall normal and snapped to 5 cm. Each
   new snapped position is checked by the server (debounced 60 ms, latest wins, stale answers
   dropped); a valid answer replaces the drawing with the returned model (areas, dimensions, joined
@@ -692,7 +692,27 @@ features/drawing/components PlanView (drag + live preview), PlanEditBar (undo/re
   the properties panel. Esc or Cancel stops. Tests: `wall-add.test.ts`, `PlanView.test.tsx`,
   `PlanEditBar.test.tsx`; API: `test_wall_addition.py` (Hypothesis: every new wall is refused or
   consistent).
-- **Limits (D2.1).** Only `move_wall` on interior walls; no snapping to other walls; the preview is
+- **Envelope editing (D2.5).** Exterior walls are dragged like interior ones (`isMovableWall`:
+  every wall but partitions; `isFacade`): the server moves the whole facade on every storey with
+  the floor slabs, the roof eaves/verge/parapet line, balconies, terraces and the canopy
+  (docs/building-model.md §5.6), so the live preview is the server's model — the new footprint and
+  room areas on the plan — and, while a facade is selected or a room's facade side is chosen, the
+  roof's eaves outline is drawn dashed over the plan from the same preview model
+  (`wall-edit.ts roofOutlines`; edit overlay only, not part of drawings or downloads). Refusals
+  (a garage front in line, a wing joined to the facade, the stair opening cut, a roof that cannot
+  follow, a room under the profile minimum) are shown red with the server's reason. A room's facade
+  side is resizable (`RoomSide.resizable`); a balcony or terrace at the facade it hangs on, and a
+  side along several walls including a facade, stay grey with the reason. The properties panel
+  shows, for any wall, **Thickness** (an exterior wall: the whole facade; limits from the rules
+  profile's `walls` section), **Finish** (face: facade / inside / both for exterior walls, left /
+  right / both otherwise; materials from the library's wall-finish categories) and, for walls that
+  carry nothing, **Height**; each is checked live and published as the draft, with Apply. The 3D
+  view and every download render the applied model like any other edit. Tests:
+  `wall-edit.test.ts`, `room-edit.test.ts`, `PlanView.test.tsx` (facade drag, roof outline),
+  `PlanEditBar.test.tsx`, `ElementEditSection.test.tsx`; API: `test_envelope_editing.py`,
+  `test_editing_api.py`. Not yet: facades a garage or wing continues or joins (L/T inner corners),
+  balconied facades' thickness, curved or diagonal walls, moving several facades at once.
+- **Limits (D2.1).** Only `move_wall` on interior walls (D2.5: and facades); no snapping to other walls; the preview is
   a server round trip per 5 cm step (fine locally; port the applier to TS if it needs to be faster,
   architecture.md §5.2); drafts are not persisted server-side.
 

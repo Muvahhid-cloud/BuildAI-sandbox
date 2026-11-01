@@ -91,6 +91,16 @@ class OpeningRules(RulesModel):
     min_clearance_m: float = Field(ge=0)
 
 
+class WallRules(RulesModel):
+    """Plan-edit wall properties (Phase 3.6 D2.5): the thickness range of exterior and interior
+    walls and the lowest wall (a half-height partition). Checked on every model by
+    rules.model_checks; generated walls lie inside these ranges."""
+
+    exterior_thickness_m: Range
+    interior_thickness_m: Range
+    min_height_m: float = Field(gt=0)
+
+
 class RailingRules(RulesModel):
     min_height_m: float = Field(gt=0)
     balcony_min_height_m: float = Field(gt=0)
@@ -116,6 +126,7 @@ class BuildingRulesProfile(RulesModel):
     doors: DoorRules
     windows: WindowRules
     openings: OpeningRules | None = None  # None: no clearance rule (profiles before D2.3)
+    walls: WallRules | None = None  # None: no wall thickness/height rules (before D2.5)
     stairs: StairRules
     railings: RailingRules
     accessibility: AccessibilityRules

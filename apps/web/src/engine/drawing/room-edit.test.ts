@@ -36,7 +36,17 @@ describe("room sides", () => {
     const entrance = room("Entrance");
     const sides = roomSides(index, entrance);
     const exterior = sides.find((s) => s.kind === "exterior")!;
-    expect(sideRefusal(entrance, exterior)).toMatch(/exterior wall/);
+    // D2.5: a facade side moves the facade (the server checks it as a whole).
+    expect(sideRefusal(entrance, exterior)).toBeNull();
+    expect(exterior.resizable).toBe(true);
+    const balcony = room("Balcony");
+    const facade = roomSides(index, balcony).find(
+      (s) => s.kind === "exterior" && s.walls.some((w) => w.properties.wall_kind === "exterior"),
+    );
+    if (facade) {
+      expect(facade.resizable).toBe(false);
+      expect(sideRefusal(balcony, facade)).toMatch(/facade/);
+    }
     expect(
       sideRefusal(
         entrance,

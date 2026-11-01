@@ -3,12 +3,14 @@ import { describe, expect, it } from "vitest";
 import type { Wall } from "../model/types";
 import { bySemanticKey, demoIndex } from "../test-fixtures";
 import {
+  isFacade,
   isMovableWall,
   moveDirections,
   movedWallOutline,
   offsetFromDrag,
   offsetTowards,
   positiveDirection,
+  roofOutlines,
   snapOffset,
 } from "./wall-edit";
 
@@ -23,7 +25,9 @@ function turned(wall: Wall, angle: number): Wall {
 describe("wall editing helpers", () => {
   it("allows interior walls only", () => {
     expect(isMovableWall(eastWall)).toBe(true);
-    expect(isMovableWall(bySemanticKey(index.model, "wall:G-S"))).toBe(false);
+    expect(isMovableWall(bySemanticKey(index.model, "wall:G-S"))).toBe(true); // a facade (D2.5)
+    expect(isFacade(bySemanticKey(index.model, "wall:G-S") as Wall)).toBe(true);
+    expect(isFacade(eastWall)).toBe(false);
     expect(isMovableWall(bySemanticKey(index.model, "room:kitchen"))).toBe(false);
   });
 
@@ -63,5 +67,14 @@ describe("wall editing helpers", () => {
     expect(Math.max(...pts.map((p) => p[0])) - Math.min(...pts.map((p) => p[0]))).toBeCloseTo(
       eastWall.dimensions.length,
     );
+  });
+});
+
+describe("roof outlines", () => {
+  it("places each roof's eaves outline in plan coordinates", () => {
+    const [ring] = roofOutlines(demoIndex());
+    expect(ring[0][0]).toBeCloseTo(-0.65);
+    expect(ring[2][0]).toBeCloseTo(12.65);
+    expect(ring[2][1]).toBeCloseTo(10.65);
   });
 });

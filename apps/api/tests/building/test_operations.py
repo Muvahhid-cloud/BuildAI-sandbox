@@ -140,15 +140,15 @@ def test_replaying_the_same_operations_gives_the_same_model() -> None:
 # --- refusals ------------------------------------------------------------------------------
 
 
-def test_exterior_walls_are_refused_with_a_reason() -> None:
-    base = fixture("demo-house")
-    ext = next(
-        e for e in base.elements if isinstance(e, Wall) and e.properties.wall_kind == "exterior"
-    )
+def test_a_facade_that_cannot_move_as_one_is_refused_with_a_reason() -> None:
+    # Exterior walls move their whole facade since D2.5 (test_envelope_editing.py); a facade
+    # that another wall continues in line (the garage) cannot, and says why.
+    base = fixture("generated-house")
+    south = by_key(base, "wall:ext:L0:S")
     with pytest.raises(BatchRejected) as err:
-        move(base, ext, 0.5)
-    assert err.value.code == "EXTERIOR_WALL_FIXED" and err.value.index == 0
-    assert "exterior wall" in err.value.message and ext.name in err.value.message
+        move(base, south, 0.5)
+    assert err.value.code == "FACADE_CONTINUES" and err.value.index == 0
+    assert "continues the facade" in err.value.message and south.name in err.value.message
 
 
 def test_unknown_wall_and_zero_move_are_refused() -> None:
@@ -198,11 +198,10 @@ def test_squeezing_a_corridor_below_the_corridor_minimum_is_rejected() -> None:
 def test_a_refused_operation_names_its_index_in_the_batch() -> None:
     base = fixture("demo-house")
     good = MoveWall(wall_id=by_key(base, "wall:G-I1").id, offset_m=0.2)
-    ext = next(
-        e for e in base.elements if isinstance(e, Wall) and e.properties.wall_kind == "exterior"
-    )
+    # Pulled in 0.6 m, the south facade would cut the stair opening (refused).
+    south = by_key(base, "wall:G-S")
     with pytest.raises(BatchRejected) as err:
-        apply_operations(base, [good, MoveWall(wall_id=ext.id, offset_m=0.2)])
+        apply_operations(base, [good, MoveWall(wall_id=south.id, offset_m=0.6)])
     assert err.value.index == 1
 
 

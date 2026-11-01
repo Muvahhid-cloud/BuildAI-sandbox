@@ -15,7 +15,7 @@ from shapely import Polygon as ShapelyPolygon
 from shapely import box
 
 from app.modules.building.elements import Door, Element, Railing, Room, Stair, Wall, Window
-from app.modules.building.enums import DoorKind, RelationshipKind, RoomType, Zone
+from app.modules.building.enums import DoorKind, RelationshipKind, RoomType, WallKind, Zone
 from app.modules.building.geometry import Point, to_absolute, wall_axis
 from app.modules.building.issues import Issue
 from app.modules.building.model import BuildingModel
@@ -311,6 +311,39 @@ class _Evaluator:
                 if not ok:
                     self.warn(el, code, "/properties", f"{el.name}: {message}", rule)
 
+    def walls(self) -> None:
+        """Wall thickness within the profile's range per wall kind, and height not below its
+        lowest wall (D2.5). Profiles without `walls` have no such rule."""
+        rules = self.profile.walls
+        if rules is None:
+            return
+        for el in self.model.elements:
+            if not isinstance(el, Wall):
+                continue
+            exterior = el.properties.wall_kind == WallKind.EXTERIOR
+            limits = rules.exterior_thickness_m if exterior else rules.interior_thickness_m
+            ref = "walls.exterior_thickness_m" if exterior else "walls.interior_thickness_m"
+            t = el.dimensions.thickness
+            if t + TOLERANCE < limits.min or t - TOLERANCE > limits.max:
+                kind = "exterior" if exterior else "interior"
+                self.warn(
+                    el,
+                    "RULE_WALL_THICKNESS",
+                    "/dimensions/thickness",
+                    f"{el.name}: {t:.3f} m thick; {kind} walls must be "
+                    f"{limits.min:.2f} to {limits.max:.2f} m",
+                    ref,
+                )
+            if el.dimensions.height + TOLERANCE < rules.min_height_m:
+                self.warn(
+                    el,
+                    "RULE_WALL_HEIGHT",
+                    "/dimensions/height",
+                    f"{el.name}: {el.dimensions.height:.2f} m high, at least "
+                    f"{rules.min_height_m:.2f} m required",
+                    "walls.min_height_m",
+                )
+
     def railings(self) -> None:
         rules = self.profile.railings
         for el in self.model.elements:
@@ -344,4 +377,5 @@ def check_model(model: BuildingModel, profile: BuildingRulesProfile) -> list[Iss
     evaluator.openings()
     evaluator.stairs()
     evaluator.railings()
+    evaluator.walls()
     return evaluator.issues

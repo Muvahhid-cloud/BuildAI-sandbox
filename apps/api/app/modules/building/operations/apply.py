@@ -29,8 +29,16 @@ from app.modules.building.operations.schemas import (
     ResizeOpening,
     ResizeRoom,
     SetRoomType,
+    SetWallFinish,
+    SetWallHeight,
+    SetWallThickness,
 )
 from app.modules.building.operations.wall_addition import add_wall
+from app.modules.building.operations.wall_properties import (
+    set_wall_finish,
+    set_wall_height,
+    set_wall_thickness,
+)
 from app.modules.building.operations.wall_removal import remove_wall
 from app.modules.building.operations.walls import move_wall
 
@@ -71,6 +79,12 @@ def apply_operation(model: BuildingModel, op: Operation) -> BuildingModel:
         return set_room_type(model, op)
     if isinstance(op, AddWall):
         return add_wall(model, op)
+    if isinstance(op, SetWallThickness):
+        return set_wall_thickness(model, op)
+    if isinstance(op, SetWallFinish):
+        return set_wall_finish(model, op)
+    if isinstance(op, SetWallHeight):
+        return set_wall_height(model, op)
     raise OperationRejected("OPERATION_UNKNOWN", f"Unsupported operation {op!r}")
 
 

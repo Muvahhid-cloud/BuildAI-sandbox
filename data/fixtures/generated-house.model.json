@@ -7,7 +7,7 @@
     "description": "Two-storey family house of about 280 m² with four bedrooms, three bathrooms, a large living room open to the kitchen, a two-car garage and a balcony on the upper floor."
   },
   "units": "m",
-  "engine_version": "layout@1.13.0",
+  "engine_version": "layout@1.14.0",
   "seed": 0,
   "levels": [
     {
@@ -3450,7 +3450,7 @@
       "position": {
         "x": 6.9,
         "y": 0.0,
-        "z": 1.0
+        "z": 1.4
       },
       "rotation": {
         "x": 0.0,
@@ -3488,7 +3488,7 @@
       "position": {
         "x": 5.7,
         "y": 0.0,
-        "z": 1.0
+        "z": 1.4
       },
       "rotation": {
         "x": 0.0,
@@ -3526,7 +3526,7 @@
       "position": {
         "x": 2.5,
         "y": 0.0,
-        "z": 1.0
+        "z": 1.4
       },
       "rotation": {
         "x": 0.0,
@@ -3602,7 +3602,7 @@
       "position": {
         "x": 11.15,
         "y": 0.0,
-        "z": 1.5
+        "z": 2.0
       },
       "rotation": {
         "x": 0.0,
@@ -3678,7 +3678,7 @@
       "position": {
         "x": 6.6,
         "y": 0.0,
-        "z": 1.5
+        "z": 2.0
       },
       "rotation": {
         "x": 0.0,
@@ -3830,7 +3830,7 @@
       "position": {
         "x": 6.9,
         "y": 0.0,
-        "z": 1.0
+        "z": 1.2
       },
       "rotation": {
         "x": 0.0,
@@ -3868,7 +3868,7 @@
       "position": {
         "x": 1.75,
         "y": 0.0,
-        "z": 1.0
+        "z": 1.2
       },
       "rotation": {
         "x": 0.0,
@@ -6244,7 +6244,7 @@
   ],
   "metadata": {
     "source": "layout",
-    "generator": "layout@1.13.0 · rules generic-residential@1"
+    "generator": "layout@1.14.0 · rules generic-residential@1"
   },
   "types": [],
   "assemblies": [],

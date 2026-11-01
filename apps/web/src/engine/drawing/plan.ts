@@ -66,15 +66,18 @@ export function buildPlanDrawing(
   const joins = computeWallJoins(walls);
   const groups: DrawGroup[] = [];
 
-  // 1. Slabs that are visible as their own outline: balconies (other slabs lie under walls).
+  // 1. Slabs that are visible as their own outline: balconies (other slabs lie under walls),
+  // and entrance canopies (1.3.0), which are above the cut plane: dashed, as overhead.
   for (const slab of of("slab")) {
-    if (slab.properties.slab_kind !== "balcony") continue;
+    const kind = slab.properties.slab_kind;
+    if (kind !== "balcony" && kind !== "canopy") continue;
     const f = { x: slab.position.x, y: slab.position.y, angle: slab.rotation.z };
     const outline = mapPts(
       f,
       slab.properties.outline.map((p) => [p.x, p.y] as P2),
     );
-    groups.push({ elementId: slab.id, role: "slab", items: [poly(outline, "outline", true)] });
+    const pen = kind === "canopy" ? "hidden" : "outline";
+    groups.push({ elementId: slab.id, role: "slab", items: [poly(outline, pen, true)] });
   }
   // Voids in this level's floor (stair openings) are drawn dashed.
   for (const slab of of("slab")) {

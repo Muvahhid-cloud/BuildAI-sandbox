@@ -34,6 +34,8 @@ Downloaded 2026-11-01. Licence of every asset: **CC0 1.0** (https://polyhaven.co
 | `textures/wall_tile/` | tile | Long White Tiles (Jenelle van Heerden, Sergej Majboroda) | https://polyhaven.com/a/long_white_tiles | 1.27 m | albedo, normal, roughness | CC0 |
 | `textures/roof_tiles/` | roof | Grey Roof Tiles 02 (Rob Tuytel) | https://polyhaven.com/a/grey_roof_tiles_02 | 1.50 m | albedo, normal, roughness (tint `#8f949b` toward anthracite) | CC0 |
 | `textures/concrete/` | concrete | Concrete Wall 004 (Dario Barresi, Charlotte Baglioni) | https://polyhaven.com/a/concrete_wall_004 | 2.00 m | albedo, normal, roughness (tint `#dde1ff` neutralises its olive cast; the most neutral of 9 Poly Haven concretes measured) | CC0 |
+| `textures/roof_membrane/` | roof_membrane (flat roofs, V3) | Tarred Gravel (Dimitrios Savva) | https://polyhaven.com/a/tarred_gravel | 2.20 m | albedo, normal, roughness | CC0 |
+| `textures/cladding_timber/` | cladding_timber (accent cladding, V3) | Hinoki Planks (Charlotte Baglioni) | https://polyhaven.com/a/hinoki_planks | 1.89 m | albedo, normal, roughness | CC0 |
 | `textures/paving/` | site_paving (site path and driveway, V2) | Concrete Pavers (Amal Kumar) | https://polyhaven.com/a/concrete_pavers | 1.92 m | albedo, normal, roughness (tint `#e8e8ec`, slightly cooler) | CC0 |
 | `textures/grass/` | site_grass | Leafy Grass (Charlotte Baglioni) | https://polyhaven.com/a/leafy_grass | 2.00 m | albedo, normal, roughness (tint `#bfffb3` toward green; every Poly Haven grass averages olive/brown) | CC0 |
 

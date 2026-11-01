@@ -1183,7 +1183,7 @@ def _windows(
                     if (
                         width >= min_w - 1e-6
                         and grid
-                        and cfg.bay_circulation_windows
+                        and (cfg.bay_circulation_windows or cfg.window_consistency)
                         and on_bay(
                             f"window:{region.key}:{side}:{n}",
                             lv,
@@ -1212,6 +1212,10 @@ def _windows(
                             "window.stair",
                         )
                         n += 1
+    if grid and cfg.window_consistency:
+        _merge_pairs(ctx, windows, grid, needed_glazing, ordered_segments)
+        _unify_widths(ctx, windows, _Glazing(ctx, windows, needed_glazing, ordered_segments))
+        _align_heads(ctx, windows)
     # Garage side window.
     if ctx.plan.garage is not None:
         g = ctx.plan.garage
@@ -1324,6 +1328,263 @@ def _rhythm_windows(
             here.append(axis)
             n += 1
     return n
+
+
+def _room_of(w: _Window) -> str:
+    """The region key a window was placed for (keys are window:<region>:<side>:<n>)."""
+    return w.key.split(":")[1]
+
+
+def _free_span(wall: WallPlan, offset: float, width: float) -> None:
+    """Give an opening's span back to its wall. WallPlan.place records (start, start + width)
+    unrounded, so the span is matched within 1 mm (an exact tuple match can miss and leave the
+    space blocked)."""
+    for i, (a, b) in enumerate(wall.occupied):
+        if abs(a - offset) < 1e-3 and abs(b - (offset + width)) < 1e-3:
+            del wall.occupied[i]
+            return
+
+
+class _Glazing:
+    """Bookkeeping for the V6 window passes: a room's glazing and its requirement, and taking a
+    window out of / back into its wall (occupied spans matched within 1 mm)."""
+
+    def __init__(
+        self,
+        ctx: _Context,
+        windows: list[_Window],
+        needed_glazing: Callable[[Region, list[tuple[str, Segment]]], float],
+        ordered_segments: Callable[[Region, list[tuple[str, Segment]]], list[tuple[str, Segment]]],
+    ) -> None:
+        self.ctx = ctx
+        self.windows = windows
+        self.needed = needed_glazing
+        self.ordered = ordered_segments
+        self.regions = {(lvl.index, r.key): r for lvl in ctx.plan.levels for r in lvl.regions}
+
+    def glazing(self, level: int, room: str) -> float:
+        return sum(
+            w.width * w.height
+            for w in self.windows
+            if w.wall.level == level and _room_of(w) == room
+        )
+
+    def required(self, level: int, room: str) -> float:
+        region = self.regions.get((level, room))
+        if region is None:
+            return math.inf
+        segments = _facade_segments(self.ctx, region)
+        return self.needed(region, self.ordered(region, segments)) if segments else 0.0
+
+    def release(self, w: _Window) -> None:
+        self.windows.remove(w)
+        _free_span(w.wall, w.offset, w.width)
+
+    def restore(self, w: _Window) -> None:
+        self.windows.append(w)
+        w.wall.occupied.append((w.offset, w.offset + w.width))
+
+
+def _merge_pairs(
+    ctx: _Context,
+    windows: list[_Window],
+    grid: Mapping[tuple[bool, float], Bays],
+    needed_glazing: Callable[[Region, list[tuple[str, Segment]]], float],
+    ordered_segments: Callable[[Region, list[tuple[str, Segment]]], list[tuple[str, Segment]]],
+) -> None:
+    """V6: no awkward pairs. Windows of one habitable room on one facade line and storey whose
+    centres share a bay become one window on that bay's axis, as wide as the widest of them
+    (wider, up to their total, if the room's glazing needs it); if that does not fit, the
+    smaller ones are dropped when the room keeps its required glazing; otherwise they stay.
+    Placement keeps the usual gap between openings (WallPlan.place), never less than the
+    profile's openings.min_clearance_m."""
+    cfg = ctx.config
+    book = _Glazing(ctx, windows, needed_glazing, ordered_segments)
+    glazing, required, release, restore = book.glazing, book.required, book.release, book.restore
+
+    # Groups: same wall, storey and room, habitable windows only (stair and service windows
+    # keep their own rules). Sorted for determinism.
+    groups: dict[tuple[str, str], list[_Window]] = {}
+    for w in windows:
+        if w.role in ("window.stair", "window.service") or w.wall.kind != WallKind.EXTERIOR:
+            continue
+        groups.setdefault((w.wall.key, _room_of(w)), []).append(w)
+    for (_, room), ws in sorted(groups.items()):
+        line = grid.get((ws[0].wall.horizontal, rnd(ws[0].wall.coord)))
+        if line is None or len(ws) < 2:
+            continue
+        ws.sort(key=lambda w: _plan_center(w))
+        clusters: list[list[_Window]] = [[ws[0]]]
+        for w in ws[1:]:
+            if _plan_center(w) - _plan_center(clusters[-1][-1]) < line.width / 2:
+                clusters[-1].append(w)
+            else:
+                clusters.append([w])
+        for cluster in clusters:
+            if len(cluster) < 2:
+                continue
+            wall, level = cluster[0].wall, cluster[0].wall.level
+            need = required(level, room)
+            mid = sum(_plan_center(w) for w in cluster) / len(cluster)
+            axis = min(line.axes, key=lambda a: (abs(a - mid), a))
+            big = max(cluster, key=lambda w: (w.width * w.height, w.key))
+            for w in cluster:
+                release(w)
+            base = glazing(level, room)
+            placed = False
+            total = rnd(sum(w.width for w in cluster))
+            for width in sorted({rnd(big.width), total}):
+                if base + width * big.height < need - 1e-6:
+                    continue
+                seg = Segment(
+                    "h" if wall.horizontal else "v",
+                    wall.coord,
+                    *sorted(
+                        (wall.start[0], wall.end[0])
+                        if wall.horizontal
+                        else (wall.start[1], wall.end[1])
+                    ),
+                )
+                offset = wall.place(seg, width, margin=cfg.window_margin, center=axis)
+                if offset is None:
+                    continue
+                if abs(wall.param(axis) - (offset + width / 2)) > 1e-3:
+                    wall.occupied.pop()
+                    continue
+                windows.append(
+                    _Window(
+                        big.key,
+                        wall,
+                        offset,
+                        width,
+                        big.height,
+                        big.sill,
+                        big.kind,
+                        big.mullions if width == big.width else _mullions(cfg, big, width),
+                        big.role,
+                        big.size_class,
+                    )
+                )
+                placed = True
+                break
+            if placed:
+                continue
+            restore(big)  # no merge on the axis: keep the largest, drop the rest if glazing allows
+            if base + big.width * big.height >= need - 1e-6:
+                continue
+            # Last resort: one window over the pair's own span (both widths and the gap
+            # between them: always free, more glass than the two) instead of a pair.
+            release(big)
+            start = min(w.offset for w in cluster)
+            width = rnd(max(w.offset + w.width for w in cluster) - start)
+            windows.append(
+                _Window(
+                    big.key,
+                    wall,
+                    start,
+                    width,
+                    big.height,
+                    big.sill,
+                    big.kind,
+                    _mullions(cfg, big, width),
+                    big.role,
+                    big.size_class,
+                )
+            )
+            wall.occupied.append((start, start + width))
+
+
+def _unify_widths(ctx: _Context, windows: list[_Window], book: _Glazing) -> None:
+    """V6: one main width per facade wall and storey. The habitable windows' most common width
+    there (the wider on a tie; every width comes from LayoutConfig: the bay width of the
+    facade, the side rhythm width or a preset-sized window) becomes the main width; every
+    other habitable window takes it, centred where it stands, when it fits exactly there and
+    the room keeps its required glazing; otherwise it keeps its size. Service windows already
+    share LayoutConfig.service_window; stair windows keep their own size."""
+    cfg = ctx.config
+    walls: dict[str, list[_Window]] = {}
+    for w in windows:
+        if w.role in ("window.stair", "window.service") or w.wall.kind != WallKind.EXTERIOR:
+            continue
+        walls.setdefault(w.wall.key, []).append(w)
+    for _, ws in sorted(walls.items()):
+        counts: dict[float, int] = {}
+        for w in ws:
+            counts[rnd(w.width)] = counts.get(rnd(w.width), 0) + 1
+        main = max(counts, key=lambda v: (counts[v], v))
+        for w in sorted(ws, key=lambda w: w.key):
+            if abs(w.width - main) < 1e-6:
+                continue
+            wall, room, level = w.wall, _room_of(w), w.wall.level
+            centre = _plan_center(w)
+            book.release(w)
+            if book.glazing(level, room) + main * w.height < book.required(level, room) - 1e-6:
+                book.restore(w)
+                continue
+            lo, hi = sorted(
+                (wall.start[0], wall.end[0]) if wall.horizontal else (wall.start[1], wall.end[1])
+            )
+            seg = Segment("h" if wall.horizontal else "v", wall.coord, lo, hi)
+            offset = wall.place(seg, main, margin=cfg.window_margin, center=centre)
+            if offset is None:
+                book.restore(w)
+                continue
+            if abs(wall.param(centre) - (offset + main / 2)) > 1e-3:
+                _free_span(wall, offset, main)
+                book.restore(w)
+                continue
+            windows.append(
+                _Window(
+                    w.key,
+                    wall,
+                    offset,
+                    main,
+                    w.height,
+                    w.sill,
+                    w.kind,
+                    _mullions(cfg, w, main),
+                    w.role,
+                    w.size_class,
+                )
+            )
+
+
+def _align_heads(ctx: _Context, windows: list[_Window]) -> None:
+    """V6: one head height per storey. The most common head (sill + height) of the storey's
+    habitable windows (the higher on a tie) becomes the head of its stair, hall, corridor and
+    service windows: their sill is raised by the difference, never lowered (a service sill
+    stays above LayoutConfig.service_window's, an upper-storey sill above the guard height),
+    and the head stays a lintel below the wall top."""
+    cfg = ctx.config
+    top = ctx.wall_height - cfg.lintel_min
+    for level in sorted({w.wall.level for w in windows}):
+        heads: dict[float, int] = {}
+        for w in windows:
+            if (
+                w.wall.level == level
+                and w.wall.kind == WallKind.EXTERIOR
+                and w.role not in ("window.stair", "window.service")
+            ):
+                h = rnd(w.sill + w.height)
+                heads[h] = heads.get(h, 0) + 1
+        if not heads:
+            continue
+        head = max(heads, key=lambda h: (heads[h], h))
+        if head > top + 1e-6:
+            continue
+        for w in windows:
+            if w.wall.level != level or w.role not in ("window.stair", "window.service"):
+                continue
+            sill = rnd(head - w.height)
+            if sill > w.sill + 1e-6:
+                w.sill = sill
+
+
+def _mullions(cfg: LayoutConfig, w: _Window, width: float) -> int:
+    preset = cfg.window_presets.get(w.size_class) if w.size_class is not None else None
+    if preset is None:
+        return w.mullions
+    return min(12, max(0, math.ceil(width / preset.mullion_spacing) - 1))
 
 
 def _plan_center(w: _Window) -> float:

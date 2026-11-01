@@ -168,6 +168,15 @@ class LayoutConfig(_Config):
     # snap to the partitions of the storey below when they are at most this far off, so the
     # rooms (and the windows centred in them) stack. 0 switches it off.
     facade_grid_snap: float = 1.2
+    # Facade bay grid (V5, docs/3d-engine.md §16.15): each facade line is divided into equal
+    # bays of bay_min_m..bay_max_m; windows stand on the bay centres with one width per facade
+    # and storey (at most bay_window_share of a bay). False reproduces layout@1.9.0 exactly
+    # (step 1 of V5 lands switched off; it is switched on with rooms on whole bays).
+    facade_bays: bool = False
+    bay_min_m: float = 3.0
+    bay_max_m: float = 4.2
+    bay_window_share: float = 0.6
+    bay_windows_per_room: int = 4
     lintel_min: float = 0.2  # wall above the highest opening
 
     # Garage, balconies, terraces

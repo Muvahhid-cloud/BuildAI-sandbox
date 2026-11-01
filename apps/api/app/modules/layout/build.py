@@ -79,6 +79,7 @@ from app.modules.building.primitives import EPS, Rotation, Vec2, Vec3
 from app.modules.building.specification import (
     ArchitecturalStyle,
     BuildingSpecification,
+    DesignPriority,
     FinishLevel,
     WindowStyle,
 )
@@ -1010,6 +1011,48 @@ def _windows(
             for key, v in need.items()
         }
 
+    excluded_sides = {PLAN_SIDE[f] for f in intent.excluded_facades} if intent else set()
+    quiet_sides = DesignPriority.PRIVACY in ctx.spec.design.priorities
+
+    def side_rhythm(region: Region, ordered: list[tuple[str, Segment]], n: int) -> int:
+        """V5 side facades: a habitable room takes a window on every free bay axis of its
+        side facades (not its main facade), one width per side line and storey
+        (`bay_side_window_share` of a bay, at least the rules' minimum width). Never on a
+        facade the spec's window intent excludes; the caller skips it when privacy is a
+        design priority. Extra glazing only (the required glazing is placed before)."""
+        main = ordered[0][0]
+        for side, seg in ordered[1:]:
+            if side == main or side in excluded_sides:
+                continue
+            wall = _wall_on(ctx, region.level, seg)
+            line = line_of(wall)
+            if line is None:
+                continue
+            width = rnd(
+                max(min_w, math.floor(cfg.bay_side_window_share * line.width / 0.05 + 1e-9) * 0.05)
+            )
+            style = side_style[side]
+            preset = cfg.window_presets[style]
+            sill, height = dims(region.level, style)
+            mullions = min(12, max(0, math.ceil(width / preset.mullion_spacing) - 1))
+            while n < cfg.bay_windows_per_room + 2:
+                got = on_bay(
+                    f"window:{region.key}:{side}:{n}",
+                    region.level,
+                    seg,
+                    width,
+                    height,
+                    sill,
+                    WindowKind.CASEMENT,
+                    mullions,
+                    WINDOW_STYLE_ROLE[style],
+                    style,
+                )
+                if got <= 0:
+                    break
+                n += 1
+        return n
+
     # V4 facade grid: the top storey first, so the larger rooms below take its window axes.
     order = (
         sorted(ctx.plan.levels, key=lambda lvl: -lvl.index)
@@ -1096,6 +1139,8 @@ def _windows(
                         n += 1
                 if cfg.facade_grid_snap > 0:
                     n = _rhythm_windows(ctx, region, segments, windows, side_style, dims, n)
+                if grid and cfg.bay_side_rhythm and not quiet_sides:
+                    n = side_rhythm(region, ordered, n)
             elif region.kind == "room" and rtype in SERVICE_WINDOWS:
                 w, h, sill = cfg.service_window
                 side, seg = max(segments, key=lambda s: (s[1].length, s[0]))

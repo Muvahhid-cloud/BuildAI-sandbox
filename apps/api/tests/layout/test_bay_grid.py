@@ -20,7 +20,7 @@ from app.modules.layout.engine import LayoutResult
 from app.modules.layout.golden import generate_reference
 from app.modules.rules.model_checks import check_model
 from tests.building.helpers import DATA_DIR, SPECS_DIR, material_ids
-from tests.layout.helpers import PROFILE, SPEC_PATHS
+from tests.layout.helpers import PROFILE, SPEC_PATHS, generate, load_spec
 
 ON = DEFAULT_CONFIG.model_copy(update={"facade_bays": True})
 OFF = DEFAULT_CONFIG.model_copy(update={"facade_bays": False})
@@ -158,3 +158,62 @@ def test_windows_move_onto_the_bay_axes() -> None:
     on = sum(windows_on_bays(_gen(n, bays=True).model)[0] for n in NAMES)
     off = sum(windows_on_bays(_gen(n, bays=False).model)[0] for n in NAMES)
     assert on >= off + 40, (on, off)
+
+
+# --- side facades (step 3) ----------------------------------------------------------------------
+
+
+def _side_windows(model: BuildingModel) -> list[Window]:
+    """Windows of habitable-room rhythm on the house's east/west facades (rectangular
+    bands: the side facades)."""
+    walls = {e.id: e for e in model.elements if isinstance(e, Wall)}
+    out = []
+    for w in model.elements:
+        if not isinstance(w, Window) or w.properties.window_kind is None:
+            continue
+        host = walls[next(r.target_id for r in w.relationships if r.kind == "hosted_by")]
+        if host.semantic_key.startswith("wall:ext:") and host.semantic_key.endswith((":E", ":W")):
+            out.append(w)
+    return out
+
+
+def _on_axis(model: BuildingModel, windows: list[Window]) -> int:
+    walls = {e.id: e for e in model.elements if isinstance(e, Wall)}
+    axes = _bay_axes(model)
+    n = 0
+    for w in windows:
+        host = walls[next(r.target_id for r in w.relationships if r.kind == "hosted_by")]
+        a = host.rotation.z
+        c = w.position.x + w.dimensions.width / 2
+        x, y = host.position.x + c * math.cos(a), host.position.y + c * math.sin(a)
+        horizontal = abs(math.sin(a)) < 0.5
+        key = (horizontal, round(y if horizontal else x, 3))
+        n += any(abs((x if horizontal else y) - ax) < 0.05 for ax in axes.get(key, []))
+    return n
+
+
+def test_side_facades_get_windows_on_their_bays() -> None:
+    """Reference 01: its long side facades carry more windows, on bay axes."""
+    on = _gen("01-family-house-280.spec.json", bays=True).model
+    off = _gen("01-family-house-280.spec.json", bays=False).model
+    assert len(_side_windows(on)) > len(_side_windows(off))
+    assert _on_axis(on, _side_windows(on)) >= _on_axis(off, _side_windows(off)) + 3
+
+
+def _spec_with(**design: object) -> dict[str, object]:
+    spec = load_spec("01-family-house-280.spec.json").model_dump(mode="json")
+    spec["design"] = {**(spec.get("design") or {}), **design}
+    return spec
+
+
+def test_privacy_priority_keeps_the_side_facades_quiet() -> None:
+    quiet = generate(_spec_with(priorities=["privacy"])).model
+    loud = generate(_spec_with(priorities=[])).model
+    assert len(_side_windows(quiet)) < len(_side_windows(loud))
+
+
+def test_an_excluded_facade_gets_no_rhythm_windows() -> None:
+    rear = {"emphasis": "large", "preferred_facades": ["rear"]}
+    plain = generate(_spec_with(windows=rear)).model
+    excluded = generate(_spec_with(windows={**rear, "excluded_facades": ["left", "right"]})).model
+    assert len(_side_windows(excluded)) < len(_side_windows(plain))

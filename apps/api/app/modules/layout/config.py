@@ -11,7 +11,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.modules.building.enums import RoofType, RoomType
 from app.modules.building.specification import ArchitecturalStyle, FacadeMaterial, WindowStyle
 
-ENGINE_VERSION = "layout@1.10.0"  # 1.10.0: facade bay grid (V5): bays per facade line,
+ENGINE_VERSION = "layout@1.11.0"  # 1.11.0: side facades in the bay rhythm (V5 step 3).
+# 1.10.0: facade bay grid (V5): bays per facade line,
 # windows on bay axes with one width per facade and storey, rooms snap to whole bays where
 # their minimums and area ranges allow.
 # 1.9.0: facade grid (V4): partitions of the storeys snap to
@@ -179,6 +180,10 @@ class LayoutConfig(_Config):
     bay_max_m: float = 4.2
     bay_window_share: float = 0.6
     bay_windows_per_room: int = 4
+    # Side facades (V5 step 3): habitable rooms take a window on every free bay axis of their
+    # side facades, this share of a bay wide (one width per side line and storey).
+    bay_side_rhythm: bool = True
+    bay_side_window_share: float = 0.35
     # Stair, hall and corridor windows on bay axes too; off = they follow the windows of the
     # other storeys (V4 axis rule), which stacks them better where the hall below is short.
     bay_circulation_windows: bool = False

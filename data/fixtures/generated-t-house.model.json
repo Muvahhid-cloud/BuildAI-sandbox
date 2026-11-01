@@ -7,7 +7,7 @@
     "description": "Single-storey 170 m² T-shaped bungalow: day rooms on both sides of a bedroom wing that reaches into the garden, a garden terrace and a one-car garage."
   },
   "units": "m",
-  "engine_version": "layout@1.8.0",
+  "engine_version": "layout@1.9.0",
   "seed": 0,
   "levels": [
     {
@@ -4461,7 +4461,7 @@
   ],
   "metadata": {
     "source": "layout",
-    "generator": "layout@1.8.0 · rules generic-residential@1"
+    "generator": "layout@1.9.0 · rules generic-residential@1"
   },
   "types": [],
   "assemblies": [],

@@ -7,7 +7,7 @@
     "description": "Single-storey 160 m² L-shaped bungalow: day rooms on the garden, a bedroom wing, a garden terrace and a one-car garage."
   },
   "units": "m",
-  "engine_version": "layout@1.8.0",
+  "engine_version": "layout@1.9.0",
   "seed": 0,
   "levels": [
     {
@@ -4339,7 +4339,7 @@
   ],
   "metadata": {
     "source": "layout",
-    "generator": "layout@1.8.0 · rules generic-residential@1"
+    "generator": "layout@1.9.0 · rules generic-residential@1"
   },
   "types": [],
   "assemblies": [],

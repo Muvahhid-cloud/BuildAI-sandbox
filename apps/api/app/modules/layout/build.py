@@ -1214,6 +1214,7 @@ def _windows(
                         n += 1
     if grid and cfg.window_consistency:
         _merge_pairs(ctx, windows, grid, needed_glazing, ordered_segments)
+        _unify_widths(ctx, windows, _Glazing(ctx, windows, needed_glazing, ordered_segments))
     # Garage side window.
     if ctx.plan.garage is not None:
         g = ctx.plan.garage
@@ -1490,6 +1491,61 @@ def _merge_pairs(
                 )
             )
             wall.occupied.append((start, start + width))
+
+
+def _unify_widths(ctx: _Context, windows: list[_Window], book: _Glazing) -> None:
+    """V6: one main width per facade wall and storey. The habitable windows' most common width
+    there (the wider on a tie; every width comes from LayoutConfig: the bay width of the
+    facade, the side rhythm width or a preset-sized window) becomes the main width; every
+    other habitable window takes it, centred where it stands, when it fits exactly there and
+    the room keeps its required glazing; otherwise it keeps its size. Service windows already
+    share LayoutConfig.service_window; stair windows keep their own size."""
+    cfg = ctx.config
+    walls: dict[str, list[_Window]] = {}
+    for w in windows:
+        if w.role in ("window.stair", "window.service") or w.wall.kind != WallKind.EXTERIOR:
+            continue
+        walls.setdefault(w.wall.key, []).append(w)
+    for _, ws in sorted(walls.items()):
+        counts: dict[float, int] = {}
+        for w in ws:
+            counts[rnd(w.width)] = counts.get(rnd(w.width), 0) + 1
+        main = max(counts, key=lambda v: (counts[v], v))
+        for w in sorted(ws, key=lambda w: w.key):
+            if abs(w.width - main) < 1e-6:
+                continue
+            wall, room, level = w.wall, _room_of(w), w.wall.level
+            centre = _plan_center(w)
+            book.release(w)
+            if book.glazing(level, room) + main * w.height < book.required(level, room) - 1e-6:
+                book.restore(w)
+                continue
+            lo, hi = sorted(
+                (wall.start[0], wall.end[0]) if wall.horizontal else (wall.start[1], wall.end[1])
+            )
+            seg = Segment("h" if wall.horizontal else "v", wall.coord, lo, hi)
+            offset = wall.place(seg, main, margin=cfg.window_margin, center=centre)
+            if offset is None:
+                book.restore(w)
+                continue
+            if abs(wall.param(centre) - (offset + main / 2)) > 1e-3:
+                _free_span(wall, offset, main)
+                book.restore(w)
+                continue
+            windows.append(
+                _Window(
+                    w.key,
+                    wall,
+                    offset,
+                    main,
+                    w.height,
+                    w.sill,
+                    w.kind,
+                    _mullions(cfg, w, main),
+                    w.role,
+                    w.size_class,
+                )
+            )
 
 
 def _mullions(cfg: LayoutConfig, w: _Window, width: float) -> int:

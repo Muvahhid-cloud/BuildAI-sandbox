@@ -132,3 +132,25 @@ def test_a_released_window_gives_its_span_back() -> None:
     assert offset is not None and wall.occupied
     _free_span(wall, offset, 1.1)
     assert wall.occupied == []
+
+
+def habitable_widths_per_wall(model: BuildingModel) -> float:
+    """Average number of distinct widths of habitable-room windows (those with a design size
+    class) per exterior wall and storey."""
+    widths: dict[str, set[float]] = {}
+    for el, host, _a, _b in _openings(model):
+        if (
+            isinstance(el, Window)
+            and el.properties.size_class is not None
+            and host.semantic_key.startswith("wall:ext:")
+        ):
+            widths.setdefault(str(host.id), set()).add(round(el.dimensions.width, 2))
+    return sum(len(v) for v in widths.values()) / max(len(widths), 1)
+
+
+def test_one_main_width_per_facade_and_storey() -> None:
+    """Step 2: fewer distinct habitable window widths per wall and storey than main."""
+    on = [habitable_widths_per_wall(_gen(n, on=True).model) for n in NAMES]
+    off = [habitable_widths_per_wall(_gen(n, on=False).model) for n in NAMES]
+    assert sum(on) < sum(off)
+    assert all(a <= b + 1e-9 for a, b in zip(on, off, strict=True))

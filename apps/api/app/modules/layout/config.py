@@ -11,7 +11,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.modules.building.enums import RoofType, RoomType
 from app.modules.building.specification import ArchitecturalStyle, FacadeMaterial, WindowStyle
 
-ENGINE_VERSION = "layout@1.12.0"  # 1.12.0: no two windows of one room in one bay (V6 step 1).
+ENGINE_VERSION = "layout@1.13.0"  # 1.13.0: one main window width per facade wall and storey
+# (V6 step 2).
+# 1.12.0: no two windows of one room in one bay (V6 step 1).
 # 1.11.0: side facades in the bay rhythm (V5 step 3).
 # 1.10.0: facade bay grid (V5): bays per facade line,
 # windows on bay axes with one width per facade and storey, rooms snap to whole bays where

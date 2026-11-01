@@ -275,6 +275,31 @@ export const addWallOpSchema = z.object({
 });
 export type AddWallOp = z.infer<typeof addWallOpSchema>;
 
+/** set_wall_thickness (D2.5): the axis stays; an exterior wall changes its whole facade. */
+export const setWallThicknessOpSchema = z.object({
+  op: z.literal("set_wall_thickness"),
+  wall_id: z.uuid(),
+  thickness_m: z.number().positive(),
+});
+export type SetWallThicknessOp = z.infer<typeof setWallThicknessOpSchema>;
+
+/** set_wall_finish (D2.5): a material-library id on the left, right or both faces. */
+export const setWallFinishOpSchema = z.object({
+  op: z.literal("set_wall_finish"),
+  wall_id: z.uuid(),
+  face: z.enum(["left", "right", "both"]),
+  material_id: z.string().min(1),
+});
+export type SetWallFinishOp = z.infer<typeof setWallFinishOpSchema>;
+
+/** set_wall_height (D2.5): non-structural walls only, never above the storey's walls. */
+export const setWallHeightOpSchema = z.object({
+  op: z.literal("set_wall_height"),
+  wall_id: z.uuid(),
+  height_m: z.number().positive(),
+});
+export type SetWallHeightOp = z.infer<typeof setWallHeightOpSchema>;
+
 export type EditOperation =
   | MoveWallOp
   | ResizeRoomOp
@@ -285,7 +310,10 @@ export type EditOperation =
   | RemoveWallOp
   | RenameRoomOp
   | SetRoomTypeOp
-  | AddWallOp;
+  | AddWallOp
+  | SetWallThicknessOp
+  | SetWallFinishOp
+  | SetWallHeightOp;
 
 export const editRejectionSchema = z.object({
   code: z.string(),

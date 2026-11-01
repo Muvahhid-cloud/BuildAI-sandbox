@@ -296,3 +296,63 @@ describe("PlanView: adding a wall", () => {
     useEditStore.getState().end();
   });
 });
+
+describe("PlanView: dragging a facade (D2.5)", () => {
+  it("drags an exterior wall, checks the facade move live and shows the roof outline", async () => {
+    const east = bySemanticKey(index.model, "wall:G-E");
+    const check = vi.fn().mockResolvedValue({
+      valid: false,
+      model: null,
+      summary: null,
+      warnings: [],
+      changed_ids: [],
+      rejection: {
+        code: "VOLUME_ATTACHED",
+        message: "W-G02 cannot move: another volume is attached",
+        index: 0,
+        element_id: east.id,
+        related_ids: [],
+        issues: [],
+      },
+    });
+    const apply = vi.fn().mockResolvedValue(true);
+    useEditStore.getState().end();
+    useEditStore.getState().begin("p1", { id: "v1", model: demoModelJson() });
+    useEditStore.setState({ check, apply });
+    useSelectionStore.getState().select(east.id);
+    const { container } = render(<PlanView index={index} />);
+    expect(screen.getByTestId("roof-outline").querySelectorAll("polygon")).toHaveLength(1);
+    const svg = container.querySelector("svg")!;
+    const [, , vw, vh] = svg.getAttribute("viewBox")!.split(" ").map(Number);
+    svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: vw, height: vh }) as DOMRect;
+    svg.setPointerCapture = () => undefined;
+    const group = container.querySelector(`[data-element-id="${east.id}"]`)!;
+
+    // 1 pixel = 0.1 m at 1:100: 0.5 m east.
+    fireEvent.pointerDown(group, { clientX: 100, clientY: 100, button: 0 });
+    fireEvent.pointerMove(svg, { clientX: 105, clientY: 100 });
+    await waitFor(() =>
+      expect(check).toHaveBeenLastCalledWith(
+        expect.objectContaining({ op: "move_wall", wall_id: east.id }),
+        expect.anything(),
+      ),
+    );
+    expect(await screen.findByText(/another volume is attached/)).toBeInTheDocument();
+    fireEvent.pointerUp(svg, { clientX: 105, clientY: 100 });
+    // The refused live check goes along: the store shows its reason and records nothing.
+    await waitFor(() =>
+      expect(apply).toHaveBeenCalledWith(
+        expect.objectContaining({ op: "move_wall", wall_id: east.id }),
+        expect.objectContaining({ valid: false }),
+      ),
+    );
+    useEditStore.getState().end();
+  });
+
+  it("draws no roof outline outside editing", () => {
+    useEditStore.getState().end();
+    useSelectionStore.getState().select(bySemanticKey(index.model, "wall:G-E").id);
+    render(<PlanView index={index} />);
+    expect(screen.queryByTestId("roof-outline")).toBeNull();
+  });
+});

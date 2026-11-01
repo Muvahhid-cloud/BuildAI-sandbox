@@ -3,6 +3,7 @@
 // operation applied and validated by the server.
 import type { P2 } from "../math/polygon";
 import { wallThicknessRange } from "../math/transform";
+import type { ModelIndex } from "../model/model-index";
 import type { BuildingElement, Wall } from "../model/types";
 import { mapPts, rect } from "./plan-math";
 
@@ -11,9 +12,36 @@ export const WALL_SNAP_M = 0.05;
 
 export type Compass = "north" | "east" | "south" | "west";
 
-/** Only interior walls can be moved for now (exterior walls carry slabs and the roof). */
+/**
+ * Walls that can be dragged on the plan: interior walls, and (D2.5) exterior walls, which move
+ * their whole facade with the slabs and roof. The server refuses what cannot follow.
+ */
 export function isMovableWall(el: BuildingElement | undefined): el is Wall {
-  return el?.type === "wall" && el.properties.wall_kind === "interior";
+  return el?.type === "wall" && el.properties.wall_kind !== "partition";
+}
+
+/** Whether moving this wall moves a facade (every storey, slabs and roof follow). */
+export function isFacade(wall: Wall): boolean {
+  return wall.properties.wall_kind === "exterior";
+}
+
+/**
+ * Eaves outlines of every roof in plan (model meters), for the dashed overlay while a facade is
+ * edited: the roof outline is roof-local, placed by the roof's position and rotation.
+ */
+export function roofOutlines(index: ModelIndex): P2[][] {
+  const out: P2[][] = [];
+  for (const el of index.model.elements) {
+    if (el.type !== "roof") continue;
+    const c = Math.cos(el.rotation.z);
+    const s = Math.sin(el.rotation.z);
+    out.push(
+      el.properties.outline.map(
+        (p) => [el.position.x + c * p.x - s * p.y, el.position.y + s * p.x + c * p.y] as P2,
+      ),
+    );
+  }
+  return out;
 }
 
 /** Unit normal of the wall's left face: the direction of a positive `offset_m`. */

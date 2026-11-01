@@ -6,6 +6,7 @@ import { bySemanticKey, demoIndex, demoModelJson } from "@/engine/test-fixtures"
 import { useEditStore } from "@/features/editing/store";
 import { PropertiesPanel } from "@/features/editor/components/PropertiesPanel";
 import type { EditOperation, EditPreview } from "@/lib/api/schemas";
+import type { Wall } from "@/engine/model/types";
 import { useSelectionStore } from "@/stores/selection-store";
 
 const index = demoIndex();
@@ -131,10 +132,61 @@ describe("Properties panel: interior walls", () => {
     expect(screen.getByRole("button", { name: "Confirm removal" })).toBeDisabled();
   });
 
-  it("offers nothing for exterior walls", () => {
-    select("wall:G-S");
-    expect(screen.queryByRole("region", { name: "Edit" })).toBeNull();
+  it("offers thickness and finish, not removal, for exterior walls", () => {
+    const wall = select("wall:G-S") as Wall;
+    expect(screen.getByRole("region", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.getByText(/whole facade on every storey/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Thickness in meters")).toHaveValue(
+      Number(wall.dimensions.thickness.toFixed(3)),
+    );
+    expect(screen.getByRole("option", { name: "Facade (outside)" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove wall…" })).toBeNull();
+    expect(screen.queryByLabelText("Height in meters")).toBeNull(); // structural: fixed height
+  });
+});
+
+describe("Properties panel: wall thickness, finish and height (D2.5)", () => {
+  it("changes a facade's thickness after a live check", async () => {
+    const wall = select("wall:G-S");
+    await retype("Thickness in meters", "0.42");
+    const op = { op: "set_wall_thickness", wall_id: wall.id, thickness_m: 0.42 };
+    await waitFor(() => expect(check).toHaveBeenLastCalledWith(op, expect.anything()));
+    expect(await screen.findByText(/0\.420 m fits/)).toBeInTheDocument();
+    const [applyButton] = screen.getAllByRole("button", { name: "Apply" });
+    await userEvent.click(applyButton);
+    expect(apply).toHaveBeenCalledWith(op, expect.objectContaining({ valid: true }));
+  });
+
+  it("explains a refused thickness and keeps Apply disabled", async () => {
+    select("wall:G-I1");
+    check.mockResolvedValue(refused("W-G05: 0.500 m thick; interior walls must be 0.08 to 0.30 m"));
+    await retype("Thickness in meters", "0.5");
+    expect(await screen.findByRole("alert")).toHaveTextContent("interior walls must be");
+    expect(screen.getAllByRole("button", { name: "Apply" })[0]).toBeDisabled();
+  });
+
+  it("sets a library finish on the facade face", async () => {
+    const wall = select("wall:G-S");
+    await userEvent.selectOptions(screen.getByLabelText("Finish material"), "exterior_wall");
+    const op = {
+      op: "set_wall_finish",
+      wall_id: wall.id,
+      face: "right",
+      material_id: "exterior_wall",
+    };
+    await waitFor(() => expect(check).toHaveBeenLastCalledWith(op, expect.anything()));
+    const applyButton = screen.getAllByRole("button", { name: "Apply" })[1];
+    await waitFor(() => expect(applyButton).toBeEnabled());
+    await userEvent.click(applyButton);
+    expect(apply).toHaveBeenCalledWith(op, expect.objectContaining({ valid: true }));
+  });
+
+  it("offers a height for non-structural walls only", () => {
+    select("wall:G-I1");
+    const structural = bySemanticKey(index.model, "wall:G-I1").relationships.some(
+      (r) => r.kind === "supports",
+    );
+    expect(screen.queryByLabelText("Height in meters") === null).toBe(structural);
   });
 });
 

@@ -34,9 +34,11 @@ import {
   wallBody,
 } from "@/engine/drawing/wall-add";
 import {
+  isFacade,
   isMovableWall,
   movedWallOutline,
   offsetFromDrag,
+  roofOutlines,
   snapOffset,
 } from "@/engine/drawing/wall-edit";
 import type { ModelIndex } from "@/engine/model/model-index";
@@ -281,6 +283,14 @@ export function PlanView({
     }
   }, [dragPreview]);
   const shownIndex = previewIndex ?? index;
+  // A facade being moved or re-sized: the roof outline (eaves) is drawn dashed over the plan.
+  const chosen =
+    selectedRoom && chosenSide?.roomId === selectedRoom.id ? sides[chosenSide.edge] : null;
+  const facadeEdit =
+    editable &&
+    ((selected?.type === "wall" && isFacade(selected)) ||
+      (drag?.target.kind === "side" && drag.target.side.kind === "exterior") ||
+      chosen?.kind === "exterior");
 
   const drawing = useMemo(
     () => (level ? buildPlanDrawing(shownIndex, level.id, { furniture }) : null),
@@ -444,7 +454,7 @@ export function PlanView({
       const side = sides[Number(handle.dataset.side)];
       if (side) {
         useEditStore.getState().chooseSide({ roomId: selectedRoom.id, edge: side.index });
-        if (side.kind === "movable") target = { kind: "side", room: selectedRoom, side };
+        if (side.resizable) target = { kind: "side", room: selectedRoom, side };
       }
     } else {
       const hit = (e.target as Element).closest<SVGElement>("[data-element-id]");
@@ -642,6 +652,7 @@ export function PlanView({
         {!ghost && draft && !draft.preview.valid && draft.op.op === "resize_opening" && (
           <DraftGhost index={index} op={draft.op} scale={drawing.scale} />
         )}
+        {facadeEdit && <RoofOutlines index={shownIndex} scale={drawing.scale} />}
         {selectedOpening && selectedHost && !ghost && !placing && !placingWall && (
           <OpeningGrips opening={selectedOpening} host={selectedHost} scale={drawing.scale} />
         )}
@@ -793,6 +804,24 @@ function OpeningGrips({ opening, host, scale }: { opening: Opening; host: Wall; 
   );
 }
 
+/** Dashed eaves outline of the roofs, shown while a facade is edited (follows the preview). */
+function RoofOutlines({ index, scale }: { index: ModelIndex; scale: number }) {
+  return (
+    <g data-testid="roof-outline" aria-label="Roof outline" pointerEvents="none">
+      {roofOutlines(index).map((ring, i) => (
+        <polygon
+          key={i}
+          points={svgPoints(ring, scale)}
+          fill="none"
+          stroke="#7c3aed"
+          strokeWidth={0.35}
+          strokeDasharray="3 1.5"
+        />
+      ))}
+    </g>
+  );
+}
+
 /** A size prepared in the properties panel that the server refused: its outline, in red. */
 function DraftGhost({
   index,
@@ -835,7 +864,7 @@ function SideHandles({
       {sides.map((side) => {
         const [x0, y0] = paperPoint(side.start, scale);
         const [x1, y1] = paperPoint(side.end, scale);
-        const movable = side.kind === "movable";
+        const movable = side.resizable;
         const color = movable ? "#2563eb" : "#a3a3a3";
         const horizontal = Math.abs(side.outward[1]) > Math.abs(side.outward[0]);
         return (

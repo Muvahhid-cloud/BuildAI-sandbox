@@ -15,6 +15,7 @@ import { roomSides, sideRefusal } from "@/engine/drawing/room-edit";
 import { newWall } from "@/engine/drawing/wall-add";
 import {
   type Compass,
+  isFacade,
   isMovableWall,
   moveDirections,
   offsetTowards,
@@ -95,7 +96,7 @@ export function PlanEditBar({
   const chosen = useEditStore((s) => s.side);
   const side =
     room && chosen?.roomId === room.id ? (roomSides(index, room)[chosen.edge] ?? null) : null;
-  const sideMovable = side?.kind === "movable";
+  const sideMovable = side?.resizable ?? false;
   const [distance, setDistance] = useState("0.10");
   const opening = isOpening(selected) ? selected : null;
   const host = opening ? (index.hostOf.get(opening.id) ?? null) : null;
@@ -330,8 +331,10 @@ export function PlanEditBar({
       ) : wall ? (
         <div className="rounded-md bg-white/95 p-2 text-xs shadow ring-1 ring-neutral-200">
           <p className="mb-1.5 text-neutral-700">
-            <span className="font-semibold">{wall.name}</span> · drag it on the plan (remove it in
-            the Properties panel), or move by
+            <span className="font-semibold">{wall.name}</span> ·{" "}
+            {isFacade(wall)
+              ? "drag the facade on the plan (it moves on every storey with slabs and roof), or move by"
+              : "drag it on the plan (remove it in the Properties panel), or move by"}
           </p>
           <div className="flex items-center gap-1">
             <label className="sr-only" htmlFor="wall-move-distance">
@@ -394,8 +397,8 @@ export function PlanEditBar({
             : room
               ? `Click a side handle of ${room.name} to resize it; rename it or change its type in the Properties panel.`
               : selected?.type === "wall"
-                ? `${selected.name} is an exterior wall; only interior walls can be moved for now.`
-                : "Select an interior wall, a room, a door or a window, then drag it or use the arrow keys."}
+                ? `${selected.name} is a partition; it cannot be moved on the plan.`
+                : "Select a wall, a room, a door or a window, then drag it or use the arrow keys."}
         </p>
       )}
 

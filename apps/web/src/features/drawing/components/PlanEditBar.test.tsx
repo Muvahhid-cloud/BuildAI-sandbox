@@ -34,7 +34,7 @@ describe("PlanEditBar", () => {
     expect(screen.getByText("No changes")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Undo" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Save version" })).toBeDisabled();
-    expect(screen.getByText(/Select an interior wall/)).toBeInTheDocument();
+    expect(screen.getByText(/Select a wall, a room/)).toBeInTheDocument();
   });
 
   it("moves the selected wall by the typed distance in a compass direction", async () => {
@@ -62,13 +62,17 @@ describe("PlanEditBar", () => {
     expect(undo).toHaveBeenCalled();
   });
 
-  it("says why an exterior wall cannot be moved", () => {
+  it("moves an exterior wall as a whole facade", async () => {
     useSelectionStore.getState().select(exterior.id);
     render(<PlanEditBar index={index} />);
-    expect(
-      screen.getByText(/is an exterior wall; only interior walls can be moved/),
-    ).toBeInTheDocument();
-    expect(screen.queryByLabelText("Distance in meters")).toBeNull();
+    expect(screen.getByText(/drag the facade on the plan/)).toBeInTheDocument();
+    const input = screen.getByLabelText("Distance in meters");
+    await userEvent.clear(input);
+    await userEvent.type(input, "0.3");
+    await userEvent.click(screen.getByRole("button", { name: "↓ South" }));
+    expect(apply).toHaveBeenCalledWith(
+      expect.objectContaining({ op: "move_wall", wall_id: exterior.id }),
+    );
   });
 
   it("shows the server's reason for a refused change", () => {
@@ -125,15 +129,26 @@ describe("PlanEditBar room resizing", () => {
     expect(apply).toHaveBeenCalledTimes(3);
   });
 
-  it("explains a side that cannot move", async () => {
+  it("resizes a room at its facade side (the facade moves)", async () => {
     useSelectionStore.getState().select(entrance.id);
     const { roomSides } = await import("@/engine/drawing/room-edit");
     const exterior = roomSides(index, entrance).find((s) => s.kind === "exterior")!;
     useEditStore.getState().chooseSide({ roomId: entrance.id, edge: exterior.index });
     render(<PlanEditBar index={index} />);
-    expect(
-      screen.getByText(/is an exterior wall; rooms can be resized at interior walls/),
-    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Enlarge" }));
+    expect(apply).toHaveBeenCalledWith(
+      expect.objectContaining({ op: "resize_room", room_id: entrance.id }),
+    );
+  });
+
+  it("explains a side that cannot move", async () => {
+    const balcony = bySemanticKey(index.model, "room:balcony") as Room;
+    useSelectionStore.getState().select(balcony.id);
+    const { roomSides } = await import("@/engine/drawing/room-edit");
+    const side = roomSides(index, balcony).find((s) => !s.resizable)!;
+    useEditStore.getState().chooseSide({ roomId: balcony.id, edge: side.index });
+    render(<PlanEditBar index={index} />);
+    expect(screen.getByText(/Balcony/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Enlarge" })).toBeNull();
   });
 });

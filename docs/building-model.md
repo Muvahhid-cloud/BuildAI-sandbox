@@ -368,7 +368,10 @@ Compatibility: existing codes keep their names (`OPENING_OUTSIDE_WALL`, `OPENING
 
 ```jsonc
 // discriminated union on "op"
-{ "op": "move_wall",       "wall_id": "uuid", "offset_m": 0.4 }          // implemented (Phase 3.6 D2.1)
+{ "op": "move_wall",       "wall_id": "uuid", "offset_m": 0.4 }          // implemented (Phase 3.6 D2.1; exterior walls: the facade, D2.5)
+{ "op": "set_wall_thickness", "wall_id": "uuid", "thickness_m": 0.4 }    // implemented (D2.5): interior, or the whole facade
+{ "op": "set_wall_finish", "wall_id": "uuid", "face": "right", "material_id": "brick" }  // implemented (D2.5): left | right | both
+{ "op": "set_wall_height", "wall_id": "uuid", "height_m": 2.4 }        // implemented (D2.5): non-structural walls only
 { "op": "add_element",     "element": Element }
 { "op": "remove_element",  "element_id": "uuid" }                    // implemented (D2.3) for doors and windows only
 { "op": "remove_wall",     "wall_id": "uuid", "merge_rooms": false }   // implemented (D2.4): interior walls; merge_rooms joins the two rooms
@@ -401,8 +404,9 @@ Each operation also records its **inverse** for undo within a draft. Batches tha
 
 `building/operations` (pure; schemas, `walls.py`, `relationships.py`, `apply.py`). `offset_m` moves
 the wall sideways, + towards its left face (the left of its start→end direction), rounded to 1 mm,
-|offset| ≤ 20 m. Interior walls only: an exterior wall is refused (`EXTERIOR_WALL_FIXED`), because
-the footprint, slabs and roof would have to follow.
+|offset| ≤ 20 m. An exterior wall moves its whole facade on every storey, with the slabs and the
+roof (D2.5, §5.6); the rest of this section describes the move of one wall, which the facade move
+applies per storey.
 
 - The wall keeps its length and openings. At each end: against the side of another wall the end
   slides along it (`WALL_END_UNSUPPORTED` past its end); where the wall's line goes on (another
@@ -438,7 +442,9 @@ neighbouring room on the other side of a shared wall, joined walls, step walls, 
 and relationships follow exactly as for a wall move (§5.1), and the same acceptance applies.
 Refused, naming the room and side: `ROOM_NOT_FOUND`, `ROOM_SIDE_NOT_FOUND`, `NO_CHANGE`,
 `ROOM_SIDE_OPEN` (no wall: an open-plan boundary), `ROOM_SIDE_PARTLY_OPEN` (walls cover only part
-of the side), `EXTERIOR_WALL_FIXED`; errors of the wall moves are re-raised prefixed with
+of the side), `ROOM_SIDE_FACADE` (a balcony or terrace at the facade it hangs on: move the
+facade itself), `ROOM_SIDE_MIXED` (a side along several walls, one of them a facade); a side along
+one exterior wall moves that facade (§5.6, D2.5); errors of the wall moves are re-raised prefixed with
 "Resizing <room>:".
 
 **Mandatory requirements (all edits, D2.2).** When the version has a spec, the edited model is
@@ -559,6 +565,64 @@ not on a door or window of that wall, widened by half the new wall's thickness
   requirements are judged by the editing check. `remove_wall {merge_rooms: true}` on the new wall
   gives the room back.
 
+### 5.6 Implemented: envelope editing — facades, wall thickness, finish and height (Phase 3.6 D2.5)
+
+`building/operations/envelope.py` (facades), `wall_properties.py` (thickness, finish, height). Pure
+like every operation; `building` does not import `layout`, and the same model with the same
+operations gives the same result (test).
+
+**The facade of an exterior wall** is the set of exterior walls on the same line, one per storey,
+with the same extent and thickness (`facade_of`). It is edited as one, or refused:
+
+| Code | When |
+|---|---|
+| `FACADE_CONTINUES` | another exterior wall of the same storey overlaps it or continues it in line (e.g. a garage front flush with the house front) |
+| `FACADE_STOREYS_DIFFER` | the walls on that line differ between storeys (extent or thickness) |
+| `VOLUME_ATTACHED` | a wall end does not meet a perpendicular exterior wall at a corner, or another volume's exterior wall (garage, wing) joins the facade — L and T wings where a facade meets the other wing are refused, their free ends move |
+
+**`move_wall` on an exterior wall** (`move_facade`): every stacked wall moves with `shift_wall` (the
+§5.1 move: corner walls stretch or shrink, rooms along it change area, openings stay host-relative,
+furniture against it follows). Then:
+
+- what hangs outside the facade is translated unchanged: balcony and terrace rooms and slabs,
+  their railings and furniture, the entrance canopy (`slab_kind: canopy`);
+- floor slabs: outline edges on the facade's outer face line move with it; roofs it supports: the
+  edge on the outer face line + overhang moves (eaves, verge, parapet line); outlines are
+  simplified, areas recomputed; `bounds`/`adjacent_to` are recomputed per level;
+- refused: `FACADE_CUTS_STAIR` (the wall body would run through a stair, or a slab's stair opening
+  would leave the slab), `ROOF_CANNOT_FORM` (a supported roof has no edge on the facade line, or a
+  pitched roof would not stay an axis-aligned rectangle), `ENVELOPE_INVALID` (an outline would
+  fold), and every §5.1 refusal.
+
+`resize_room` on a side along one exterior wall issues this facade move.
+
+**`set_wall_thickness {wall_id, thickness_m}`** (0 < t ≤ 1.5 m by schema): an interior wall changes
+alone (axis kept); an exterior wall changes on the whole facade with its axis kept, so the outer
+face moves by Δt/2: slab and roof edges on the outer face move with it and the canopy follows.
+Refused: `NO_CHANGE`, the facade codes above, `BALCONY_ATTACHED` (a balcony or terrace hangs on the
+facade: its slab and railings start at the outer face). The limits are the active profile's
+`walls.exterior_thickness_m` / `walls.interior_thickness_m` (generic-residential: 0.20–0.60 m and
+0.08–0.30 m), enforced by `rules.model_checks` as `RULE_WALL_THICKNESS`, so the editing check
+refuses an edit outside them (`EDIT_INVALID`). No thickness is hard-coded in operations.
+
+**`set_wall_finish {wall_id, face: left|right|both, material_id}`**: sets `finish_left_id` /
+`finish_right_id` (the right face of an exterior wall is the facade) and clears that face's display
+colour; the material must be in the library (validated with the model). `NO_CHANGE` when nothing
+changes. The wall core (`material_id`) is not changed.
+
+**`set_wall_height {wall_id, height_m}`**: only where it stays consistent — `WALL_HEIGHT_FIXED` for a
+wall that supports a slab or roof (its height is the storey's), `WALL_HEIGHT_EXCEEDS_STOREY` above
+the storey's structural walls, `OPENING_ABOVE_WALL_TOP` when a door or window head would stand above
+it; the profile's `walls.min_height_m` (`RULE_WALL_HEIGHT`) applies through the editing check.
+
+All four join the `Operation` union, keep `origin: user` on what they change, and pass through the
+same acceptance (§5.1: no new model error, rules finding or circulation pinch; MUST requirements the
+base meets stay met). Tests: `tests/building/test_envelope_editing.py` (each operation, refusals,
+determinism, a Hypothesis property: every facade move and thickness change on the demo,
+generated rectangular, L and T houses is refused or consistent — no new model error or rules
+finding, the facade's storeys on one axis with one thickness, pitched roofs still rectangles,
+canopies valid) and `tests/test_editing_api.py` (save and reload).
+
 ---
 
 ## 6. Discipline layers & materials
@@ -659,6 +723,10 @@ windows:
   min_height_m: 0.6
 openings:                            # plan editing (D2.3), optional: absent = no clearance rule
   min_clearance_m: 0.1               # solid wall from a moved/added opening to a corner/joining wall, wall end or next opening
+walls:                               # envelope editing (D2.5), optional: absent = no wall rules
+  exterior_thickness_m: { min: 0.2,  max: 0.6 }   # RULE_WALL_THICKNESS
+  interior_thickness_m: { min: 0.08, max: 0.3 }
+  min_height_m: 0.9                  # RULE_WALL_HEIGHT (lowest wall of any kind)
 stairs:
   min_width_m: 0.9
   riser_m: { min: 0.15, max: 0.19 }

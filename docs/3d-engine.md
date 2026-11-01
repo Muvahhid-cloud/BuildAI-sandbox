@@ -566,6 +566,49 @@ fingerprints).
   circulation windows are not on bays; widths per facade and storey still vary where service and
   stair windows share the facade (average 2.3 widths per facade line and storey on 01, 04–09).
 
+### 16.16 Window consistency (layout@1.12.0–1.14.0, V6)
+
+Three passes over the placed windows (`build._windows`, bay grid on, `LayoutConfig.window_consistency`;
+False reproduces layout@1.11.0 exactly — test against main's geometry fingerprints):
+
+- **No awkward pairs (step 1, `_merge_pairs`).** Windows of one habitable room on one facade
+  wall and storey whose centres share a bay become one window on that bay's axis, as wide as the
+  widest (up to their total if the room's glazing needs it); if that does not fit, the smaller
+  ones are dropped when the room keeps its required glazing; as a last resort the pair becomes
+  one window over its own span. Placement keeps the 0.15 m gap of `WallPlan.place`, above the
+  profile's `openings.min_clearance_m` (tested on every opening). Spans are freed with
+  `_free_span` (matched within 1 mm: `place` records them unrounded).
+- **One main width per wall and storey (step 2, `_unify_widths`).** The habitable windows' most
+  common width there (the wider on a tie; all widths come from `LayoutConfig`: bay width, side
+  rhythm width, preset-sized windows) is the main width; every other habitable window takes it,
+  centred where it stands, when it fits exactly and the room keeps its required glazing. Service
+  windows share `service_window`.
+- **Circulation windows and heads (step 3, `_align_heads`).** Stair, hall and corridor windows take
+  the bay placement. One head height per storey: the most common head (sill + height) of the
+  storey's habitable windows; stair, hall, corridor and service windows keep their height and
+  raise their sill to it — never lower (service sills stay above `service_window`'s, upper-storey
+  sills above the guard height), the head stays `lintel_min` below the wall top.
+- **Measured on the model** (`tests/layout/test_window_consistency.py`, script for 01, 04–09):
+
+| | main (layout@1.11.0) | layout@1.14.0 |
+|---|---|---|
+| Same-room pairs in one bay, 12 specs | 26 | 0 |
+| Pairs of any windows in one bay (01, 04–09) | 25 | 3 (different rooms) |
+| Habitable window widths per exterior wall and storey, 12 specs | 1.52 | 1.20 |
+| All window widths per facade line and storey (01, 04–09) | 2.32 | 2.03 |
+| Window heads per storey, 12 specs | 3.0 | 1.08 |
+| Windows on a bay axis, 12 specs | 102/245 | 110/219 |
+| Windows on a bay axis (01, 04–09) | 71/181 | 78/160 |
+| Upper windows standing on a window below (01, 04–09) | 75/105 | 62/92 (67 %) |
+
+  Merged pairs were stacked pairs on both storeys, hence fewer stacked windows in absolute terms
+  (the V4 floor, 58 and 65 %, is kept). Design scores, warnings, validation, rules checks and the
+  benchmark (hard 147/147, soft 26/33, known gaps 0/3) unchanged.
+- **Next steps.** Widths per facade line still mix main, service and stair sizes (2.03); a
+  service width snapped to the main width where glazing and privacy allow; two windows of
+  different rooms in one bay (3 left); 04's upper corridor window takes a bay its short hall below
+  cannot reach.
+
 ### 16.5 Limitations (layout@1.0.0)
 
 - One plan type (double-loaded corridor, street on the south) plus, since layout@1.5.0, a single-storey L (§16.10) and since 1.7.0 a single-storey T (§16.12); no U-shapes or courtyards (refused with the reason), no sloped sites, no basements.

@@ -144,6 +144,10 @@ Local environment notes (dev machine is Windows): `uv` may only be available as 
 
 - Design: `docs/3d-engine.md` §16.15. Bays come from the footprint (`layout/bays.py`, numbers in `LayoutConfig`); the search never sees them — the chosen design is re-laid on bays (`planner.rebay`) and kept only if it is valid, meets every MUST the original meets, scores no lower and adds no area deviation. `facade_bays = False` must reproduce layout@1.9.0 (test pins main's geometry fingerprints). Side-facade rhythm never on an excluded facade nor with a `privacy` priority.
 
+## Window consistency notes (layout@1.14.0, V6)
+
+- Design: `docs/3d-engine.md` §16.16. Merges, width unification and head alignment only happen where the room keeps its required glazing; sills are only raised (service and guard sills kept). `window_consistency = False` must reproduce layout@1.11.0 (test pins main's geometry fingerprints).
+
 ## Knowledge notes (Phase 3.5)
 
 - Design: `docs/knowledge.md`. Steps K1 Foundation → K2 Families/Types/Assemblies → K3 Design Systems → K4 Templates → K5 Knowledge API and Units → K6 Optional Structural Elements; don't rename, merge or start a step before the previous one is reviewed.

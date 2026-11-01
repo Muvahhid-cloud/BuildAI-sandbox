@@ -109,14 +109,21 @@ def resize_room(model: BuildingModel, op: ResizeRoom) -> BuildingModel:
             related_ids=[w.id for w in side.walls],
         )
     exterior = [w for w in side.walls if w.properties.wall_kind == WallKind.EXTERIOR]
-    if exterior:
+    if exterior and room.properties.zone == Zone.EXTERIOR:
         raise OperationRejected(
-            "EXTERIOR_WALL_FIXED",
-            f"{where} is the exterior wall {exterior[0].name}. Moving exterior walls changes the "
-            "footprint, the floor slabs and the roof; rooms can be resized at interior walls for "
-            "now.",
+            "ROOM_SIDE_FACADE",
+            f"{where} is the facade {exterior[0].name} that {room.name} hangs on; the balcony or "
+            "terrace moves with its facade. Resize its outer sides, or move the facade.",
             element_id=room.id,
             related_ids=[w.id for w in exterior],
+        )
+    if exterior and len(side.walls) > 1:
+        raise OperationRejected(
+            "ROOM_SIDE_MIXED",
+            f"{where} runs along {len(side.walls)} walls including the exterior wall "
+            f"{exterior[0].name}; move the facade itself instead.",
+            element_id=room.id,
+            related_ids=[w.id for w in side.walls],
         )
     current = model
     for wall in side.walls:

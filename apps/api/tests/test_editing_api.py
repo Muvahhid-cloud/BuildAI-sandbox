@@ -47,16 +47,14 @@ async def test_preview_returns_the_edited_model_without_saving(client: Any) -> N
 async def test_preview_refuses_invalid_edits_with_reasons(client: Any) -> None:
     h, pid, v1 = await _demo_version(client)
     url = f"/api/v1/projects/{pid}/versions/{v1['id']}/edits/preview"
-    ext = next(
-        e
-        for e in v1["model"]["elements"]
-        if e["type"] == "wall" and e["properties"]["wall_kind"] == "exterior"
+    # The south facade pulled in 0.6 m would cut the stair opening (D2.5 facade moves).
+    resp = await client.post(
+        url, json={"operations": [_move(_wall(v1, "wall:G-S"), 0.6)]}, headers=h
     )
-    resp = await client.post(url, json={"operations": [_move(ext, 0.3)]}, headers=h)
     assert resp.status_code == 200
     out = resp.json()
     assert out["valid"] is False and out["model"] is None
-    assert out["rejection"]["code"] == "EXTERIOR_WALL_FIXED" and out["rejection"]["index"] == 0
+    assert out["rejection"]["code"] == "FACADE_CUTS_STAIR" and out["rejection"]["index"] == 0
     resp = await client.post(
         url, json={"operations": [_move(_wall(v1, "wall:G-I6"), 0.5)]}, headers=h
     )
@@ -398,3 +396,64 @@ async def test_an_added_wall_saves_and_reloads_with_its_new_room(client: Any) ->
     assert (await client.get(f"{url}/{v2['id']}", headers=h)).json()["model"] == v2["model"]
     base = (await client.get(f"{url}/{v1['id']}", headers=h)).json()
     assert base["model_hash"] == v1["model_hash"]
+
+
+async def test_d25_envelope_edits_save_and_reload_as_one_version(client: Any) -> None:
+    """D2.5: a facade move, a facade thickness, a finish and a partition height preview, save as
+    a new version and reload exactly; the base version is untouched."""
+    h, pid, v1 = await _demo_version(client, email="envelope@example.com")
+    url = f"/api/v1/projects/{pid}/versions"
+    east = _wall(v1, "wall:G-E")  # exterior, runs north: + = west (inwards)
+    upper_east = _wall(v1, "wall:F-E")
+    interior = _wall(v1, "wall:G-I1")
+    ops = [
+        _move(east, -0.8),
+        {"op": "set_wall_thickness", "wall_id": east["id"], "thickness_m": 0.4},
+        {
+            "op": "set_wall_finish",
+            "wall_id": east["id"],
+            "face": "right",
+            "material_id": "exterior_wall",
+        },
+        {"op": "set_wall_thickness", "wall_id": interior["id"], "thickness_m": 0.15},
+    ]
+    preview = (
+        await client.post(f"{url}/{v1['id']}/edits/preview", json={"operations": ops}, headers=h)
+    ).json()
+    assert preview["valid"] is True, preview["rejection"]
+    resp = await client.post(
+        f"{url}/{v1['id']}/edits", json={"operations": ops, "label": "Wider east"}, headers=h
+    )
+    assert resp.status_code == 201, resp.text
+    v2 = resp.json()
+    assert v2["model"] == preview["model"]
+    moved = _wall(v2, "wall:G-E")
+    assert moved["position"]["x"] == pytest.approx(east["position"]["x"] + 0.8)
+    assert moved["dimensions"]["thickness"] == 0.4
+    assert moved["properties"]["finish_right_id"] == "exterior_wall"
+    # The storey above moved with it.
+    assert _wall(v2, "wall:F-E")["position"]["x"] == pytest.approx(
+        upper_east["position"]["x"] + 0.8
+    )
+    roof = next(e for e in v2["model"]["elements"] if e["type"] == "roof")
+    base_roof = next(e for e in v1["model"]["elements"] if e["type"] == "roof")
+    assert max(p["x"] for p in roof["properties"]["outline"]) > max(
+        p["x"] for p in base_roof["properties"]["outline"]
+    )
+    reloaded = (await client.get(f"{url}/{v2['id']}", headers=h)).json()
+    assert reloaded["model"] == v2["model"]
+    base = (await client.get(f"{url}/{v1['id']}", headers=h)).json()
+    assert base["model"] == v1["model"]
+
+    # Refusals explain themselves and store nothing.
+    for bad, code in (
+        ([{"op": "set_wall_thickness", "wall_id": east["id"], "thickness_m": 0.1}], "EDIT_INVALID"),
+        ([{"op": "set_wall_height", "wall_id": east["id"], "height_m": 2.0}], "WALL_HEIGHT_FIXED"),
+    ):
+        out = (
+            await client.post(
+                f"{url}/{v2['id']}/edits/preview", json={"operations": bad}, headers=h
+            )
+        ).json()
+        assert out["valid"] is False and out["rejection"]["code"] == code
+    assert len((await client.get(url, headers=h)).json()["items"]) == 2

@@ -16,6 +16,9 @@ from app.modules.building.operations.schemas import (
     ResizeOpening,
     ResizeRoom,
     SetRoomType,
+    SetWallFinish,
+    SetWallHeight,
+    SetWallThickness,
 )
 
 __all__ = [
@@ -34,6 +37,9 @@ __all__ = [
     "ResizeRoom",
     "RoomSide",
     "SetRoomType",
+    "SetWallFinish",
+    "SetWallHeight",
+    "SetWallThickness",
     "apply_operation",
     "apply_operations",
     "room_sides",

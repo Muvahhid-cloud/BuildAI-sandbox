@@ -6,8 +6,9 @@ untrusted: every reference is checked, and the result is validated by the editin
 before anything is shown as valid or saved.
 
 Implemented: `move_wall` (D2.1), `resize_room` (D2.2, expressed as wall moves), for doors and
-windows (D2.3) `move_opening`, `add_opening` and `remove_element`, and (D2.4) `resize_opening`,
-`remove_wall`, `rename_room`, `set_room_type` and `add_wall`. All join the `Operation` union
+windows (D2.3) `move_opening`, `add_opening` and `remove_element`, (D2.4) `resize_opening`,
+`remove_wall`, `rename_room`, `set_room_type` and `add_wall`, and (D2.5) exterior wall moves,
+`set_wall_thickness`, `set_wall_finish` and `set_wall_height`. All join the `Operation` union
 (discriminated on `op`).
 """
 
@@ -35,7 +36,9 @@ class MoveWall(Frozen):
     Positive = towards the wall's left face (+v: the left of the direction from its start to its
     end). Walls that join it follow (they stretch or shrink), the rooms on both sides change
     shape and area, openings stay where they are on their walls, and furniture standing against
-    the wall moves with it. Exterior walls are refused for now: they carry slabs and roofs.
+    the wall moves with it. An exterior wall moves its whole facade (D2.5, `envelope.py`): the
+    walls on the same line on every storey, the slab and roof edges along it, and what hangs on
+    it (canopy, balconies, terraces); shapes that cannot follow are refused with the reason.
     """
 
     op: Literal["move_wall"] = "move_wall"
@@ -47,10 +50,10 @@ class ResizeRoom(Frozen):
     """Move one side of a room outwards (`delta_m` > 0, the room grows) or inwards (< 0).
 
     `edge` is the index of the side in the room's boundary as the model stores it: side i runs
-    from vertex i to vertex i + 1. The side must run along interior walls over its whole length;
-    the operation moves those walls (`MoveWall`), so the neighbouring rooms, joined walls,
-    openings and furniture follow exactly as for a wall move. Sides along exterior walls or
-    open (wall-less) boundaries are refused for now.
+    from vertex i to vertex i + 1. The side must run along walls over its whole length; the
+    operation moves those walls (`MoveWall`), so the neighbouring rooms, joined walls, openings
+    and furniture follow exactly as for a wall move. A side along an exterior wall moves the
+    whole facade (D2.5). Open (wall-less) boundaries are refused for now.
     """
 
     op: Literal["resize_room"] = "resize_room"
@@ -172,6 +175,43 @@ class AddWall(Frozen):
         return self
 
 
+#: Input sanity bounds of wall properties (m); the design limits come from the rules profile.
+MAX_WALL_THICKNESS_M = 1.5
+MAX_WALL_HEIGHT_M = 10.0
+
+
+class SetWallThickness(Frozen):
+    """A wall's thickness (D2.5). The axis stays where it is (room boundaries stay on wall
+    axes), so both faces move by half the change; clear widths and areas are re-checked by the
+    rules profile (`walls.*_thickness_m`). An exterior wall changes on every storey of its facade
+    and the slab and roof edges on its outer face follow."""
+
+    op: Literal["set_wall_thickness"] = "set_wall_thickness"
+    wall_id: uuid.UUID
+    thickness_m: float = Field(gt=0, le=MAX_WALL_THICKNESS_M, allow_inf_nan=False)
+
+
+class SetWallFinish(Frozen):
+    """The finish material (a material-library id) of one or both faces of a wall (D2.5).
+    `left` = the +normal side (the interior of exterior walls), `right` = the other side (the
+    facade). A chosen material replaces a display colour on that face."""
+
+    op: Literal["set_wall_finish"] = "set_wall_finish"
+    wall_id: uuid.UUID
+    face: Literal["left", "right", "both"]
+    material_id: str = Field(min_length=1, max_length=64, pattern=r"^[a-z][a-z0-9_]*$")
+
+
+class SetWallHeight(Frozen):
+    """A non-structural wall's height (D2.5): walls that carry a slab or a roof keep the storey
+    height. Not above the storey's structural walls, not below the profile's lowest wall
+    (`walls.min_height_m`), never below the head of an opening in it."""
+
+    op: Literal["set_wall_height"] = "set_wall_height"
+    wall_id: uuid.UUID
+    height_m: float = Field(gt=0, le=MAX_WALL_HEIGHT_M, allow_inf_nan=False)
+
+
 Operation = Annotated[
     MoveWall
     | ResizeRoom
@@ -182,7 +222,10 @@ Operation = Annotated[
     | RemoveWall
     | RenameRoom
     | SetRoomType
-    | AddWall,
+    | AddWall
+    | SetWallThickness
+    | SetWallFinish
+    | SetWallHeight,
     Field(discriminator="op"),
 ]
 

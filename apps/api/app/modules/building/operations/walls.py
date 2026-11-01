@@ -282,17 +282,9 @@ def _furniture_against(item: Furniture, wall: Wall, a: Point, u: Point) -> bool:
 
 
 def move_wall(model: BuildingModel, op: MoveWall) -> BuildingModel:
-    edit = _Edit(model)
-    wall = edit.by_id.get(op.wall_id)
+    wall = next((e for e in model.elements if e.id == op.wall_id), None)
     if not isinstance(wall, Wall):
         raise OperationRejected("WALL_NOT_FOUND", "The wall to move is not in this design.")
-    if wall.properties.wall_kind == WallKind.EXTERIOR:
-        raise OperationRejected(
-            "EXTERIOR_WALL_FIXED",
-            f"{wall.name} is an exterior wall. Moving exterior walls changes the footprint, "
-            "the floor slabs and the roof; plan editing supports interior walls for now.",
-            element_id=wall.id,
-        )
     if not is_axis_aligned(wall.rotation.z):
         raise OperationRejected(
             "WALL_NOT_AXIS_ALIGNED", f"{wall.name} is not axis-aligned.", element_id=wall.id
@@ -302,7 +294,25 @@ def move_wall(model: BuildingModel, op: MoveWall) -> BuildingModel:
         raise OperationRejected(
             "NO_CHANGE", f"{wall.name} would move by less than 1 mm.", element_id=wall.id
         )
+    if wall.properties.wall_kind == WallKind.EXTERIOR:
+        # The whole facade moves, with the envelope it carries (D2.5).
+        from app.modules.building.operations.envelope import move_facade
 
+        return move_facade(model, wall, delta)
+    return shift_wall(model, wall, delta)
+
+
+def shift_wall(
+    model: BuildingModel,
+    wall: Wall,
+    delta: float,
+    *,
+    skip_rooms: frozenset[uuid.UUID] = frozenset(),
+) -> BuildingModel:
+    """Move one wall sideways on its level with everything that joins it (see module doc).
+    Rooms in `skip_rooms` keep their boundaries (a facade move translates the outdoor rooms
+    that hang on it instead)."""
+    edit = _Edit(model)
     a, b = wall_axis(wall)
     u = _unit(wall)
     n = (-u[1], u[0])
@@ -333,7 +343,11 @@ def move_wall(model: BuildingModel, op: MoveWall) -> BuildingModel:
                 related_ids=[o.id],
             )
 
-    rooms = [e for e in model.elements if isinstance(e, Room) and e.level_id == wall.level_id]
+    rooms = [
+        e
+        for e in model.elements
+        if isinstance(e, Room) and e.level_id == wall.level_id and e.id not in skip_rooms
+    ]
     for end, e in (("start", a), ("end", b)):
         moved_e = _add(e, m)
         at_e = [
@@ -401,10 +415,12 @@ def move_wall(model: BuildingModel, op: MoveWall) -> BuildingModel:
 
     for el in model.elements:
         if isinstance(el, Room) and el.level_id == wall.level_id:
-            edit.set(_move_room_edges(el, a, u, length, m))
+            if el.id not in skip_rooms:
+                edit.set(_move_room_edges(el, a, u, length, m))
         elif (
             isinstance(el, Furniture)
             and el.level_id == wall.level_id
+            and not any(r.target_id in skip_rooms for r in el.relationships)
             and _furniture_against(el, wall, a, u)
         ):
             fx, fy = _round_pt(_add((el.position.x, el.position.y), m))

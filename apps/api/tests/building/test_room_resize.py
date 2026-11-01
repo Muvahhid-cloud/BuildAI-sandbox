@@ -181,18 +181,20 @@ def _first_side(name: str, kind: str) -> tuple[Room, int]:
 
 
 @pytest.mark.parametrize(
-    ("kind", "code", "words"),
+    ("kind", "delta", "code", "words"),
     [
-        ("exterior", "EXTERIOR_WALL_FIXED", "exterior wall"),
-        ("open", "ROOM_SIDE_OPEN", "open boundary"),
-        ("partly", "ROOM_SIDE_PARTLY_OPEN", "only partly a wall"),
+        # Exterior sides move the facade since D2.5; pulled in 0.6 m, the demo's south facade
+        # would cut the stair opening, which is refused naming the room.
+        ("exterior", -0.6, "FACADE_CUTS_STAIR", "stair opening"),
+        ("open", 0.3, "ROOM_SIDE_OPEN", "open boundary"),
+        ("partly", 0.3, "ROOM_SIDE_PARTLY_OPEN", "only partly a wall"),
     ],
 )
 def test_sides_that_cannot_move_are_refused_naming_the_room(
-    kind: str, code: str, words: str
+    kind: str, delta: float, code: str, words: str
 ) -> None:
     r, edge = _first_side("demo-house", kind)
-    outcome = resize("demo-house", r, edge, 0.3)
+    outcome = resize("demo-house", r, edge, delta)
     assert outcome.model is None and outcome.rejection is not None
     assert outcome.rejection.code == code
     assert r.name in outcome.rejection.message and words in outcome.rejection.message
@@ -360,5 +362,12 @@ def test_every_resize_is_refused_or_consistent(case: tuple[str, str, int], delta
     def level_area(m: BuildingModel) -> float:
         return sum(area(e) for e in m.elements if isinstance(e, Room) and e.level_id == r.level_id)
 
-    assert level_area(outcome.model) == pytest.approx(level_area(base), abs=1e-3)
+    side = room_sides(base, r)[edge]
+    if all(w.properties.wall_kind != "exterior" for w in side.walls):
+        # Interior sides move area between neighbours: the level's area is conserved.
+        assert level_area(outcome.model) == pytest.approx(level_area(base), abs=1e-3)
+    else:
+        # An exterior side moves the facade (D2.5): the level grows or shrinks with the room.
+        change = level_area(outcome.model) - level_area(base)
+        assert math.copysign(1, change) == math.copysign(1, delta)
     assert errors(validate_model(outcome.model, material_ids=MATERIALS)) == []

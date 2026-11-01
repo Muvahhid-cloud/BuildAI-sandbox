@@ -62,6 +62,7 @@ docs/  infra/  docker-compose.yml  Makefile
 - Backend module shape: `router.py` (HTTP only) → `service.py` (use cases, transactions) → `repository.py` (SQLAlchemy) ; `models.py` ORM, `schemas.py` DTOs.
 - Frontend: `engine/` is pure TS (no React, no stores) — geometry builders `(element, ctx) → RenderDescriptor[]`, all drawing through `engine/geometry/mesh-builder.ts`. `viewer/` is R3F. `features/*` are vertical slices.
 - 3D rules: model→world conversion only via `engine/math/coords.ts` + the `ModelRoot` group; materials only from `data/materials/library.json` via `MaterialCache`; every mesh carries only `{ elementId, part }` and maps to one model element; new element types need a schema class, a builder in `engine/builders/registry.ts`, and tests (see `docs/3d-engine.md`).
+- Rendering (V1 visual quality, `docs/3d-engine.md` §21): look-dev constants only in `viewer/render-settings.ts`; textures/HDRI only CC0 (ambientCG, Poly Haven), stored in `data/materials/{textures,hdri}` and recorded in `data/materials/ASSETS.md`, referenced from `library.json` with `tile_size_m`; a missing texture must fall back to the flat library color; no runtime CDN.
 - State: server state in TanStack Query; the model being edited + view state (selection, isolation, layers, camera mode) in Zustand with granular selectors.
 
 ## Conventions

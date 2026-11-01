@@ -1,6 +1,6 @@
 # 3D Engine
 
-Status: **Implemented for Phase 2 (v0.4)** · Last updated: 2026-09-28
+Status: **Implemented for Phase 2 (v0.4)**; rendering V1 step 1 (§21) · Last updated: 2026-10-31
 
 The "3D engine" is four parts with hard boundaries:
 
@@ -17,10 +17,10 @@ Positions of everything are decided by the model (the layout engine for generate
 
 > **Same BuildingModel + same EngineConfig ⇒ identical geometry** (same descriptors, same order, same buffers, same material keys).
 
-- Builders never call `Math.random`/`Date.now` or read mutable globals.
+- Builders never call `Math.random`/`Date.now` or read mutable globals. Textures, lights and post-processing are applied by the viewer after building and never feed back into geometry.
 - Elements are built in **id order**, independent of document order (tested by building a reversed document).
 - Walls joins are resolved in id order; polygon orientation is normalized before triangulation.
-- `EngineConfig.version` (`engine@1`) is part of every geometry cache key; bump it when builder output changes.
+- `EngineConfig.version` (`engine@2` since V1 visual quality, §21) is part of every geometry cache key; bump it when builder output changes.
 - Verified by Vitest: a hash over every descriptor key, material list, matrix and position/normal/uv buffer must be equal across builds (`engine/scene/build-scene.test.ts`).
 
 ---
@@ -174,7 +174,8 @@ Demo house (measured): 116 elements → 144 meshes, ~7k triangles; validate + in
 | Shared materials (`MaterialCache`) | ☑ |
 | Memoized meshes, granular Zustand selectors | ☑ |
 | Explicit disposal of replaced geometry; meshes use `dispose={null}` | ☑ |
-| PCF sun shadows (2048²), disabled while a section cut is active | ☑ |
+| PCF sun shadows (2048², radius 4), disabled while a section cut is active | ☑ |
+| Optional post-processing (N8AO half-res, SMAA), contact shadows; shared textures per (file, repeat) | ☑ V1 (§21) |
 | InstancedMesh / BatchedMesh, Web Worker builds, LOD, BVH raycasting | Deferred until a model needs it (budget: 3–5k elements) |
 
 ---
@@ -198,7 +199,8 @@ viewer/
   ModelRoot         the model->world group; ElementMesh per descriptor; selection outline
   CameraRig         drei OrbitControls (rotate / zoom / pan), perspective + orthographic cameras,
                     animated presets
-  SceneEnvironment  hemisphere + ambient + shadowed sun, ground disc, infinite grid
+  SceneEnvironment  HDRI lighting, soft-shadowed sun, contact shadows, textured ground, sky, grid (§21)
+  PostEffects       optional N8AO + SMAA + tone mapping (§21)
   SectionPlane      horizontal clipping plane (renderer clipping planes)
 stores/ (Zustand, one concern each)
   project-store · building-store · selection-store · viewer-store (floors, inspection,
@@ -682,3 +684,94 @@ features/drawing/components PlanView (drag + live preview), PlanEditBar (undo/re
 - **Limits (D2.1).** Only `move_wall` on interior walls; no snapping to other walls; the preview is
   a server round trip per 5 cm step (fine locally; port the applier to TS if it needs to be faster,
   architecture.md §5.2); drafts are not persisted server-side.
+
+## 21. Rendering & visual quality — V1 step 1 (2026-10-31)
+
+Scope: how the viewer *looks*. Nothing here changes the BuildingModel, the layout engine, golden
+files, the API or the 2D plan drawings (they use `engine/drawing`, not the 3D materials). The
+determinism contract is unchanged: builders still take only (element, ctx); textures and lights
+are applied by the viewer and `MaterialCache` after geometry is built.
+
+### 21.1 Pipeline
+
+```
+Canvas (frameloop="demand", PCF shadows, ACES Filmic tone mapping, exposure RENDER.exposure)
+ ├─ SceneEnvironment   local HDRI (drei <Environment files>, image-based light + reflections only;
+ │                     error boundary → hemisphere light if the file cannot load)
+ │                     sun: directional light, 2048² PCF shadow map, shadow radius 4 (soft edges),
+ │                     switched off while a section cut is active
+ │                     contact shadows under the building (drei ContactShadows, off when sectioned)
+ │                     site ground: grass disc, library material `site_grass`, UVs in meters
+ │                     sky: neutral vertex-colour gradient dome (not tone mapped) + distance fog
+ │                     reference grid (viewer-store `showGrid`, toolbar "Grid", default off)
+ ├─ ModelRoot          building meshes (unchanged), materials from MaterialCache
+ ├─ PostEffects        viewer-store `effects` (toolbar "Effects", default on):
+ │                     EffectComposer → N8AO (half resolution, medium quality) → SMAA → ACES
+ │                     Filmic ToneMapping effect (the composer disables renderer tone mapping
+ │                     while mounted). Off = plain renderer with MSAA and the same tone mapping.
+ └─ MaterialTextures   invalidates the on-demand canvas when a texture finishes loading
+```
+
+All look-development numbers (HDRI file, intensities, exposure, sky colours, AO and contact-shadow
+parameters) live in one file, `viewer/render-settings.ts`.
+
+### 21.2 Materials and textures
+
+- `data/materials/library.json` stays the only material source. A preset may carry
+  `textures: { albedo, normal, roughness, tile_size_m: [u, v], tint? }` (paths relative to
+  `data/materials`), `shading: "glass"` and `env_intensity`. `tile_size_m` is the asset's
+  published real-world size; the measured repeat (≈ 70 mm brick courses, 300 mm floor tiles,
+  136 mm slate courses, 212 mm boards) is recorded in ASSETS.md. Every asset is recorded in
+  `data/materials/ASSETS.md` (CC0 only: ambientCG, Poly Haven); a test keeps the library and
+  ASSETS.md in sync and checks that every slot marked present ships its files.
+- `MaterialCache` gets an injected `TextureSource` (the engine does no I/O; `viewer/textures.ts`
+  installs the browser loader, tests use fakes). One texture per (file, repeat) is shared by all
+  materials and variants; `repeat = 1 / tile_size_m`; albedo is sRGB, normal/roughness linear;
+  anisotropy 8. Ghost (isolated-floor) variants are never textured.
+- **Fallback:** the flat library `color` is used until a map has loaded and stays if it never
+  does (missing file, empty slot). With an albedo map the colour becomes `textures.tint`
+  (default white); a K3 display colour (`id@#rrggbb`) multiplies the map instead.
+- `scripts/sync-materials.mjs` (run by the web `dev` and `build` scripts) copies
+  `data/materials/{textures,hdri}` to `apps/web/public/materials/` (git-ignored) and writes
+  `manifest.json`; the browser requests only files listed there, so empty slots cost no request.
+- **Glass** (`shading: "glass"`): `MeshPhysicalMaterial`, transparent (opacity 0.3), roughness
+  0.05, IOR 1.5, clear coat, environment reflections ×1.6, library tint. No transmission pass
+  (keeps the cost of a transparent standard material).
+
+### 21.3 UVs (meters)
+
+`MeshBuilder` writes planar UVs in meters (1 UV unit = 1 m) in the element's local frame, so a
+texture's `tile_size_m` is its real size on every element. Horizontal faces (|n.z| > 0.9999) use
+the plan axes; every other face gets **u level along the face and v up the face** — brick courses
+run level on walls, and roof tile rows run parallel to the eave on every roof slope (before
+engine@2, slopes shallower than ~25.8°, i.e. |n.z| > 0.9, used the plan axes). The site ground uses the same convention
+(`engine/scene/site.ts`). Tests: `mesh-builder.test.ts` (UV distances equal edge lengths under
+rotation; slope axes), `site.test.ts`.
+
+### 21.4 Window detail (engine@2)
+
+Windows add a glazing bead (25 mm, shallower than the frame) around every pane and reveal
+linings (12 mm) on jambs, head and sill between the frame and each wall face, in the host wall's
+face finishes (left face → interior lining, right face → exterior lining, display colours
+included). Reveals therefore read as plaster / render instead of the raw wall core. All parts stay
+in the window's `body` descriptor, so selection and the mesh ↔ element mapping are unchanged.
+`EngineConfig.version` is `engine@2` (UVs of sloped faces and window geometry changed).
+
+### 21.5 Performance
+
+Effects on: one extra depth/normal pass for N8AO at half resolution, SMAA, contact shadows
+(one depth render from below + blur per frame) — only on demand frames (camera moves,
+changes). Shadows stay PCF 2048². "Effects" turns post-processing off on slow devices.
+
+### 21.6 Limitations (V1 step 1)
+
+- Assets (2026-11-01): nine 1K CC0 texture sets and the 1K Poly Haven "Potsdamer Platz" `.hdr`,
+  all from Poly Haven (≈ 17 MB, `data/materials/ASSETS.md`). ambientCG's download CDN is not
+  reachable from the build environment, so none of its sets is used. Painted interior plaster has
+  relief maps only (flat paint colour); grass and concrete use tints to correct the assets'
+  colour cast.
+- UVs start at each element's local origin: textures are continuous along a wall but not across
+  wall corners or between elements.
+- No transmission/refraction in glass, no screen-space reflections, no bloom; interior views get
+  sky light through the openings only via the HDRI (no light probes).
+- `three` removed `PCFSoftShadowMap`; soft shadow edges come from the PCF shadow radius.

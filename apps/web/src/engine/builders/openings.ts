@@ -4,6 +4,7 @@
 import type { MeshBuilder } from "../geometry/mesh-builder";
 import { openingMatrix } from "../math/transform";
 import type { Door, Wall, Window } from "../model/types";
+import { coloredMaterialKey } from "../materials/material-cache";
 import { contentKey, part } from "./common";
 import {
   assertDimensions,
@@ -16,6 +17,9 @@ const FRAME = 0.06; // window frame profile width
 const FRAME_DEPTH = 0.08;
 const MULLION = 0.05;
 const GLASS_T = 0.012;
+const SASH = 0.025; // glazing bead around each pane (visible profile step)
+const SASH_DEPTH = FRAME_DEPTH - 0.02;
+const LINING = 0.012; // reveal lining between the frame and each wall face
 const DOOR_FRAME = 0.05;
 const HANDLE_Z = 1.0;
 
@@ -34,7 +38,27 @@ export function buildWindow(win: Window, ctx: BuildContext): RenderDescriptor[] 
   const glass = win.material_id ?? "__missing__";
   const exterior = host.properties.wall_kind === "exterior";
   const matrix = openingMatrix(win, host, ctx.index);
-  const key = contentKey("window", win.dimensions, win.properties, glass, t, exterior);
+  // Reveal linings take the host's face finishes (+v = left face, -v = right face), so window
+  // reveals read as plaster/render instead of the raw wall core.
+  const core = host.material_id ?? "__missing__";
+  const liningIn = coloredMaterialKey(
+    host.properties.finish_left_id ?? core,
+    host.properties.finish_left_color,
+  );
+  const liningOut = coloredMaterialKey(
+    host.properties.finish_right_id ?? core,
+    host.properties.finish_right_color,
+  );
+  const key = contentKey(
+    "window",
+    win.dimensions,
+    win.properties,
+    glass,
+    t,
+    exterior,
+    liningIn,
+    liningOut,
+  );
 
   const body = part(ctx, win, "body", key, matrix, (mb) => {
     mb.box([w, FRAME_DEPTH, FRAME], [w / 2, 0, FRAME / 2], frame);
@@ -46,6 +70,18 @@ export function buildWindow(win: Window, ctx: BuildContext): RenderDescriptor[] 
     for (let i = 0; i < n; i++) {
       const u = FRAME + (i + 1) * pane + i * MULLION + MULLION / 2;
       mb.box([MULLION, FRAME_DEPTH * 0.8, h - 2 * FRAME], [u, 0, h / 2], frame);
+    }
+    const paneH = h - 2 * FRAME;
+    if (pane > 3 * SASH && paneH > 3 * SASH) {
+      for (let i = 0; i <= n; i++) {
+        const u0 = FRAME + i * (pane + MULLION);
+        sashRing(mb, u0, FRAME, pane, paneH, frame);
+      }
+    }
+    const half = t / 2;
+    if (half - FRAME_DEPTH / 2 > LINING) {
+      revealLining(mb, w, h, FRAME_DEPTH / 2, half, liningIn);
+      revealLining(mb, w, h, -half, -FRAME_DEPTH / 2, liningOut);
     }
     if (exterior) {
       // Outside = right face (-v) for counter-clockwise exterior walls.
@@ -106,6 +142,24 @@ export function buildDoor(door: Door, ctx: BuildContext): RenderDescriptor[] {
     }
   });
   return [...body, ...glass];
+}
+
+/** Glazing bead around one pane (lower-left corner u0, z0), thinner than the frame. */
+function sashRing(mb: MeshBuilder, u0: number, z0: number, pw: number, ph: number, m: string) {
+  mb.box([pw, SASH_DEPTH, SASH], [u0 + pw / 2, 0, z0 + SASH / 2], m);
+  mb.box([pw, SASH_DEPTH, SASH], [u0 + pw / 2, 0, z0 + ph - SASH / 2], m);
+  mb.box([SASH, SASH_DEPTH, ph - 2 * SASH], [u0 + SASH / 2, 0, z0 + ph / 2], m);
+  mb.box([SASH, SASH_DEPTH, ph - 2 * SASH], [u0 + pw - SASH / 2, 0, z0 + ph / 2], m);
+}
+
+/** Thin lining on the jambs, head and sill of the reveal between v0 and v1. */
+function revealLining(mb: MeshBuilder, w: number, h: number, v0: number, v1: number, m: string) {
+  const d = v1 - v0;
+  const vc = (v0 + v1) / 2;
+  mb.box([LINING, d, h], [LINING / 2, vc, h / 2], m);
+  mb.box([LINING, d, h], [w - LINING / 2, vc, h / 2], m);
+  mb.box([w - 2 * LINING, d, LINING], [w / 2, vc, h - LINING / 2], m);
+  mb.box([w - 2 * LINING, d, LINING], [w / 2, vc, LINING / 2], m);
 }
 
 function handle(mb: MeshBuilder, u: number, leafT: number) {

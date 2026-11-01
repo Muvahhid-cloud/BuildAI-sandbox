@@ -17,6 +17,10 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
   const setViewMode = useViewerStore((s) => s.setViewMode);
   const planLevelId = useViewerStore((s) => s.planLevelId);
   const setPlanLevel = useViewerStore((s) => s.setPlanLevel);
+  const effects = useViewerStore((s) => s.effects);
+  const setEffects = useViewerStore((s) => s.setEffects);
+  const showGrid = useViewerStore((s) => s.showGrid);
+  const setShowGrid = useViewerStore((s) => s.setShowGrid);
   const selectedId = useSelectionStore((s) => s.selectedId);
   const buildMs = useBuildingStore((s) => s.buildMs);
   const selected = selectedId ? scene.index.elementsById.get(selectedId) : undefined;
@@ -94,6 +98,22 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
               onClick={() => setProjection("orthographic")}
             >
               Orthographic
+            </SegmentButton>
+          </div>
+          <div className="flex items-center gap-1" role="group" aria-label="Display">
+            <SegmentButton
+              active={effects}
+              onClick={() => setEffects(!effects)}
+              title="Ambient occlusion and anti-aliasing (turn off on slow devices)"
+            >
+              Effects
+            </SegmentButton>
+            <SegmentButton
+              active={showGrid}
+              onClick={() => setShowGrid(!showGrid)}
+              title="Reference grid (1 m cells, 5 m sections)"
+            >
+              Grid
             </SegmentButton>
           </div>
         </>

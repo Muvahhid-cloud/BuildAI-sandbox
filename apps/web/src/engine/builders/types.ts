@@ -9,7 +9,7 @@ export interface EngineConfig {
   version: string;
 }
 
-export const DEFAULT_ENGINE_CONFIG: EngineConfig = { version: "engine@1" };
+export const DEFAULT_ENGINE_CONFIG: EngineConfig = { version: "engine@2" };
 
 /**
  * One renderable part of one BuildingModel element. Every mesh in the viewer is created from

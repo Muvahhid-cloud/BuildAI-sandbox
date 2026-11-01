@@ -43,3 +43,6 @@ Thumbs.db
 
 # Local AI-assistant configuration (sandbox: CLAUDE.md is tracked so cloud sessions read the rules)
 .claude/
+
+# Served copy of data/materials assets (scripts/sync-materials.mjs)
+apps/web/public/materials/

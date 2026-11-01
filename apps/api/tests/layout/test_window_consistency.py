@@ -115,3 +115,20 @@ def test_openings_keep_the_profile_clearance(name: str) -> None:
         spans.sort()
         for (_, b0), (a1, _) in itertools.pairwise(spans):
             assert a1 - b0 >= clearance - 1e-6
+
+
+def test_a_released_window_gives_its_span_back() -> None:
+    """Regression (V6 step 1): WallPlan.place stores (start, start + width) unrounded; the
+    span must be freed even when start + width carries float noise."""
+    from app.modules.building.enums import WallKind
+    from app.modules.layout.build import WallPlan, _free_span
+    from app.modules.layout.plan import Segment
+
+    wall = WallPlan(
+        "wall:ext:L0:S", "W", 0, (0.0, 0.0), (6.0, 0.0), WallKind.EXTERIOR, 0.3, "brick", "a", "b"
+    )
+    seg = Segment("h", 0.0, 0.0, 6.0)
+    offset = wall.place(seg, 1.1, margin=0.3, center=0.1 + 0.2 + 1.85)
+    assert offset is not None and wall.occupied
+    _free_span(wall, offset, 1.1)
+    assert wall.occupied == []

@@ -1333,6 +1333,56 @@ def _room_of(w: _Window) -> str:
     return w.key.split(":")[1]
 
 
+def _free_span(wall: WallPlan, offset: float, width: float) -> None:
+    """Give an opening's span back to its wall. WallPlan.place records (start, start + width)
+    unrounded, so the span is matched within 1 mm (an exact tuple match can miss and leave the
+    space blocked)."""
+    for i, (a, b) in enumerate(wall.occupied):
+        if abs(a - offset) < 1e-3 and abs(b - (offset + width)) < 1e-3:
+            del wall.occupied[i]
+            return
+
+
+class _Glazing:
+    """Bookkeeping for the V6 window passes: a room's glazing and its requirement, and taking a
+    window out of / back into its wall (occupied spans matched within 1 mm)."""
+
+    def __init__(
+        self,
+        ctx: _Context,
+        windows: list[_Window],
+        needed_glazing: Callable[[Region, list[tuple[str, Segment]]], float],
+        ordered_segments: Callable[[Region, list[tuple[str, Segment]]], list[tuple[str, Segment]]],
+    ) -> None:
+        self.ctx = ctx
+        self.windows = windows
+        self.needed = needed_glazing
+        self.ordered = ordered_segments
+        self.regions = {(lvl.index, r.key): r for lvl in ctx.plan.levels for r in lvl.regions}
+
+    def glazing(self, level: int, room: str) -> float:
+        return sum(
+            w.width * w.height
+            for w in self.windows
+            if w.wall.level == level and _room_of(w) == room
+        )
+
+    def required(self, level: int, room: str) -> float:
+        region = self.regions.get((level, room))
+        if region is None:
+            return math.inf
+        segments = _facade_segments(self.ctx, region)
+        return self.needed(region, self.ordered(region, segments)) if segments else 0.0
+
+    def release(self, w: _Window) -> None:
+        self.windows.remove(w)
+        _free_span(w.wall, w.offset, w.width)
+
+    def restore(self, w: _Window) -> None:
+        self.windows.append(w)
+        w.wall.occupied.append((w.offset, w.offset + w.width))
+
+
 def _merge_pairs(
     ctx: _Context,
     windows: list[_Window],
@@ -1347,29 +1397,8 @@ def _merge_pairs(
     Placement keeps the usual gap between openings (WallPlan.place), never less than the
     profile's openings.min_clearance_m."""
     cfg = ctx.config
-    regions = {(lvl.index, r.key): r for lvl in ctx.plan.levels for r in lvl.regions}
-
-    def glazing(level: int, room: str) -> float:
-        return sum(
-            w.width * w.height for w in windows if w.wall.level == level and _room_of(w) == room
-        )
-
-    def required(level: int, room: str) -> float:
-        region = regions.get((level, room))
-        if region is None:
-            return math.inf
-        segments = _facade_segments(ctx, region)
-        return needed_glazing(region, ordered_segments(region, segments)) if segments else 0.0
-
-    def release(w: _Window) -> None:
-        windows.remove(w)
-        span = (w.offset, round(w.offset + w.width, 3))
-        if span in w.wall.occupied:
-            w.wall.occupied.remove(span)
-
-    def restore(w: _Window) -> None:
-        windows.append(w)
-        w.wall.occupied.append((w.offset, round(w.offset + w.width, 3)))
+    book = _Glazing(ctx, windows, needed_glazing, ordered_segments)
+    glazing, required, release, restore = book.glazing, book.required, book.release, book.restore
 
     # Groups: same wall, storey and room, habitable windows only (stair and service windows
     # keep their own rules). Sorted for determinism.
@@ -1460,7 +1489,7 @@ def _merge_pairs(
                     big.size_class,
                 )
             )
-            wall.occupied.append((start, round(start + width, 3)))
+            wall.occupied.append((start, start + width))
 
 
 def _mullions(cfg: LayoutConfig, w: _Window, width: float) -> int:

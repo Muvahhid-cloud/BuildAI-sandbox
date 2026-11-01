@@ -106,6 +106,10 @@ class SlabKind(StrEnum):
     GROUND = "ground"
     FLOOR = "floor"
     BALCONY = "balcony"
+    # Entrance canopy (1.3.0): a thin slab cantilevered from the facade over the front door,
+    # between the door head and the level above. Not a floor: not walked on, carries nothing
+    # (building-model.md §3.3, constraint slab.canopy).
+    CANOPY = "canopy"
 
 
 class RoofType(StrEnum):

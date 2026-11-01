@@ -103,7 +103,7 @@ export type Zone = "public" | "private" | "service" | "circulation" | "exterior"
  * This interface was referenced by `BuildingModel`'s JSON-Schema
  * via the `definition` "SlabKind".
  */
-export type SlabKind = "ground" | "floor" | "balcony";
+export type SlabKind = "ground" | "floor" | "balcony" | "canopy";
 /**
  * This interface was referenced by `BuildingModel`'s JSON-Schema
  * via the `definition` "StairType".
@@ -196,7 +196,7 @@ export type FacadeMaterial = "render" | "brick" | "concrete" | "timber";
 export type FacadeSide = "front" | "rear" | "left" | "right";
 
 export interface BuildingModel {
-  schema_version: "1.2.0";
+  schema_version: "1.3.0";
   id: string;
   building: BuildingInfo;
   units: "m";

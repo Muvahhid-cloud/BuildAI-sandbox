@@ -215,6 +215,14 @@ _ALL = [
         "Slabs of the same level do not overlap.",
     ),
     GeometryConstraint(
+        "slab.canopy",
+        "CANOPY_PLACEMENT_INVALID",
+        "error",
+        "An entrance canopy hangs from the outer face of an exterior wall of its level over an "
+        "entrance door: it lies outside the walls, spans the door, its underside is above the "
+        "door head and its top below the next level.",
+    ),
+    GeometryConstraint(
         "support.slab",
         "SLAB_RELATIONSHIP_INVALID",
         "error",

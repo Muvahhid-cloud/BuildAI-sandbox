@@ -10,9 +10,9 @@ from app.modules.building.elements import Element
 from app.modules.building.primitives import Frozen, Meters, PositiveMeters
 from app.modules.building.types import AssemblySnapshot, TypeSnapshot
 
-SCHEMA_VERSION = "1.2.0"
+SCHEMA_VERSION = "1.3.0"
 # older ones are upgraded on read (migrations/)
-SUPPORTED_SCHEMA_VERSIONS = ("1.0.0", "1.1.0", "1.2.0")
+SUPPORTED_SCHEMA_VERSIONS = ("1.0.0", "1.1.0", "1.2.0", "1.3.0")
 
 
 class BuildingInfo(Frozen):
@@ -38,7 +38,7 @@ class ModelMetadata(Frozen):
 
 
 class BuildingModel(Frozen):
-    schema_version: Literal["1.2.0"]
+    schema_version: Literal["1.3.0"]
     id: uuid.UUID
     building: BuildingInfo
     units: Literal["m"]

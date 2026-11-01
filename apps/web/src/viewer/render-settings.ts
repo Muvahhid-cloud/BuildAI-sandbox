@@ -15,6 +15,11 @@ export const RENDER = {
   shadowMapSize: 2048,
   /** PCF filter radius (soft shadow edges; PCFSoftShadowMap no longer exists in three). */
   shadowRadius: 4,
+  /**
+   * Bounce fill (V2): a soft hemisphere light that stands in for light reflected by floors and
+   * the ground, so downward-facing surfaces (slab soffits seen as ceilings, eaves) are not black.
+   */
+  bounce: { sky: "#e9eef3", ground: "#d9cfc1", intensity: 0.55 },
   /** Fallback fill when the HDRI is unavailable. */
   fallbackHemisphere: { sky: "#f4f7fb", ground: "#a89c8a", intensity: 1.1 },
   /** Neutral sky gradient (sRGB, not tone mapped). */

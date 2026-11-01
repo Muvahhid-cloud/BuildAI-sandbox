@@ -148,6 +148,10 @@ Local environment notes (dev machine is Windows): `uv` may only be available as 
 
 - Design: `docs/3d-engine.md` §16.16. Merges, width unification and head alignment only happen where the room keeps its required glazing; sills are only raised (service and guard sills kept). `window_consistency = False` must reproduce layout@1.11.0 (test pins main's geometry fingerprints).
 
+## Bay-aware rooms notes (layout@1.15.0, V7)
+
+- Design: `docs/3d-engine.md` §16.17. `window_quick_wins = False` must reproduce layout@1.14.0 (test pins main's geometry fingerprints). Window-moving passes must terminate (each window moves at most once) and never break a stack across storeys to fix a pair. Rooms on whole bays need planner changes (bay-multiple skeletons appended after the existing ones, integer-bay bands); a ranking bonus alone does not get there (recorded finding).
+
 ## Knowledge notes (Phase 3.5)
 
 - Design: `docs/knowledge.md`. Steps K1 Foundation → K2 Families/Types/Assemblies → K3 Design Systems → K4 Templates → K5 Knowledge API and Units → K6 Optional Structural Elements; don't rename, merge or start a step before the previous one is reviewed.

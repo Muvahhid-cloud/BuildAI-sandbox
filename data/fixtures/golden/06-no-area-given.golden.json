@@ -1,5 +1,5 @@
 {
-  "engine_version": "layout@1.10.0",
+  "engine_version": "layout@1.11.0",
   "seed": 0,
   "footprint_m": [
     5.8,
@@ -132,6 +132,6 @@
     }
   ],
   "warnings": [],
-  "model_sha256": "64fdcbaadab9a386eea241967ebe6ae786c88d85cafccff07a1e89faa50c3c0d",
+  "model_sha256": "b6c2430af8327c98963b63f61cc0b64ee51f95754c75f0334de515c82fd4e141",
   "geometry_sha256": "53602a30fbc92f761f2edbe300d06d6c7f333189bd1c48822f7ac1d30ff406a6"
 }

@@ -7,7 +7,7 @@
     "description": "Two-storey family house of about 280 m² with four bedrooms, three bathrooms, a large living room open to the kitchen, a two-car garage and a balcony on the upper floor."
   },
   "units": "m",
-  "engine_version": "layout@1.10.0",
+  "engine_version": "layout@1.11.0",
   "seed": 0,
   "levels": [
     {
@@ -3671,8 +3671,46 @@
       }
     },
     {
-      "id": "93d3735c-da01-5fd9-877f-35cbdd4b1f7d",
+      "id": "ac4ebe7f-8845-5d8a-99c6-061379c87572",
       "name": "WN2-07",
+      "layer": "architecture",
+      "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
+      "position": {
+        "x": 1.075,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "3414b192-b52d-5090-a2b9-68341a0991fa"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:bedroom_2:W:3",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.15,
+        "height": 1.7
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "93d3735c-da01-5fd9-877f-35cbdd4b1f7d",
+      "name": "WN2-08",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -3709,8 +3747,46 @@
       }
     },
     {
+      "id": "bdde8b8a-e7a1-5987-8149-e5dd05fa9e2e",
+      "name": "WN2-09",
+      "layer": "architecture",
+      "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
+      "position": {
+        "x": 10.975,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "24f0fed0-03d5-5801-8ca5-739443bff722"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:master_bedroom:E:1",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.15,
+        "height": 1.7
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
       "id": "3fcc86ff-16f3-5d68-b402-6be0c5feda29",
-      "name": "WN2-08",
+      "name": "WN2-10",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -3748,7 +3824,7 @@
     },
     {
       "id": "f558af61-3771-584b-817b-aa7d29b183f0",
-      "name": "WN2-09",
+      "name": "WN2-11",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -3786,7 +3862,7 @@
     },
     {
       "id": "1e246b47-c040-52fb-8552-f7401f43680d",
-      "name": "WN2-10",
+      "name": "WN2-12",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -3824,7 +3900,7 @@
     },
     {
       "id": "a4f57ee0-a59b-5e9f-b522-550b462dafaa",
-      "name": "WN2-11",
+      "name": "WN2-13",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -3862,7 +3938,7 @@
     },
     {
       "id": "40d99791-d3bd-59b9-9d9b-d5353a3dd413",
-      "name": "WN2-12",
+      "name": "WN2-14",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -3889,6 +3965,82 @@
       "type": "window",
       "dimensions": {
         "width": 0.6,
+        "height": 1.7
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "edb83749-5609-5f54-9a59-44110a884f90",
+      "name": "WN2-15",
+      "layer": "architecture",
+      "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
+      "position": {
+        "x": 1.075,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "24f0fed0-03d5-5801-8ca5-739443bff722"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:bedroom_1:E:2",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.15,
+        "height": 1.7
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "7008ccc5-814b-55bd-8df1-63cfcb9a47f8",
+      "name": "WN2-16",
+      "layer": "architecture",
+      "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
+      "position": {
+        "x": 4.375,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "24f0fed0-03d5-5801-8ca5-739443bff722"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:bedroom_1:E:3",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.15,
         "height": 1.7
       },
       "properties": {
@@ -4051,8 +4203,46 @@
       }
     },
     {
-      "id": "9aaf6112-9069-5f1b-8c7c-f3ab10208b89",
+      "id": "c81f9da9-9707-522d-8fa2-75ae9f681aca",
       "name": "WN1-05",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 1.075,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "34c244a9-70c8-5031-bb2d-5796fb387608"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:study:W:2",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.15,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "9aaf6112-9069-5f1b-8c7c-f3ab10208b89",
+      "name": "WN1-06",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
@@ -4090,11 +4280,11 @@
     },
     {
       "id": "d939723e-9aa7-5998-8237-08880d85da0b",
-      "name": "WN1-06",
+      "name": "WN1-07",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 10.2,
+        "x": 10.975,
         "y": 0.0,
         "z": 0.6
       },
@@ -4116,7 +4306,7 @@
       "type_ref": null,
       "type": "window",
       "dimensions": {
-        "width": 0.6,
+        "width": 1.15,
         "height": 1.8
       },
       "properties": {
@@ -4128,7 +4318,7 @@
     },
     {
       "id": "1a8997d1-1f01-5a4e-baf1-3b398d30d717",
-      "name": "WN1-07",
+      "name": "WN1-08",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
@@ -4166,7 +4356,7 @@
     },
     {
       "id": "02cb8eb8-46b2-5df4-8973-59322b481a79",
-      "name": "WN1-08",
+      "name": "WN1-09",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
@@ -4204,7 +4394,7 @@
     },
     {
       "id": "5bf1e59a-6e39-5e3d-a2cf-4f9c0a0f83b9",
-      "name": "WN1-09",
+      "name": "WN1-10",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
@@ -4242,7 +4432,7 @@
     },
     {
       "id": "f63b29ab-8dde-5041-a4a9-8ef051870ec4",
-      "name": "WN1-10",
+      "name": "WN1-11",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
@@ -4280,7 +4470,7 @@
     },
     {
       "id": "0fc571fc-8132-5ac0-908f-730c22ba4cf2",
-      "name": "WN1-11",
+      "name": "WN1-12",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
@@ -4317,8 +4507,84 @@
       }
     },
     {
+      "id": "760e6933-0e4e-5066-8b2a-50526dcec1d9",
+      "name": "WN1-13",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 1.075,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6113f1a9-f082-5a05-90ee-40d6a3bb43ac"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:kitchen:E:3",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.15,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "633bafb9-90d5-5030-9365-d5405d5ed71a",
+      "name": "WN1-14",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 4.375,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6113f1a9-f082-5a05-90ee-40d6a3bb43ac"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:kitchen:E:4",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.15,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
       "id": "c9b004cc-0edc-519c-ad68-b064d08a6ae2",
-      "name": "WN1-12",
+      "name": "WN1-15",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
@@ -6092,7 +6358,7 @@
   ],
   "metadata": {
     "source": "layout",
-    "generator": "layout@1.10.0 · rules generic-residential@1"
+    "generator": "layout@1.11.0 · rules generic-residential@1"
   },
   "types": [],
   "assemblies": [],

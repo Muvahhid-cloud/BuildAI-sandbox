@@ -7,7 +7,7 @@
     "description": "Two-storey family house of about 280 m² with four bedrooms, three bathrooms, a large living room open to the kitchen, a two-car garage and a balcony on the upper floor."
   },
   "units": "m",
-  "engine_version": "layout@1.14.0",
+  "engine_version": "layout@1.15.0",
   "seed": 0,
   "levels": [
     {
@@ -3519,46 +3519,8 @@
       }
     },
     {
-      "id": "907d8217-4ad7-590b-8264-c85467190fb7",
-      "name": "WN2-03",
-      "layer": "architecture",
-      "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
-      "position": {
-        "x": 2.5,
-        "y": 0.0,
-        "z": 1.4
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "1eb707da-5d74-5522-a782-fb728b2912c0"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:void_1:S:0",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 0.6,
-        "height": 1.2
-      },
-      "properties": {
-        "window_kind": "fixed",
-        "frame_material_id": "window_frame",
-        "mullions": 0,
-        "size_class": null
-      }
-    },
-    {
       "id": "bdde8b8a-e7a1-5987-8149-e5dd05fa9e2e",
-      "name": "WN2-04",
+      "name": "WN2-03",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -3595,46 +3557,8 @@
       }
     },
     {
-      "id": "3fcc86ff-16f3-5d68-b402-6be0c5feda29",
-      "name": "WN2-05",
-      "layer": "architecture",
-      "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
-      "position": {
-        "x": 11.15,
-        "y": 0.0,
-        "z": 2.0
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "3414b192-b52d-5090-a2b9-68341a0991fa"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:bathroom_1:W:0",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 0.8,
-        "height": 0.6
-      },
-      "properties": {
-        "window_kind": "casement",
-        "frame_material_id": "window_frame",
-        "mullions": 0,
-        "size_class": null
-      }
-    },
-    {
       "id": "f558af61-3771-584b-817b-aa7d29b183f0",
-      "name": "WN2-06",
+      "name": "WN2-04",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -3671,46 +3595,8 @@
       }
     },
     {
-      "id": "1e246b47-c040-52fb-8552-f7401f43680d",
-      "name": "WN2-07",
-      "layer": "architecture",
-      "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
-      "position": {
-        "x": 6.6,
-        "y": 0.0,
-        "z": 2.0
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "1eb707da-5d74-5522-a782-fb728b2912c0"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:bathroom_2:S:0",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 0.8,
-        "height": 0.6
-      },
-      "properties": {
-        "window_kind": "casement",
-        "frame_material_id": "window_frame",
-        "mullions": 0,
-        "size_class": null
-      }
-    },
-    {
       "id": "a4f57ee0-a59b-5e9f-b522-550b462dafaa",
-      "name": "WN2-08",
+      "name": "WN2-05",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -3748,7 +3634,7 @@
     },
     {
       "id": "edb83749-5609-5f54-9a59-44110a884f90",
-      "name": "WN2-09",
+      "name": "WN2-06",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -3786,7 +3672,7 @@
     },
     {
       "id": "7008ccc5-814b-55bd-8df1-63cfcb9a47f8",
-      "name": "WN2-10",
+      "name": "WN2-07",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -4166,7 +4052,7 @@
     },
     {
       "id": "de5b923d-e667-5b3a-b8e3-6f11834d896d",
-      "name": "WN2-11",
+      "name": "WN2-08",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -4204,7 +4090,7 @@
     },
     {
       "id": "ac4ebe7f-8845-5d8a-99c6-061379c87572",
-      "name": "WN2-12",
+      "name": "WN2-09",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -4394,7 +4280,7 @@
     },
     {
       "id": "40d99791-d3bd-59b9-9d9b-d5353a3dd413",
-      "name": "WN2-13",
+      "name": "WN2-10",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -4432,7 +4318,7 @@
     },
     {
       "id": "93d3735c-da01-5fd9-877f-35cbdd4b1f7d",
-      "name": "WN2-14",
+      "name": "WN2-11",
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
@@ -4466,6 +4352,120 @@
         "frame_material_id": "window_frame",
         "mullions": 0,
         "size_class": "large"
+      }
+    },
+    {
+      "id": "3fcc86ff-16f3-5d68-b402-6be0c5feda29",
+      "name": "WN2-12",
+      "layer": "architecture",
+      "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
+      "position": {
+        "x": 10.975,
+        "y": 0.0,
+        "z": 2.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "3414b192-b52d-5090-a2b9-68341a0991fa"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:bathroom_1:W:0",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.15,
+        "height": 0.6
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": null
+      }
+    },
+    {
+      "id": "1e246b47-c040-52fb-8552-f7401f43680d",
+      "name": "WN2-13",
+      "layer": "architecture",
+      "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
+      "position": {
+        "x": 6.6,
+        "y": 0.0,
+        "z": 2.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "1eb707da-5d74-5522-a782-fb728b2912c0"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:bathroom_2:S:0",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 0.8,
+        "height": 0.6
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": null
+      }
+    },
+    {
+      "id": "907d8217-4ad7-590b-8264-c85467190fb7",
+      "name": "WN2-14",
+      "layer": "architecture",
+      "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
+      "position": {
+        "x": 2.5,
+        "y": 0.0,
+        "z": 1.4
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "1eb707da-5d74-5522-a782-fb728b2912c0"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:void_1:S:0",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 0.6,
+        "height": 1.2
+      },
+      "properties": {
+        "window_kind": "fixed",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": null
       }
     },
     {
@@ -6244,7 +6244,7 @@
   ],
   "metadata": {
     "source": "layout",
-    "generator": "layout@1.14.0 · rules generic-residential@1"
+    "generator": "layout@1.15.0 · rules generic-residential@1"
   },
   "types": [],
   "assemblies": [],

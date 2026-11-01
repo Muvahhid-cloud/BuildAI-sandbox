@@ -46,7 +46,7 @@ def _replace_type(type_set: TypeSet, type_id: str, **params: object) -> TypeSet:
 
 
 def test_engine_version() -> None:
-    assert ENGINE_VERSION == "layout@1.14.0"
+    assert ENGINE_VERSION == "layout@1.15.0"
 
 
 def test_generic_types_reproduce_layout_config_exactly() -> None:
@@ -113,7 +113,7 @@ def test_typed_generation_keeps_geometry_identical(name: str) -> None:
 
 def test_untyped_generation_carries_no_types() -> None:
     model = reference(NAMES[0]).model
-    assert model.schema_version == "1.3.0" and model.engine_version == "layout@1.14.0"
+    assert model.schema_version == "1.3.0" and model.engine_version == "layout@1.15.0"
     assert model.design is None  # no design system, no intent: nothing recorded
     assert model.types == [] and model.assemblies == []
     assert all(el.type_ref is None for el in model.elements)

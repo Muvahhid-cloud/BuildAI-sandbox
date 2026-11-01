@@ -5,6 +5,7 @@ uuid5(id_namespace, semantic_key) unless the caller supplies ids of a previous m
 semantic keys (ID stability across regeneration, docs/building-model.md §7).
 """
 
+import itertools
 import math
 import uuid
 from collections.abc import Callable, Mapping, Sequence
@@ -1215,6 +1216,11 @@ def _windows(
     if grid and cfg.window_consistency:
         _merge_pairs(ctx, windows, grid, needed_glazing, ordered_segments)
         _unify_widths(ctx, windows, _Glazing(ctx, windows, needed_glazing, ordered_segments))
+        if cfg.window_quick_wins:
+            book = _Glazing(ctx, windows, needed_glazing, ordered_segments)
+            _service_main_width(ctx, windows, book)
+            _separate_rooms(ctx, windows, grid, book)
+            _stack_circulation(ctx, windows, book)
         _align_heads(ctx, windows)
     # Garage side window.
     if ctx.plan.garage is not None:
@@ -1547,6 +1553,173 @@ def _unify_widths(ctx: _Context, windows: list[_Window], book: _Glazing) -> None
                     w.size_class,
                 )
             )
+
+
+def _room_segments(ctx: _Context, book: _Glazing, w: _Window) -> list[Segment]:
+    """The facade segments of the window's room on the window's own wall."""
+    region = book.regions.get((w.wall.level, _room_of(w)))
+    if region is None:
+        return []
+    return [seg for _, seg in _facade_segments(ctx, region) if w.wall.covers(seg)]
+
+
+def _relocate(ctx: _Context, book: _Glazing, w: _Window, width: float, centre: float) -> bool:
+    """Move/resize a window to `width` centred exactly on `centre` within its room's facade
+    segment on its wall (WallPlan.place: gaps to other openings and junctions kept); the
+    window is unchanged when it does not fit there."""
+    segs = [s for s in _room_segments(ctx, book, w) if min(s.a0, s.a1) < centre < max(s.a0, s.a1)]
+    if not segs:
+        return False
+    wall = w.wall
+    book.release(w)
+    offset = wall.place(segs[0], width, margin=ctx.config.window_margin, center=centre)
+    if offset is None or abs(wall.param(centre) - (offset + width / 2)) > 1e-3:
+        if offset is not None:
+            _free_span(wall, offset, width)
+        book.restore(w)
+        return False
+    book.windows.append(
+        _Window(
+            w.key,
+            wall,
+            offset,
+            rnd(width),
+            w.height,
+            w.sill,
+            w.kind,
+            _mullions(ctx.config, w, width),
+            w.role,
+            w.size_class,
+        )
+    )
+    return True
+
+
+def _main_widths(windows: list[_Window]) -> dict[str, float]:
+    """Main (most common, then wider) habitable window width per exterior wall."""
+    counts: dict[str, dict[float, int]] = {}
+    for w in windows:
+        if w.role in ("window.stair", "window.service") or w.wall.kind != WallKind.EXTERIOR:
+            continue
+        c = counts.setdefault(w.wall.key, {})
+        c[rnd(w.width)] = c.get(rnd(w.width), 0) + 1
+    return {k: max(c, key=lambda v: (c[v], v)) for k, c in counts.items()}
+
+
+def _service_main_width(ctx: _Context, windows: list[_Window], book: _Glazing) -> None:
+    """V7 1a: a bathroom/WC window takes its wall's main window width, centred where it stands,
+    keeping its height and (privacy) sill; it keeps its size where the wider one does not fit."""
+    mains = _main_widths(windows)
+    for w in sorted((w for w in windows if w.role == "window.service"), key=lambda w: w.key):
+        main = mains.get(w.wall.key)
+        if main is None or abs(main - w.width) < 1e-6 or w.wall.kind != WallKind.EXTERIOR:
+            continue
+        _relocate(ctx, book, w, main, _plan_center(w))
+
+
+def _separate_rooms(
+    ctx: _Context,
+    windows: list[_Window],
+    grid: Mapping[tuple[bool, float], Bays],
+    book: _Glazing,
+) -> None:
+    """V7 1b: windows of two rooms whose centres share a bay. One of them (the narrower first)
+    moves to a free bay axis of its own room's facade on that wall (never a window that stacks
+    with another storey's: the stack outranks the pair); failing that, it is dropped
+    only if its room keeps another window and its required glazing, or if it lights a stair
+    void (no glazing requirement; lit through the open stair); otherwise both stay."""
+    moved: set[str] = set()  # each window moves at most once: the loop always ends
+    changed = True
+    while changed:
+        changed = False
+        by_wall: dict[str, list[_Window]] = {}
+        for w in windows:
+            if w.wall.kind == WallKind.EXTERIOR:
+                by_wall.setdefault(w.wall.key, []).append(w)
+        for _, ws in sorted(by_wall.items()):
+            line = grid.get((ws[0].wall.horizontal, rnd(ws[0].wall.coord)))
+            if line is None:
+                continue
+            ws.sort(key=_plan_center)
+            for a, b in itertools.pairwise(ws):
+                if (
+                    _room_of(a) == _room_of(b)
+                    or _plan_center(b) - _plan_center(a) >= line.width / 2
+                ):
+                    continue
+                for w in sorted((a, b), key=lambda w: (w.width, w.key)):
+                    if w.key in moved or _stacked(windows, w):  # a stack outranks the pair
+                        continue
+                    taken = [_plan_center(o) for o in ws if o is not w]
+                    free = sorted(
+                        (
+                            ax
+                            for ax in line.axes
+                            if all(abs(ax - c) >= line.width / 2 for c in taken)
+                        ),
+                        key=lambda ax: (abs(ax - _plan_center(w)), ax),
+                    )
+                    if any(_relocate(ctx, book, w, w.width, ax) for ax in free):
+                        moved.add(w.key)
+                        changed = True
+                        break
+                    level, room = w.wall.level, _room_of(w)
+                    others = [
+                        o
+                        for o in windows
+                        if o is not w and o.wall.level == level and _room_of(o) == room
+                    ]
+                    region = book.regions.get((level, room))
+                    void = region is not None and region.kind == "void"
+                    if void or (
+                        others
+                        and book.glazing(level, room) - w.width * w.height
+                        >= book.required(level, room) - 1e-6
+                    ):
+                        book.release(w)
+                        changed = True
+                        break
+                if changed:
+                    break
+            if changed:
+                break
+
+
+def _stacked(windows: list[_Window], w: _Window) -> bool:
+    """A window of another storey stands on the same facade line at the same centre."""
+    c = _plan_center(w)
+    return any(
+        o.wall.level != w.wall.level
+        and o.wall.kind == WallKind.EXTERIOR
+        and o.wall.horizontal == w.wall.horizontal
+        and abs(o.wall.coord - w.wall.coord) < 1e-6
+        and abs(_plan_center(o) - c) < 0.05
+        for o in windows
+    )
+
+
+def _stack_circulation(ctx: _Context, windows: list[_Window], book: _Glazing) -> None:
+    """V7 1c: an upper stair/hall/corridor window that stands on no window below moves onto
+    the axis of a window of the storey below that falls inside its own room's facade segment,
+    when it fits exactly there."""
+    for w in sorted((w for w in windows if w.role == "window.stair"), key=lambda w: w.key):
+        if w.wall.level == 0 or w.wall.kind != WallKind.EXTERIOR:
+            continue
+        same_line = [
+            o
+            for o in windows
+            if o.wall.kind == WallKind.EXTERIOR
+            and o.wall.horizontal == w.wall.horizontal
+            and abs(o.wall.coord - w.wall.coord) < 1e-6
+        ]
+        below = sorted(
+            {rnd(_plan_center(o)) for o in same_line if o.wall.level == w.wall.level - 1}
+        )
+        if any(abs(c - _plan_center(w)) < 0.05 for c in below):
+            continue
+        for c in sorted(below, key=lambda c: (abs(c - _plan_center(w)), c)):
+            if _relocate(ctx, book, w, w.width, c):
+                break
 
 
 def _align_heads(ctx: _Context, windows: list[_Window]) -> None:

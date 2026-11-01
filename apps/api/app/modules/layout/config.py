@@ -11,7 +11,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.modules.building.enums import RoofType, RoomType
 from app.modules.building.specification import ArchitecturalStyle, FacadeMaterial, WindowStyle
 
-ENGINE_VERSION = "layout@1.14.0"  # 1.14.0: stair/hall/corridor windows on bay axes, one window
+ENGINE_VERSION = "layout@1.15.0"  # 1.15.0: V7 step 1 (service windows at the main width, two
+# rooms in one bay separated, upper stair windows stacked).
+# 1.14.0: stair/hall/corridor windows on bay axes, one window
 # head per storey (V6 step 3).
 # 1.13.0: one main window width per facade wall and storey
 # (V6 step 2).
@@ -191,6 +193,10 @@ class LayoutConfig(_Config):
     # Window consistency (V6, docs/3d-engine.md §16.16): no two windows of one room in one bay
     # (merged onto the bay axis, or the extra one dropped). False reproduces layout@1.11.0.
     window_consistency: bool = True
+    # V7 step 1 (docs/3d-engine.md §16.17): service windows take the wall's main width, windows
+    # of two rooms in one bay are separated, upper stair windows stack on a window below.
+    # False reproduces layout@1.14.0.
+    window_quick_wins: bool = True
     bay_side_window_share: float = 0.35
     # Stair, hall and corridor windows on bay axes too (also on whenever window_consistency
     # is, V6); off = they follow the windows of the other storeys (V4 axis rule).

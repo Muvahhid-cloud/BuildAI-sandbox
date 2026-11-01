@@ -609,6 +609,41 @@ False reproduces layout@1.11.0 exactly — test against main's geometry fingerpr
   different rooms in one bay (3 left); 04's upper corridor window takes a bay its short hall below
   cannot reach.
 
+### 16.17 Bay-aware rooms (layout@1.15.0, V7)
+
+**Step 1 — quick wins (done; `LayoutConfig.window_quick_wins`, False reproduces layout@1.14.0,
+test against main's geometry fingerprints).** After the V6 passes, before head alignment:
+
+- **Service windows at the main width** (`_service_main_width`): a bathroom/WC window takes its
+  wall's main window width, centred where it stands, keeping its height and privacy sill.
+- **Two rooms in one bay** (`_separate_rooms`): the narrower window moves to a free bay axis of
+  its own room's facade on that wall — never a window that stacks with another storey's (the
+  stack outranks the pair); failing that it is dropped only if its room keeps another window
+  and its required glazing, or if it lights a stair void (no glazing requirement). Each window
+  moves at most once (regression test: the benchmark's T-shaped villa looped without it).
+- **Stair windows stack** (`_stack_circulation`): an upper stair/hall/corridor window standing on
+  no window below moves onto a lower window's axis inside its own room's segment when it fits
+  exactly (04: the upper corridor window is back above the hall window).
+
+Measured (01, 04–09): pairs of windows of two rooms in one bay 3 → 1 (07: a WC beside the
+kitchen-living window; neither can move without breaking a stack or a neighbour's bay); widths
+per facade line and storey 2.03 → 1.85; upper windows standing on a window below 62/92 (67 %) →
+63/90 (70 %); windows on a bay axis 78/160 → 78/158 (12 specs: 110/219 → 110/217). Rooms, design
+scores, warnings, validation, rules checks and the benchmark (hard 147/147, soft 26/33, gaps
+0/3) unchanged; room partitions on bay lines 23/162 (unchanged, rooms are not touched).
+
+**Step 2 — bay-aware search (not done; findings).** Tried: every searched candidate got a twin
+with its bands re-laid on the bay lines (the V4 snap: minimum widths, minimum areas and area
+ranges kept), built and ranked next to it. Twins form for 0–251 candidates per reference spec,
+but they never win on the design evaluation: the bands are packed at their rooms' minimum
+widths, so a twin only moves a few partitions and pays for it in area/proportion criteria.
+Allowing twins a design-score tolerance of 0.005–0.02 brings room partitions on bay lines from
+23/162 to only 24/162 while lowering 03 and 05. Rooms on whole bays therefore need a planner
+change, not a ranking change: skeleton widths chosen as whole bay multiples (appended after the
+existing skeletons so seeding is unchanged), and band subdivision that gives each room an
+integer number of bays before area water-filling (falling back to today's widths per room
+where a minimum or area range would break). Left as the next step.
+
 ### 16.5 Limitations (layout@1.0.0)
 
 - One plan type (double-loaded corridor, street on the south) plus, since layout@1.5.0, a single-storey L (§16.10) and since 1.7.0 a single-storey T (§16.12); no U-shapes or courtyards (refused with the reason), no sloped sites, no basements.

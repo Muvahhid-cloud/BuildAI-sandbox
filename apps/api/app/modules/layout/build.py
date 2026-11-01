@@ -1212,6 +1212,8 @@ def _windows(
                             "window.stair",
                         )
                         n += 1
+    if grid and cfg.window_consistency:
+        _merge_pairs(ctx, windows, grid, needed_glazing, ordered_segments)
     # Garage side window.
     if ctx.plan.garage is not None:
         g = ctx.plan.garage
@@ -1324,6 +1326,148 @@ def _rhythm_windows(
             here.append(axis)
             n += 1
     return n
+
+
+def _room_of(w: _Window) -> str:
+    """The region key a window was placed for (keys are window:<region>:<side>:<n>)."""
+    return w.key.split(":")[1]
+
+
+def _merge_pairs(
+    ctx: _Context,
+    windows: list[_Window],
+    grid: Mapping[tuple[bool, float], Bays],
+    needed_glazing: Callable[[Region, list[tuple[str, Segment]]], float],
+    ordered_segments: Callable[[Region, list[tuple[str, Segment]]], list[tuple[str, Segment]]],
+) -> None:
+    """V6: no awkward pairs. Windows of one habitable room on one facade line and storey whose
+    centres share a bay become one window on that bay's axis, as wide as the widest of them
+    (wider, up to their total, if the room's glazing needs it); if that does not fit, the
+    smaller ones are dropped when the room keeps its required glazing; otherwise they stay.
+    Placement keeps the usual gap between openings (WallPlan.place), never less than the
+    profile's openings.min_clearance_m."""
+    cfg = ctx.config
+    regions = {(lvl.index, r.key): r for lvl in ctx.plan.levels for r in lvl.regions}
+
+    def glazing(level: int, room: str) -> float:
+        return sum(
+            w.width * w.height for w in windows if w.wall.level == level and _room_of(w) == room
+        )
+
+    def required(level: int, room: str) -> float:
+        region = regions.get((level, room))
+        if region is None:
+            return math.inf
+        segments = _facade_segments(ctx, region)
+        return needed_glazing(region, ordered_segments(region, segments)) if segments else 0.0
+
+    def release(w: _Window) -> None:
+        windows.remove(w)
+        span = (w.offset, round(w.offset + w.width, 3))
+        if span in w.wall.occupied:
+            w.wall.occupied.remove(span)
+
+    def restore(w: _Window) -> None:
+        windows.append(w)
+        w.wall.occupied.append((w.offset, round(w.offset + w.width, 3)))
+
+    # Groups: same wall, storey and room, habitable windows only (stair and service windows
+    # keep their own rules). Sorted for determinism.
+    groups: dict[tuple[str, str], list[_Window]] = {}
+    for w in windows:
+        if w.role in ("window.stair", "window.service") or w.wall.kind != WallKind.EXTERIOR:
+            continue
+        groups.setdefault((w.wall.key, _room_of(w)), []).append(w)
+    for (_, room), ws in sorted(groups.items()):
+        line = grid.get((ws[0].wall.horizontal, rnd(ws[0].wall.coord)))
+        if line is None or len(ws) < 2:
+            continue
+        ws.sort(key=lambda w: _plan_center(w))
+        clusters: list[list[_Window]] = [[ws[0]]]
+        for w in ws[1:]:
+            if _plan_center(w) - _plan_center(clusters[-1][-1]) < line.width / 2:
+                clusters[-1].append(w)
+            else:
+                clusters.append([w])
+        for cluster in clusters:
+            if len(cluster) < 2:
+                continue
+            wall, level = cluster[0].wall, cluster[0].wall.level
+            need = required(level, room)
+            mid = sum(_plan_center(w) for w in cluster) / len(cluster)
+            axis = min(line.axes, key=lambda a: (abs(a - mid), a))
+            big = max(cluster, key=lambda w: (w.width * w.height, w.key))
+            for w in cluster:
+                release(w)
+            base = glazing(level, room)
+            placed = False
+            total = rnd(sum(w.width for w in cluster))
+            for width in sorted({rnd(big.width), total}):
+                if base + width * big.height < need - 1e-6:
+                    continue
+                seg = Segment(
+                    "h" if wall.horizontal else "v",
+                    wall.coord,
+                    *sorted(
+                        (wall.start[0], wall.end[0])
+                        if wall.horizontal
+                        else (wall.start[1], wall.end[1])
+                    ),
+                )
+                offset = wall.place(seg, width, margin=cfg.window_margin, center=axis)
+                if offset is None:
+                    continue
+                if abs(wall.param(axis) - (offset + width / 2)) > 1e-3:
+                    wall.occupied.pop()
+                    continue
+                windows.append(
+                    _Window(
+                        big.key,
+                        wall,
+                        offset,
+                        width,
+                        big.height,
+                        big.sill,
+                        big.kind,
+                        big.mullions if width == big.width else _mullions(cfg, big, width),
+                        big.role,
+                        big.size_class,
+                    )
+                )
+                placed = True
+                break
+            if placed:
+                continue
+            restore(big)  # no merge on the axis: keep the largest, drop the rest if glazing allows
+            if base + big.width * big.height >= need - 1e-6:
+                continue
+            # Last resort: one window over the pair's own span (both widths and the gap
+            # between them: always free, more glass than the two) instead of a pair.
+            release(big)
+            start = min(w.offset for w in cluster)
+            width = rnd(max(w.offset + w.width for w in cluster) - start)
+            windows.append(
+                _Window(
+                    big.key,
+                    wall,
+                    start,
+                    width,
+                    big.height,
+                    big.sill,
+                    big.kind,
+                    _mullions(cfg, big, width),
+                    big.role,
+                    big.size_class,
+                )
+            )
+            wall.occupied.append((start, round(start + width, 3)))
+
+
+def _mullions(cfg: LayoutConfig, w: _Window, width: float) -> int:
+    preset = cfg.window_presets.get(w.size_class) if w.size_class is not None else None
+    if preset is None:
+        return w.mullions
+    return min(12, max(0, math.ceil(width / preset.mullion_spacing) - 1))
 
 
 def _plan_center(w: _Window) -> float:

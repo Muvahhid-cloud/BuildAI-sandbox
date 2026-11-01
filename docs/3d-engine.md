@@ -486,6 +486,42 @@ BuildingModel 1.3.0. Details and rationale: §23. In the engine:
 
 Golden files: every reference spec changes (a canopy each; garage/flat roof coverings; zoning; axes) — rooms, areas, counts and warnings unchanged except one window fewer in spec 05 (an aligned, narrower window met the room's glazing without its second window).
 
+### 16.14 Facade grid (layout@1.9.0, V4)
+
+The storeys share a facade grid so upper windows stand on the windows below and repeat in a
+rhythm. No schema change; `LayoutConfig.facade_grid_snap` (1.2 m; 0 = layout@1.8.0 exactly, test).
+
+- **Partitions (planner).** `facade_grid(levels)` collects, per facade line, the band ends and the
+  *facade partitions* of the storeys laid out so far (`facade_partitions`: where the room seen on
+  the facade changes; a tucked room shows its owner). `layout_strip(..., grid)` snaps each
+  partition to the nearest line within the reach (`_snap_to_grid`, integer grid units), taking
+  the width from rooms between the neighbouring partitions already on the grid (rooms between
+  slide). A snap is kept only if every room keeps its minimum width (`min_units`), its minimum
+  area and its permitted area range (`area_low`/`area_high`, MUST and SHOULD): **no requirement or
+  rules limit is relaxed**. Upper storeys are usually packed at their minimum widths, so after
+  all storeys the ground floor (larger rooms, with slack) is laid out once more on the upper
+  storeys' grid (`_ground_on_upper_grid`; a band that cannot snap keeps its first layout).
+  Skeleton seeding and candidate order are untouched (determinism).
+- **Windows (build).** Placed top storey first; the V3 axis rule (§16.13) then centres a window on
+  the axis of a window of any storey already placed. After its required glazing, a habitable room
+  takes **rhythm windows** (`_rhythm_windows`) on each axis of the storeys above that falls on its
+  facade, only where that width fits exactly on the axis (clear of doors, windows, junctions) —
+  extra glazing, never a substitute for the required one.
+- **Garden doors.** Garden and terrace sliding doors stand under the centre of an upper habitable
+  room's facade span (where its window goes) when the full door fits there; never narrowed for it.
+- **Measured on the model** (`tests/layout/test_facade_grid.py`, independent of the engine):
+  exterior windows above the ground floor with a window of a lower storey on the same plan
+  centre (5 cm), reference specs 01 and 04–09: **41/84 (layout@1.8.0) → 58/86**. Per spec 4→7/11,
+  5→7/9, 13→17/25, 4→7/10, 7→8/10, 4→6/11, 4→6/10. Soft design score equal on every reference
+  spec except 05 (0.612 → 0.640, a different candidate ranks first; warnings 8 → 5); benchmark
+  unchanged (hard 147/147, soft 26/33, known gaps 0/3). Screenshots: `docs/visual/v4/`.
+- **Not aligned yet** (28/86): upper windows over a garage (01 west) or over a sliding door that
+  could not move at full width (08, 09 garden facades: the door stays centred between the two
+  windows above — symmetric, but no window below); stair and hall windows a few centimetres too
+  tight for the axis; small bathroom windows whose room below already has its window elsewhere.
+  Next steps: a bay grid chosen per facade before the rooms (rooms then take whole bays),
+  narrower garden doors as a design choice, stair windows on the core axis.
+
 ### 16.5 Limitations (layout@1.0.0)
 
 - One plan type (double-loaded corridor, street on the south) plus, since layout@1.5.0, a single-storey L (§16.10) and since 1.7.0 a single-storey T (§16.12); no U-shapes or courtyards (refused with the reason), no sloped sites, no basements.

@@ -28,6 +28,8 @@ interface ViewerState {
   effects: boolean;
   /** Reference grid over the site ground. */
   showGrid: boolean;
+  /** Site context (V2): paving, fence, trees and shrubs around the building. */
+  showSite: boolean;
 
   /** Floor navigation: isolates a level and frames it; "all" keeps the current camera. */
   selectFloor: (filter: LevelFilter) => void;
@@ -41,6 +43,7 @@ interface ViewerState {
   setPlanLevel: (levelId: string | null) => void;
   setEffects: (effects: boolean) => void;
   setShowGrid: (showGrid: boolean) => void;
+  setShowSite: (showSite: boolean) => void;
   /** Back to defaults for a newly loaded model; the 3D / plan choice and render options are kept. */
   reset: () => void;
 }
@@ -62,6 +65,7 @@ export const useViewerStore = create<ViewerState>()((set) => ({
   viewMode: "3d",
   effects: true,
   showGrid: false,
+  showSite: true,
   selectFloor: (filter) =>
     set(
       filter === "all"
@@ -78,6 +82,7 @@ export const useViewerStore = create<ViewerState>()((set) => ({
   setPlanLevel: (planLevelId) => set({ planLevelId }),
   setEffects: (effects) => set({ effects }),
   setShowGrid: (showGrid) => set({ showGrid }),
+  setShowSite: (showSite) => set({ showSite }),
   reset: () => set({ ...INITIAL, cameraRequest: request("exterior", false) }),
 }));
 

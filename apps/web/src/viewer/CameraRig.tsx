@@ -5,7 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { type ComponentRef, useCallback, useEffect, useRef, useState } from "react";
 import { type Camera, OrthographicCamera as ThreeOrthographicCamera, Vector3 } from "three";
 
-import { modelToWorld } from "@/engine/math/coords";
+import { modelToWorld, type XYZ } from "@/engine/math/coords";
 import type { SceneGraph } from "@/engine/scene/build-scene";
 import { cameraPose } from "@/engine/scene/camera-presets";
 import { useViewerStore } from "@/stores/viewer-store";
@@ -96,6 +96,26 @@ export function CameraRig({ scene }: { scene: SceneGraph }) {
     }
     invalidate();
   }, [controls, request, scene, setLevelFilter, fitZoom, invalidate]);
+
+  // Development aid for reproducible screenshots (docs/visual): set an exact pose in MODEL
+  // coordinates. Never present in production builds.
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" || !controls) return;
+    const w = window as unknown as { __buildaiViewer?: unknown };
+    w.__buildaiViewer = {
+      setPose: (position: XYZ, target: XYZ, levelFilter?: string) => {
+        if (levelFilter) setLevelFilter(levelFilter);
+        tween.current = null;
+        controls.object.position.copy(modelToWorld(position));
+        controls.target.copy(modelToWorld(target));
+        controls.update();
+        invalidate();
+      },
+    };
+    return () => {
+      delete w.__buildaiViewer;
+    };
+  }, [controls, invalidate, setLevelFilter]);
 
   useFrame((state) => {
     if (!controls) return;

@@ -1,7 +1,9 @@
-// Furniture asset resolution. Phase 1 renders every piece with procedural placeholder
-// geometry. To use real models later, register GLB/glTF assets here by the element's
-// `properties.asset_id`; the viewer then loads the asset (e.g. drei useGLTF) instead of the
-// placeholder, keeping the same element id, transform and selection behaviour.
+// Furniture asset resolution. Geometry builders always emit the procedural placeholder (it is
+// the pick proxy, the bounds and the fallback). The viewer draws a CC0 glTF model instead when
+// one is available (V2): an explicitly registered asset (by `asset_id`), else the model of the
+// manifest (data/materials/models.json) for that `asset_id` or furniture kind — fitted to the
+// element's width x depth x height, so the BuildingModel stays the source of truth.
+import { furnitureModel, type ModelEntry } from "../../materials/models";
 import type { Furniture } from "../../model/types";
 
 export interface GltfAsset {
@@ -11,7 +13,10 @@ export interface GltfAsset {
   offset: [number, number, number];
 }
 
-export type FurnitureSource = { type: "procedural" } | { type: "gltf"; asset: GltfAsset };
+export type FurnitureSource =
+  | { type: "procedural" }
+  | { type: "gltf"; asset: GltfAsset }
+  | { type: "model"; model: ModelEntry };
 
 const ASSETS = new Map<string, GltfAsset>();
 
@@ -22,5 +27,7 @@ export function registerFurnitureAsset(assetId: string, asset: GltfAsset): void 
 export function furnitureSource(el: Furniture): FurnitureSource {
   const id = el.properties.asset_id;
   const asset = id ? ASSETS.get(id) : undefined;
-  return asset ? { type: "gltf", asset } : { type: "procedural" };
+  if (asset) return { type: "gltf", asset };
+  const model = furnitureModel(el.properties.furniture_kind, id);
+  return model ? { type: "model", model } : { type: "procedural" };
 }

@@ -70,10 +70,19 @@ describe("MaterialCache", () => {
 });
 
 describe("furniture assets", () => {
-  it("uses procedural placeholders unless a GLB asset is registered", () => {
-    const sofa = demoIndex().model.elements.find((e) => e.type === "furniture")!;
-    if (sofa.type !== "furniture") throw new Error("fixture");
-    expect(furnitureSource(sofa)).toEqual({ type: "procedural" });
+  it("uses the kind's CC0 model, a registered asset first, and the placeholder otherwise", () => {
+    const furniture = demoIndex().model.elements.filter((e) => e.type === "furniture");
+    const sofa = furniture.find(
+      (e) => e.type === "furniture" && e.properties.furniture_kind === "sofa",
+    )!;
+    const toilet = furniture.find(
+      (e) => e.type === "furniture" && e.properties.furniture_kind === "toilet",
+    )!;
+    if (sofa.type !== "furniture" || toilet.type !== "furniture") throw new Error("fixture");
+    // V2: the manifest has a sofa model, no toilet model (box placeholder stays).
+    const s = furnitureSource(sofa);
+    expect(s.type === "model" && s.model.id).toBe("sofa_02");
+    expect(furnitureSource(toilet)).toEqual({ type: "procedural" });
     registerFurnitureAsset("sofa-v1", { url: "/assets/sofa.glb", scale: 1, offset: [0, 0, 0] });
     const withAsset = { ...sofa, properties: { ...sofa.properties, asset_id: "sofa-v1" } };
     expect(furnitureSource(withAsset).type).toBe("gltf");

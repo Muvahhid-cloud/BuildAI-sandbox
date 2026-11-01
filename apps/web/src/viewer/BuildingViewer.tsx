@@ -14,6 +14,7 @@ import { RENDER } from "./render-settings";
 import { RenderOnResize } from "./RenderOnResize";
 import { SceneEnvironment } from "./SceneEnvironment";
 import { SectionPlane } from "./SectionPlane";
+import { SiteLayer } from "./SiteLayer";
 
 /** Interactive 3D view of a built SceneGraph. Renders on demand (no idle GPU work). */
 export function BuildingViewer({ scene }: { scene: SceneGraph }) {
@@ -41,6 +42,7 @@ export function BuildingViewer({ scene }: { scene: SceneGraph }) {
       <MaterialTextures />
       <SceneEnvironment bounds={scene.bounds} />
       <ModelRoot scene={scene} />
+      <SiteLayer scene={scene} />
       <CameraRig scene={scene} />
       <SectionPlane />
       <PostEffects />

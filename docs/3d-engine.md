@@ -1,6 +1,6 @@
 # 3D Engine
 
-Status: **Implemented for Phase 2 (v0.4)**; rendering V1 step 1 (§21) · Last updated: 2026-10-31
+Status: **Implemented for Phase 2 (v0.4)**; rendering V1 (§21), furniture and site V2 (§22) · Last updated: 2026-11-01
 
 The "3D engine" is four parts with hard boundaries:
 
@@ -115,7 +115,7 @@ The demo uses a 25° hip roof whose underside meets the wall tops at the outer f
 |---|---|
 | `stair` (`stair.ts`) | Side profile (n risers, n−1 treads, sloped soffit parallel to the pitch, waist = riser + 120 mm) extruded across the width |
 | `railing` (`railing.ts`) | Posts at ≤ `post_spacing`, top rail following `rise` (sloped for stairs), balusters every 120 mm (`bars`) or a glass panel (`glass`, level only) |
-| `furniture` (`furniture/`) | Procedural placeholders per `furniture_kind` (18 kinds) sized from the element's dimensions; shower glass is a separate glass part. `assets.ts` resolves `asset_id` → registered GLB/glTF asset; with none registered, placeholders are used |
+| `furniture` (`furniture/`) | Procedural placeholders per `furniture_kind` (18 kinds) sized from the element's dimensions; shower glass is a separate glass part. Since V2 (§22) the viewer draws a CC0 glTF model for kinds that have one (`assets.ts` → `data/materials/models.json`), fitted to the element's width × depth × height; the placeholder stays the pick proxy and the fallback |
 
 ## 10. Object UUID mapping & mesh ↔ model mapping
 
@@ -226,7 +226,7 @@ stores/ (Zustand, one concern each)
 - Selection is single-element; no hover highlight (cursor only), no multi-select or "select parent".
 - Section cut is horizontal only, global (also clips grid/ground); no section fill (hatching).
 - Walk (first-person) mode and measurement tools are not implemented (Phase 8). The plan (2D) view exists since Phase 3.6 (§19).
-- Furniture is procedural placeholder geometry; the GLB asset hook exists but no assets are registered and the viewer does not load GLBs yet.
+- Furniture is procedural placeholder geometry (Phase 1); since V2 most kinds are drawn by CC0 glTF models (§22).
 - `ResizeObserver`-driven canvas sizing: in environments that throttle rendering (hidden embedded browser panes) the canvas initialises on the first interaction; normal browser tabs are unaffected.
 - `THREE.Clock` deprecation warning comes from React Three Fiber internals.
 
@@ -775,3 +775,92 @@ changes). Shadows stay PCF 2048². "Effects" turns post-processing off on slow d
 - No transmission/refraction in glass, no screen-space reflections, no bloom; interior views get
   sky light through the openings only via the HDRI (no light probes).
 - `three` removed `PCFSoftShadowMap`; soft shadow edges come from the PCF shadow radius.
+
+## 22. Furniture models and site — V2 (2026-11-01)
+
+Scope: the viewer only. The BuildingModel schema, layout output, golden files, API and the 2D
+plan drawings and downloads are unchanged. `EngineConfig.version` is `engine@3` (window frames
+moved, below).
+
+### 22.1 Window reveals (V1 review fix)
+
+Windows in exterior walls are set 50 mm behind the outer face (`openings.ts windowFrameV`), not on
+the wall centre line: the interior reveal (jambs, head, sill) is deep and lined with the host's
+interior finish, the exterior reveal shallow and lined with the facade finish. Before, half of
+every reveal was the exterior (brick) reveal, seen through the glass from inside. Interior-wall
+windows stay centred. Test: `builders.test.ts` (every exterior-wall window of the demo and the
+generated house: four lining boxes per side, right finish, interior reveal the deep one).
+
+### 22.2 Ceilings (V1 review question)
+
+The Interior preset isolates its floor (§14), which hides the slab above: the sky there is
+intended, not a bug. With all floors shown, the slab underside is drawn in the slab's material;
+rooms carry `ceiling_assembly_ref`, but nothing assigns ceilings yet (building-model.md §3), so no
+ceiling finish is invented. A soft hemisphere "bounce" light (`RENDER.bounce`) keeps soffits and
+eaves from going black.
+
+### 22.3 Furniture models
+
+```
+data/materials/models.json   id, file (models/<id>.glb), use (furniture|tree|bush), kinds,
+                             yaw_deg (front -> glTF +Z), bounds (glTF scene box, Y-up)
+engine/materials/models.ts   schema; furnitureModel(kind, asset_id); fitToDimensions(); fitToHeight()
+engine/builders/furniture/assets.ts  furnitureSource(): registered asset > manifest model > procedural
+viewer/ModelRoot.tsx         FurnitureModel: invisible placeholder proxy + ModelInstance(fit matrix)
+viewer/ModelInstance.tsx     GLTFLoader + three's MeshoptDecoder (local, no CDN), Suspense/error
+                             boundary -> placeholder fallback
+```
+
+- **The BuildingModel is the source of truth:** `fitToDimensions` maps the model's bounds exactly
+  onto the element's `width × depth × height` (non-uniform scale) in the furniture frame (origin =
+  base centre, width x, depth y, front −y, Z-up). glTF Y-up → Z-up is a rotation (never mirrored).
+- The procedural placeholder is still built for every piece: it is the invisible pick proxy
+  (selection, outline, bounds) and the fallback while a model loads, if its file is not served or
+  fails, and for ghosted (isolated-floor) furniture. Kinds without a model (bed, wardrobe, TV unit,
+  kitchen units, fridge, sanitary ware — `ASSETS.md` TODO) keep the placeholder.
+- Models are requested only when `public/materials/manifest.json` lists them (`viewer/served-assets.ts`).
+- **Materials (recorded exception, CLAUDE.md):** furniture and vegetation models carry their own
+  embedded CC0 PBR materials. Building elements still take materials only from `library.json`
+  via `MaterialCache`; the furniture element's `material_id` stays model data (placeholder,
+  properties panel).
+- Model meshes are not pickable and carry no `elementId`; the proxy carries `{ elementId, part }`.
+  Foliage that is alpha-blended in the source is switched to alpha-test (sorting, shadows).
+
+### 22.4 Site
+
+`engine/scene/site.ts planSite(index, bounds)` (pure, model space, deterministic) →
+`SitePlan { streetY, strips, plants, fence }`, drawn by `viewer/SiteLayer.tsx` under the same
+coords.ts root rotation as the building ("Site" toolbar toggle, default on). Never part of the
+BuildingModel, never pickable.
+
+| Item | Rule |
+|---|---|
+| Street | `streetY = bounds.min.y − 7 m` (south) |
+| Path | from the centre of the `entrance` door on the facade face to the street; straight for a street-side door, out 1.5 m then south for a side door, around the nearer end for a garden-side door; width max(1.2 m, door + 0.4 m); library `site_paving` (UVs in meters) |
+| Driveway | the same route from each `garage` door, width door + 1.6 m |
+| Trees | four fixed slots off the building corners (> 3.5 m from every facade), skipped when within 2.4 m of a strip; height 4.2–5.6 m and rotation from `hashFraction(slot)` (FNV-1a, no randomness) |
+| Shrubs | a row 1 m in front of the street facade every 2.4 m, skipped near strips |
+| Fence | 0.9 m timber (`wood`) on the street edge, open where a strip reaches it |
+
+Tests (`site.test.ts`, demo + generated rectangular/L/T houses): identical plan and mesh across
+builds and reversed element order; path starts at the entrance door and ends at the street; one
+driveway per garage door; plants outside the building and clear of strips, trees clear of the
+facades; fence gaps; paving UVs in meters. `models.test.ts`: every GLB self-contained (no
+external URIs), meshopt-compressed, recorded in ASSETS.md, < 40 MB in total; exact fit to element
+dimensions; axis conversion.
+
+### 22.5 Performance
+
+Furniture models are 0.2–22k triangles each (one shared geometry per file, clones per instance);
+trees are simplified to ~40k triangles (from ~2M) and shrubs to ~11k; all textures 512 px WebP;
+3.1 MB of models in total. Models load lazily after the building is shown (placeholders first).
+"Site" and the Furniture layer can be switched off.
+
+### 22.6 Limitations (V2)
+
+- No suitable CC0 model on Poly Haven for beds, wardrobes, TV units (with screen), kitchen units,
+  fridges or sanitary ware; those stay boxes. Non-uniform fitting stretches a model when the
+  element's proportions differ a lot from the model's.
+- Site placement is generic (street assumed south, no plot boundary from the spec, no terrain).
+- Trees are heavily simplified (thinner crowns than the originals).
+- No ceilings until the model assigns ceiling assemblies.

@@ -27,6 +27,7 @@
     {"id": "stone_tile", "name": "Stone-look tile (warm grey)", "category": "floor_finish", "color": "#b9b3a8", "roughness": 0.5, "metalness": 0, "textures": {"albedo": "textures/floor_tile/albedo.jpg", "normal": "textures/floor_tile/normal.jpg", "roughness": "textures/floor_tile/roughness.jpg", "tile_size_m": [1.5, 1.5], "tint": "#e4ddd2"}},
     {"id": "wall_warm", "name": "Interior paint (warm white)", "category": "wall_finish", "color": "#efe6d6", "roughness": 0.95, "metalness": 0, "textures": {"normal": "textures/plaster_interior/normal.jpg", "roughness": "textures/plaster_interior/roughness.jpg", "tile_size_m": [2.0, 2.0]}},
     {"id": "fabric_warm", "name": "Upholstery (warm terracotta)", "category": "textile", "color": "#a4735a", "roughness": 1, "metalness": 0},
+    {"id": "site_paving", "name": "Concrete pavers (site)", "category": "site", "color": "#8a8278", "roughness": 0.85, "metalness": 0, "textures": {"albedo": "textures/paving/albedo.jpg", "normal": "textures/paving/normal.jpg", "roughness": "textures/paving/roughness.jpg", "tile_size_m": [1.92, 1.92], "tint": "#e8e8ec"}},
     {"id": "site_grass", "name": "Grass (site)", "category": "site", "color": "#7d9a5a", "roughness": 0.95, "metalness": 0, "textures": {"albedo": "textures/grass/albedo.jpg", "normal": "textures/grass/normal.jpg", "roughness": "textures/grass/roughness.jpg", "tile_size_m": [2.0, 2.0], "tint": "#bfffb3"}}
   ]
 }

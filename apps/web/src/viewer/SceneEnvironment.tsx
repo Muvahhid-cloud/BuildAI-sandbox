@@ -55,6 +55,7 @@ export function SceneEnvironment({ bounds }: { bounds: Box3 }) {
   return (
     <>
       <EnvironmentLighting />
+      <hemisphereLight args={[RENDER.bounce.sky, RENDER.bounce.ground, RENDER.bounce.intensity]} />
       <fog attach="fog" args={[RENDER.sky.horizon, ground * 0.35, ground * 0.95]} />
       <primitive object={target} />
       <directionalLight

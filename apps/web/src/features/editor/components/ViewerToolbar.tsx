@@ -21,6 +21,8 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
   const setEffects = useViewerStore((s) => s.setEffects);
   const showGrid = useViewerStore((s) => s.showGrid);
   const setShowGrid = useViewerStore((s) => s.setShowGrid);
+  const showSite = useViewerStore((s) => s.showSite);
+  const setShowSite = useViewerStore((s) => s.setShowSite);
   const selectedId = useSelectionStore((s) => s.selectedId);
   const buildMs = useBuildingStore((s) => s.buildMs);
   const selected = selectedId ? scene.index.elementsById.get(selectedId) : undefined;
@@ -114,6 +116,13 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
               title="Reference grid (1 m cells, 5 m sections)"
             >
               Grid
+            </SegmentButton>
+            <SegmentButton
+              active={showSite}
+              onClick={() => setShowSite(!showSite)}
+              title="Site context: path, driveway, fence, trees and shrubs (not part of the model)"
+            >
+              Site
             </SegmentButton>
           </div>
         </>

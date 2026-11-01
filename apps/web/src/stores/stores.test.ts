@@ -51,6 +51,14 @@ describe("viewer store (render options)", () => {
     expect(useViewerStore.getState().showGrid).toBe(true);
     useViewerStore.setState({ effects: true, showGrid: false });
   });
+
+  it("shows the site by default and keeps the Site toggle across model loads (V2)", () => {
+    expect(useViewerStore.getState().showSite).toBe(true);
+    useViewerStore.getState().setShowSite(false);
+    useViewerStore.getState().reset();
+    expect(useViewerStore.getState().showSite).toBe(false);
+    useViewerStore.setState({ showSite: true });
+  });
 });
 
 describe("layer store", () => {

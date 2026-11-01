@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { indexModel } from "../model/model-index";
 import { parseBuildingModel } from "../model/parse";
 import { buildScene, ContentCache, elementBounds } from "../scene/build-scene";
-import { bySemanticKey, demoIndex, demoModelJson } from "../test-fixtures";
+import { bySemanticKey, demoIndex, demoModelJson, generatedModelJson } from "../test-fixtures";
 import { buildElement } from "./registry";
 import { stairProfile } from "./stair";
 import { DEFAULT_ENGINE_CONFIG, InvalidElementError } from "./types";
@@ -71,6 +71,42 @@ describe("geometry builders on the demo house", () => {
     const win = bounds("window:kitchen_s");
     const wall = elementBounds(scene, host.id)!;
     expect(win.max.y).toBeLessThanOrEqual(wall.max.y + 1e-6);
+  });
+
+  it("lines every reveal face: interior side with the interior finish, exterior with the facade", () => {
+    const scenes = [scene, buildScene(parseBuildingModel(generatedModelJson()))];
+    let checked = 0;
+    for (const sc of scenes) {
+      for (const el of sc.index.model.elements) {
+        if (el.type !== "window") continue;
+        const host = sc.index.hostOf.get(el.id)!;
+        if (host.type !== "wall" || host.properties.wall_kind !== "exterior") continue;
+        const t = host.dimensions.thickness;
+        const inner = host.properties.finish_left_id ?? host.material_id!;
+        const outer = host.properties.finish_right_id ?? host.material_id!;
+        const body = sc.byElement.get(el.id)!.find((d) => d.part === "body")!;
+        const ys = (material: string) => {
+          const g = body.geometry.groups[body.materials.indexOf(material)];
+          const pos = body.geometry.getAttribute("position");
+          const out: number[] = [];
+          for (let i = g.start; i < g.start + g.count; i++) out.push(pos.getY(i));
+          return { min: Math.min(...out), max: Math.max(...out), boxes: g.count / 36 };
+        };
+        const vIn = ys(inner);
+        const vOut = ys(outer);
+        // Jambs, head and sill on each side (4 boxes each, 12 triangles per box).
+        expect(vIn.boxes, el.name).toBe(4);
+        expect(vOut.boxes, el.name).toBe(4);
+        // Interior lining reaches the interior face, exterior lining the facade, never crossing.
+        expect(vIn.max, el.name).toBeCloseTo(t / 2, 5);
+        expect(vOut.min, el.name).toBeCloseTo(-t / 2, 5);
+        expect(vIn.min, el.name).toBeGreaterThan(vOut.max);
+        // The frame sits near the facade: the interior reveal is the deep one.
+        expect(vIn.max - vIn.min, el.name).toBeGreaterThan(2 * (vOut.max - vOut.min));
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(20);
   });
 
   it("places upper-floor elements at the level elevation", () => {

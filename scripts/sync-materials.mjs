@@ -1,4 +1,4 @@
-// Copies the material assets (data/materials/{textures,hdri}) to apps/web/public/materials so
+// Copies the material assets (data/materials/{textures,hdri,models}) to apps/web/public/materials so
 // Next.js serves them at /materials/... (MATERIAL_ASSET_BASE). The copy is git-ignored;
 // data/materials is the only source. Runs before `dev` and `build` of the web app. It also
 // writes manifest.json (the files present), so the viewer never requests a missing texture.
@@ -12,7 +12,7 @@ const target = join(root, "apps", "web", "public", "materials");
 
 rmSync(target, { recursive: true, force: true });
 mkdirSync(target, { recursive: true });
-for (const dir of ["textures", "hdri"]) {
+for (const dir of ["textures", "hdri", "models"]) {
   const from = join(source, dir);
   if (!existsSync(from)) continue;
   cpSync(from, join(target, dir), { recursive: true });

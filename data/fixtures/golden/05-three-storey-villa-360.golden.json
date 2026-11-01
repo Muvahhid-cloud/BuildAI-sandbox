@@ -1,5 +1,5 @@
 {
-  "engine_version": "layout@1.9.0",
+  "engine_version": "layout@1.10.0",
   "seed": 0,
   "footprint_m": [
     9.05,
@@ -18,21 +18,21 @@
     "terraces": 1,
     "walls": 40,
     "doors": 20,
-    "windows": 36,
-    "elements": 174,
+    "windows": 35,
+    "elements": 173,
     "facade_colors": [],
     "windows_by_facade": {
       "front": {
         "large": 3
       },
       "left": {
-        "large": 8
-      },
-      "rear": {
         "large": 5
       },
+      "rear": {
+        "large": 8
+      },
       "right": {
-        "large": 3
+        "large": 2
       }
     },
     "rooms_on_facade": {
@@ -96,7 +96,7 @@
     "slab": 6,
     "stair": 2,
     "wall": 40,
-    "window": 36
+    "window": 35
   },
   "rooms": [
     {
@@ -263,6 +263,6 @@
     "LAYOUT_AREA_DEVIATION",
     "LAYOUT_AREA_DEVIATION"
   ],
-  "model_sha256": "483e5b9d3c58c4f8e7943bf5f328d65d8cd4f470c8798f5972c6789159a69cd7",
-  "geometry_sha256": "f7d8b48bec05d6ce240e9914da95ca3fecaa512f0fe301cc9c69c1f43503bd07"
+  "model_sha256": "831abfa3476c7d156783edf9bbe04df493a61506a56c86122d7c895ad9c6a43b",
+  "geometry_sha256": "f72525407b66494e03639499190c6d6077e32877eeb52efd437aa830818ffd19"
 }

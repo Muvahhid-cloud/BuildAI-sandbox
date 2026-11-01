@@ -7,7 +7,7 @@
     "description": "Single-storey 160 m² L-shaped bungalow: day rooms on the garden, a bedroom wing, a garden terrace and a one-car garage."
   },
   "units": "m",
-  "engine_version": "layout@1.9.0",
+  "engine_version": "layout@1.10.0",
   "seed": 0,
   "levels": [
     {
@@ -225,7 +225,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 1.6,
+        "x": 1.75,
         "y": 3.3,
         "z": 0.0
       },
@@ -283,8 +283,8 @@
       "type_ref": null,
       "type": "room",
       "dimensions": {
-        "area": 26.76,
-        "perimeter": 47.0,
+        "area": 26.58,
+        "perimeter": 46.7,
         "height": 2.8
       },
       "properties": {
@@ -296,27 +296,27 @@
             "y": 0.0
           },
           {
-            "x": 12.0,
+            "x": 11.85,
             "y": 0.0
           },
           {
-            "x": 12.0,
+            "x": 11.85,
             "y": 1.2
           },
           {
-            "x": 8.7,
+            "x": 8.55,
             "y": 1.2
           },
           {
-            "x": 8.7,
+            "x": 8.55,
             "y": 11.5
           },
           {
-            "x": 7.5,
+            "x": 7.35,
             "y": 11.5
           },
           {
-            "x": 7.5,
+            "x": 7.35,
             "y": 1.2
           },
           {
@@ -364,8 +364,8 @@
       "type_ref": null,
       "type": "room",
       "dimensions": {
-        "area": 16.13,
-        "perimeter": 18.0,
+        "area": 17.05,
+        "perimeter": 18.3,
         "height": 2.8
       },
       "properties": {
@@ -377,19 +377,19 @@
             "y": 0.0
           },
           {
-            "x": 1.6,
+            "x": 1.75,
             "y": 0.0
           },
           {
-            "x": 1.6,
+            "x": 1.75,
             "y": 1.2
           },
           {
-            "x": 2.9,
+            "x": 3.05,
             "y": 1.2
           },
           {
-            "x": 2.9,
+            "x": 3.05,
             "y": 6.1
           },
           {
@@ -602,7 +602,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 2.9,
+        "x": 3.05,
         "y": 4.5,
         "z": 0.0
       },
@@ -632,8 +632,8 @@
       "type_ref": null,
       "type": "room",
       "dimensions": {
-        "area": 30.38,
-        "perimeter": 22.2,
+        "area": 29.64,
+        "perimeter": 21.9,
         "height": 2.8
       },
       "properties": {
@@ -645,11 +645,11 @@
             "y": 0.0
           },
           {
-            "x": 6.2,
+            "x": 6.05,
             "y": 0.0
           },
           {
-            "x": 6.2,
+            "x": 6.05,
             "y": 4.9
           },
           {
@@ -797,7 +797,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 2.9,
+        "x": 3.05,
         "y": 9.4,
         "z": 0.0
       },
@@ -819,8 +819,8 @@
       "type_ref": null,
       "type": "room",
       "dimensions": {
-        "area": 18.15,
-        "perimeter": 18.1,
+        "area": 17.7,
+        "perimeter": 17.8,
         "height": 2.8
       },
       "properties": {
@@ -832,11 +832,11 @@
             "y": 0.0
           },
           {
-            "x": 6.05,
+            "x": 5.9,
             "y": 0.0
           },
           {
-            "x": 6.05,
+            "x": 5.9,
             "y": 3.0
           },
           {
@@ -1458,7 +1458,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 1.6,
+        "x": 1.75,
         "y": 4.5,
         "z": 0.0
       },
@@ -1488,7 +1488,7 @@
       "type_ref": null,
       "type": "wall",
       "dimensions": {
-        "length": 7.5,
+        "length": 7.35,
         "thickness": 0.12,
         "height": 2.8
       },
@@ -1738,7 +1738,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 1.6,
+        "x": 1.75,
         "y": 3.3,
         "z": 0.0
       },
@@ -1784,7 +1784,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 2.9,
+        "x": 3.05,
         "y": 4.5,
         "z": 0.0
       },
@@ -2114,7 +2114,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 6.4,
+        "x": 6.25,
         "y": 0.0,
         "z": 0.0
       },
@@ -2524,7 +2524,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 1.975,
+        "x": 1.9,
         "y": 0.0,
         "z": 0.0
       },
@@ -2608,7 +2608,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 6.675,
+        "x": 6.673,
         "y": 0.0,
         "z": 0.6
       },
@@ -2630,7 +2630,7 @@
       "type_ref": null,
       "type": "window",
       "dimensions": {
-        "width": 1.95,
+        "width": 1.82,
         "height": 1.8
       },
       "properties": {
@@ -2684,7 +2684,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 1.225,
+        "x": 1.15,
         "y": 0.0,
         "z": 0.6
       },
@@ -2836,7 +2836,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 1.525,
+        "x": 1.5,
         "y": 0.0,
         "z": 0.6
       },
@@ -2858,7 +2858,7 @@
       "type_ref": null,
       "type": "window",
       "dimensions": {
-        "width": 1.45,
+        "width": 1.5,
         "height": 1.8
       },
       "properties": {
@@ -2869,50 +2869,12 @@
       }
     },
     {
-      "id": "b14f9ed2-1acd-5dff-a1eb-dfbf0713994e",
+      "id": "5bf1e59a-6e39-5e3d-a2cf-4f9c0a0f83b9",
       "name": "WN1-09",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 5.3,
-        "y": 0.0,
-        "z": 0.9
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "6c9f27b7-b1f9-5029-b42d-fb51c2a600ac"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:bedroom_2:E:1",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 0.6,
-        "height": 1.4
-      },
-      "properties": {
-        "window_kind": "casement",
-        "frame_material_id": "window_frame",
-        "mullions": 0,
-        "size_class": "standard"
-      }
-    },
-    {
-      "id": "5bf1e59a-6e39-5e3d-a2cf-4f9c0a0f83b9",
-      "name": "WN1-10",
-      "layer": "architecture",
-      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
-      "position": {
-        "x": 1.8,
+        "x": 1.15,
         "y": 0.0,
         "z": 0.9
       },
@@ -2934,18 +2896,56 @@
       "type_ref": null,
       "type": "window",
       "dimensions": {
-        "width": 2.1,
+        "width": 1.1,
         "height": 1.4
       },
       "properties": {
         "window_kind": "casement",
         "frame_material_id": "window_frame",
-        "mullions": 2,
+        "mullions": 1,
         "size_class": "standard"
       }
     },
     {
-      "id": "58efeee3-c83a-517c-8b76-e39ee0147cd7",
+      "id": "c1e68443-7ac1-534c-ac79-712a8d68a7c9",
+      "name": "WN1-10",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 2.4,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6945cb57-11ce-5e95-b7c5-e56cd8290444"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:kitchen:S:1",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.0,
+        "height": 1.4
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "standard"
+      }
+    },
+    {
+      "id": "bbe95b9e-402a-5314-a1a4-eb9e1f1e47db",
       "name": "WN1-11",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
@@ -2968,7 +2968,7 @@
       ],
       "origin": "generated",
       "locked": false,
-      "semantic_key": "window:kitchen:W:1",
+      "semantic_key": "window:kitchen:W:2",
       "type_ref": null,
       "type": "window",
       "dimensions": {
@@ -2988,7 +2988,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 9.7,
+        "x": 11.35,
         "y": 0.0,
         "z": 0.9
       },
@@ -3010,19 +3010,57 @@
       "type_ref": null,
       "type": "window",
       "dimensions": {
-        "width": 2.1,
+        "width": 1.1,
         "height": 1.4
       },
       "properties": {
         "window_kind": "casement",
         "frame_material_id": "window_frame",
-        "mullions": 2,
+        "mullions": 1,
+        "size_class": "standard"
+      }
+    },
+    {
+      "id": "83a6402c-b9b3-55da-aa4e-d1cabc7c522f",
+      "name": "WN1-13",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 10.2,
+        "y": 0.0,
+        "z": 0.9
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6945cb57-11ce-5e95-b7c5-e56cd8290444"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:bedroom_1:S:1",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.0,
+        "height": 1.4
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
         "size_class": "standard"
       }
     },
     {
       "id": "c9b004cc-0edc-519c-ad68-b064d08a6ae2",
-      "name": "WN1-13",
+      "name": "WN1-14",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
@@ -3129,7 +3167,7 @@
       "layer": "structure",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 2.9,
+        "x": 3.05,
         "y": 9.55,
         "z": 0.0
       },
@@ -3147,7 +3185,7 @@
       "type": "slab",
       "dimensions": {
         "thickness": 0.15,
-        "area": 17.24
+        "area": 16.81
       },
       "properties": {
         "slab_kind": "ground",
@@ -3157,11 +3195,11 @@
             "y": 0.0
           },
           {
-            "x": 6.05,
+            "x": 5.9,
             "y": 0.0
           },
           {
-            "x": 6.05,
+            "x": 5.9,
             "y": 2.85
           },
           {
@@ -3380,7 +3418,7 @@
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 1.45,
+        "x": 1.525,
         "y": 6.95,
         "z": 0.0
       },
@@ -3402,8 +3440,8 @@
       "type_ref": null,
       "type": "furniture",
       "dimensions": {
-        "width": 1.4,
-        "depth": 0.9,
+        "width": 2.0,
+        "depth": 1.0,
         "height": 0.75
       },
       "properties": {
@@ -3417,8 +3455,8 @@
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 0.8,
-        "y": 6.6,
+        "x": 0.825,
+        "y": 6.3,
         "z": 0.0
       },
       "rotation": {
@@ -3454,8 +3492,8 @@
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 0.8,
-        "y": 7.3,
+        "x": 0.825,
+        "y": 6.95,
         "z": 0.0
       },
       "rotation": {
@@ -3491,14 +3529,14 @@
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 2.1,
-        "y": 6.6,
+        "x": 0.825,
+        "y": 7.6,
         "z": 0.0
       },
       "rotation": {
         "x": 0.0,
         "y": 0.0,
-        "z": -1.570796
+        "z": 1.570796
       },
       "material_id": "wood",
       "relationships": [
@@ -3528,8 +3566,8 @@
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 2.1,
-        "y": 7.3,
+        "x": 2.225,
+        "y": 6.3,
         "z": 0.0
       },
       "rotation": {
@@ -3560,12 +3598,86 @@
       }
     },
     {
+      "id": "9eb2a89a-a500-5c63-9db5-c90b027c3854",
+      "name": "Chair 5",
+      "layer": "furniture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 2.225,
+        "y": 6.95,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "4738f7d7-5584-5b5f-b22c-ec9e413d8ade"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "furniture:dining:chair:5",
+      "type_ref": null,
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.45,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "0412d6c0-1545-5727-9f68-7a342a462634",
+      "name": "Chair 6",
+      "layer": "furniture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 2.225,
+        "y": 7.6,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": -1.570796
+      },
+      "material_id": "wood",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "4738f7d7-5584-5b5f-b22c-ec9e413d8ade"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "furniture:dining:chair:6",
+      "type_ref": null,
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.45,
+        "depth": 0.45,
+        "height": 0.9
+      },
+      "properties": {
+        "furniture_kind": "chair",
+        "asset_id": null
+      }
+    },
+    {
       "id": "2037d46e-35d1-569e-b1dc-e07ce6c6c668",
       "name": "TV unit",
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 3.3,
+        "x": 3.45,
         "y": 6.95,
         "z": 0.0
       },
@@ -3602,7 +3714,7 @@
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 6.35,
+        "x": 6.5,
         "y": 6.95,
         "z": 0.0
       },
@@ -3639,7 +3751,7 @@
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 4.7,
+        "x": 4.85,
         "y": 6.95,
         "z": 0.0
       },
@@ -4231,7 +4343,7 @@
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 5.925,
+        "x": 6.0,
         "y": 11.75,
         "z": 0.0
       },
@@ -4268,7 +4380,7 @@
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 5.225,
+        "x": 5.3,
         "y": 11.75,
         "z": 0.0
       },
@@ -4305,7 +4417,7 @@
       "layer": "furniture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 6.625,
+        "x": 6.7,
         "y": 11.75,
         "z": 0.0
       },
@@ -4339,7 +4451,7 @@
   ],
   "metadata": {
     "source": "layout",
-    "generator": "layout@1.9.0 · rules generic-residential@1"
+    "generator": "layout@1.10.0 · rules generic-residential@1"
   },
   "types": [],
   "assemblies": [],

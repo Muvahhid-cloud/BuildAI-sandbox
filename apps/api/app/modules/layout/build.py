@@ -1183,7 +1183,7 @@ def _windows(
                     if (
                         width >= min_w - 1e-6
                         and grid
-                        and cfg.bay_circulation_windows
+                        and (cfg.bay_circulation_windows or cfg.window_consistency)
                         and on_bay(
                             f"window:{region.key}:{side}:{n}",
                             lv,
@@ -1215,6 +1215,7 @@ def _windows(
     if grid and cfg.window_consistency:
         _merge_pairs(ctx, windows, grid, needed_glazing, ordered_segments)
         _unify_widths(ctx, windows, _Glazing(ctx, windows, needed_glazing, ordered_segments))
+        _align_heads(ctx, windows)
     # Garage side window.
     if ctx.plan.garage is not None:
         g = ctx.plan.garage
@@ -1546,6 +1547,37 @@ def _unify_widths(ctx: _Context, windows: list[_Window], book: _Glazing) -> None
                     w.size_class,
                 )
             )
+
+
+def _align_heads(ctx: _Context, windows: list[_Window]) -> None:
+    """V6: one head height per storey. The most common head (sill + height) of the storey's
+    habitable windows (the higher on a tie) becomes the head of its stair, hall, corridor and
+    service windows: their sill is raised by the difference, never lowered (a service sill
+    stays above LayoutConfig.service_window's, an upper-storey sill above the guard height),
+    and the head stays a lintel below the wall top."""
+    cfg = ctx.config
+    top = ctx.wall_height - cfg.lintel_min
+    for level in sorted({w.wall.level for w in windows}):
+        heads: dict[float, int] = {}
+        for w in windows:
+            if (
+                w.wall.level == level
+                and w.wall.kind == WallKind.EXTERIOR
+                and w.role not in ("window.stair", "window.service")
+            ):
+                h = rnd(w.sill + w.height)
+                heads[h] = heads.get(h, 0) + 1
+        if not heads:
+            continue
+        head = max(heads, key=lambda h: (heads[h], h))
+        if head > top + 1e-6:
+            continue
+        for w in windows:
+            if w.wall.level != level or w.role not in ("window.stair", "window.service"):
+                continue
+            sill = rnd(head - w.height)
+            if sill > w.sill + 1e-6:
+                w.sill = sill
 
 
 def _mullions(cfg: LayoutConfig, w: _Window, width: float) -> int:

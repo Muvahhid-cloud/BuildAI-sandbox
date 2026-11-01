@@ -11,7 +11,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.modules.building.enums import RoofType, RoomType
 from app.modules.building.specification import ArchitecturalStyle, FacadeMaterial, WindowStyle
 
-ENGINE_VERSION = "layout@1.13.0"  # 1.13.0: one main window width per facade wall and storey
+ENGINE_VERSION = "layout@1.14.0"  # 1.14.0: stair/hall/corridor windows on bay axes, one window
+# head per storey (V6 step 3).
+# 1.13.0: one main window width per facade wall and storey
 # (V6 step 2).
 # 1.12.0: no two windows of one room in one bay (V6 step 1).
 # 1.11.0: side facades in the bay rhythm (V5 step 3).
@@ -190,8 +192,8 @@ class LayoutConfig(_Config):
     # (merged onto the bay axis, or the extra one dropped). False reproduces layout@1.11.0.
     window_consistency: bool = True
     bay_side_window_share: float = 0.35
-    # Stair, hall and corridor windows on bay axes too; off = they follow the windows of the
-    # other storeys (V4 axis rule), which stacks them better where the hall below is short.
+    # Stair, hall and corridor windows on bay axes too (also on whenever window_consistency
+    # is, V6); off = they follow the windows of the other storeys (V4 axis rule).
     bay_circulation_windows: bool = False
     lintel_min: float = 0.2  # wall above the highest opening
 

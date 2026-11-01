@@ -154,3 +154,47 @@ def test_one_main_width_per_facade_and_storey() -> None:
     off = [habitable_widths_per_wall(_gen(n, on=False).model) for n in NAMES]
     assert sum(on) < sum(off)
     assert all(a <= b + 1e-9 for a, b in zip(on, off, strict=True))
+
+
+def heads_per_storey(model: BuildingModel) -> float:
+    """Average number of distinct window head heights (sill + height) per storey, exterior
+    windows of the house."""
+    levels = {lv.id: lv.index for lv in model.levels}
+    heads: dict[int, set[float]] = {}
+    for el, host, _a, _b in _openings(model):
+        if isinstance(el, Window) and host.semantic_key.startswith("wall:ext:") and host.level_id:
+            heads.setdefault(levels[host.level_id], set()).add(
+                round(el.position.z + el.dimensions.height, 2)
+            )
+    return sum(len(v) for v in heads.values()) / max(len(heads), 1)
+
+
+def test_one_head_height_per_storey() -> None:
+    """Step 3: stair, hall, corridor and service windows share the storey's window head."""
+    on = [heads_per_storey(_gen(n, on=True).model) for n in NAMES]
+    off = [heads_per_storey(_gen(n, on=False).model) for n in NAMES]
+    assert sum(on) / len(on) < 1.2 < sum(off) / len(off)
+    assert all(v <= 2 for v in on)
+
+
+def test_raised_sills_never_go_below_their_minimums() -> None:
+    service_sill = DEFAULT_CONFIG.service_window[2]
+    guard = PROFILE.windows.guard_required_below_sill_m
+    for name in NAMES:
+        model = _gen(name, on=True).model
+        levels = {lv.id: lv.index for lv in model.levels}
+        for el, host, _a, _b in _openings(model):
+            if not isinstance(el, Window) or not host.semantic_key.startswith("wall:ext:"):
+                continue
+            if el.dimensions.height <= DEFAULT_CONFIG.service_window[1] + 1e-6:
+                assert el.position.z >= service_sill - 1e-6, el.semantic_key
+            if host.level_id and levels[host.level_id] > 0:
+                assert el.position.z >= guard - 1e-6, el.semantic_key
+
+
+def test_circulation_windows_stand_on_bay_axes() -> None:
+    from tests.layout.test_bay_grid import windows_on_bays
+
+    on = sum(windows_on_bays(_gen(n, on=True).model)[0] for n in NAMES)
+    off = sum(windows_on_bays(_gen(n, on=False).model)[0] for n in NAMES)
+    assert on > off

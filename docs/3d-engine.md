@@ -556,7 +556,7 @@ fingerprints).
   priority (the rules profile has no privacy rule; the spec's intent is honoured).
 - **Measured on the model** (`tests/layout/test_bay_grid.py`, bays recomputed from the stored
   walls): exterior windows on a bay axis, all 12 reference specs: 12/202 (layout@1.9.0) → 57/203
-  (step 2); multi-storey specs 01, 04–09: 8/149 → 71/181 (step 3). Upper windows on a window
+  (step 2) → 102/245 (step 3); multi-storey specs 01, 04–09: 8/149 → 71/181 (step 3). Upper windows on a window
   below (01, 04–09): 58/86 → 58/87 (step 2) → 75/105 (step 3). Design scores equal on every
   reference spec except 11 (higher); benchmark unchanged (hard 147/147, soft 26/33, known gaps
   0/3). Screenshots (front, rear, east side): `docs/visual/v5/`.
@@ -564,7 +564,7 @@ fingerprints).
   at minimum widths; a bay-aware search (bay count chosen with the band widths) would be needed.
   A rhythm window can land beside an existing narrow window (a cluster instead of one bay);
   circulation windows are not on bays; widths per facade and storey still vary where service and
-  stair windows share the facade (average 2.4 widths per facade line and storey on 01, 04–09).
+  stair windows share the facade (average 2.3 widths per facade line and storey on 01, 04–09).
 
 ### 16.5 Limitations (layout@1.0.0)
 

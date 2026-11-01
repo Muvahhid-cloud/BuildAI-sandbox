@@ -8,10 +8,15 @@ Changing a default changes generated models, so bump ENGINE_VERSION with it.
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.modules.building.enums import RoomType
-from app.modules.building.specification import FacadeMaterial, WindowStyle
+from app.modules.building.enums import RoofType, RoomType
+from app.modules.building.specification import ArchitecturalStyle, FacadeMaterial, WindowStyle
 
-ENGINE_VERSION = "layout@1.7.0"  # 1.7.0: footprint shapes (V1.3): T-shaped single-storey
+ENGINE_VERSION = "layout@1.8.0"  # 1.8.0: architectural design quality (V3): BuildingModel
+# 1.3.0 with an entrance canopy (slab_kind "canopy") over the front door; roof covering per
+# roof type (flat roofs: gravel membrane), facade finish per facade material (timber: cladding
+# boards), facade zoning per architectural style (plinth storey, accent cladding on the garage;
+# never with a requested facade color). Wall cores (material_id) are unchanged.
+# 1.7.0: footprint shapes (V1.3): T-shaped single-storey
 # footprints, depth bars for L/T main bars (small or long houses), shapes without a generator
 # refused with the reason. Rectangular geometry unchanged (fingerprints of specs 01-10 as 1.6.0).
 # 1.6.0: L layout quality (V1.2): the wing's last room takes
@@ -39,6 +44,24 @@ class WindowPreset(_Config):
     height: float
     glazing_ratio: float  # target glazing / floor area for habitable rooms
     mullion_spacing: float
+
+
+class CanopyConfig(_Config):
+    """Entrance canopy over the front door (V3, slab_kind "canopy"). Construction defaults,
+    not rules: it projects `depth` from the facade, reaches `side` beyond each door jamb (less
+    where a window head would be cut) and hangs `clearance` above the door head."""
+
+    depth: float = Field(default=1.2, gt=0)
+    side: float = Field(default=0.45, ge=0)
+    thickness: float = Field(default=0.12, gt=0)
+    clearance: float = Field(default=0.25, ge=0)
+
+
+class FacadeZoning(_Config):
+    """Facade finishes beside the main one (V3); library material ids, None = main finish."""
+
+    plinth: str | None = None
+    accent: str | None = None
 
 
 class LayoutConfig(_Config):
@@ -194,6 +217,52 @@ class LayoutConfig(_Config):
             FacadeMaterial.BRICK: "brick",
             FacadeMaterial.CONCRETE: "concrete",
             FacadeMaterial.TIMBER: "wood",
+        }
+    )
+    # Visible facade finish (wall right face) per facade material (V3). The wall core keeps
+    # `facade_materials`; only timber differs: its facade reads as cladding boards.
+    facade_finishes: dict[FacadeMaterial, str] = Field(
+        default_factory=lambda: {
+            FacadeMaterial.RENDER: "exterior_wall",
+            FacadeMaterial.BRICK: "brick",
+            FacadeMaterial.CONCRETE: "concrete",
+            FacadeMaterial.TIMBER: "cladding_timber",
+        }
+    )
+    # Entrance canopy (V3); None = no canopy. Material per architectural style (else trim).
+    entrance_canopy: CanopyConfig | None = Field(default_factory=CanopyConfig)
+    canopy_materials: dict[ArchitecturalStyle, str] = Field(
+        default_factory=lambda: {
+            ArchitecturalStyle.CLASSIC: "wood_dark",
+            ArchitecturalStyle.TRADITIONAL: "wood_dark",
+            ArchitecturalStyle.SCANDINAVIAN: "wood",
+            ArchitecturalStyle.MEDITERRANEAN: "wood",
+        }
+    )
+    # Roof covering per roof type (V3): a flat roof is not tiled.
+    roof_materials: dict[RoofType, str] = Field(
+        default_factory=lambda: {
+            RoofType.FLAT: "roof_membrane",
+            RoofType.GABLE: "roof",
+            RoofType.HIP: "roof",
+        }
+    )
+    # Facade zoning per architectural style (V3, building/design.py precedence: an approved
+    # design system's first style tag, else the spec's style). `plinth` = finish of the ground
+    # storey of multi-storey houses, `accent` = finish of a distinct volume (the garage). Never
+    # applied when a facade color is requested (that colour covers the whole facade), and only
+    # where it differs from the main finish. Appearance only: wall cores are unchanged.
+    facade_zoning: dict[ArchitecturalStyle, FacadeZoning] = Field(
+        default_factory=lambda: {
+            ArchitecturalStyle.MODERN: FacadeZoning(accent="cladding_timber"),
+            ArchitecturalStyle.MINIMALIST: FacadeZoning(),
+            ArchitecturalStyle.CONTEMPORARY: FacadeZoning(plinth="brick", accent="cladding_timber"),
+            ArchitecturalStyle.CLASSIC: FacadeZoning(plinth="brick"),
+            ArchitecturalStyle.TRADITIONAL: FacadeZoning(plinth="brick"),
+            ArchitecturalStyle.SCANDINAVIAN: FacadeZoning(accent="cladding_timber"),
+            ArchitecturalStyle.INDUSTRIAL: FacadeZoning(plinth="brick"),
+            ArchitecturalStyle.MEDITERRANEAN: FacadeZoning(),
+            ArchitecturalStyle.LUXURY: FacadeZoning(plinth="concrete", accent="cladding_timber"),
         }
     )
 

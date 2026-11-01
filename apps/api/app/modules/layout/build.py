@@ -76,7 +76,12 @@ from app.modules.building.model import (
     ModelMetadata,
 )
 from app.modules.building.primitives import EPS, Rotation, Vec2, Vec3
-from app.modules.building.specification import BuildingSpecification, FinishLevel, WindowStyle
+from app.modules.building.specification import (
+    ArchitecturalStyle,
+    BuildingSpecification,
+    FinishLevel,
+    WindowStyle,
+)
 from app.modules.building.types import (
     AssemblySnapshot,
     DoorTypeParams,
@@ -226,11 +231,12 @@ class WallPlan:
         margin: float,
         prefer: Literal["center", "low", "high"] = "center",
         gap: float = 0.15,
+        center: float | None = None,
     ) -> float | None:
         """Offset of an opening of `width` within `seg` (plan coordinates along the wall),
         keeping `gap` from existing openings and clear of wall junctions (the same interval
         arithmetic the geometric checks validate with). `low`/`high` prefer the smaller/larger
-        plan coordinate."""
+        plan coordinate; `center` (a plan coordinate) centres the opening there when free."""
         p0, p1 = self.param(seg.a0), self.param(seg.a1)
         lo, hi = max(min(p0, p1) + margin, 0.0), min(max(p0, p1) - margin, self.length)
         if hi - lo < width - 1e-6:
@@ -240,7 +246,9 @@ class WallPlan:
         if not fits:
             return None
         increasing = self.param(seg.a1) >= self.param(seg.a0)
-        if prefer == "center":
+        if center is not None:  # a plan coordinate to centre on (facade axes, V3)
+            want = self.param(center) - width / 2
+        elif prefer == "center":
             want = (lo + hi - width) / 2
         else:
             at_low_param = (prefer == "low") == increasing
@@ -313,6 +321,50 @@ def _rel(kind: RelationshipKind, target: uuid.UUID) -> Relationship:
 # --- walls --------------------------------------------------------------------------------------
 
 
+@dataclass(frozen=True)
+class FacadeZones:
+    """Visible facade finishes of a generated house (V3, LayoutConfig.facade_zoning)."""
+
+    style: ArchitecturalStyle
+    main: str  # finish of every exterior wall not in a zone below
+    plinth: str | None  # ground storey of multi-storey houses
+    accent: str | None  # the garage volume
+
+    def describe(self, has_garage: bool) -> str | None:
+        def name(material: str) -> str:
+            return material.replace("_", " ")
+
+        parts = []
+        if self.plinth:
+            parts.append(
+                f"ground storey in {name(self.plinth)}, upper storeys in {name(self.main)}"
+            )
+        if self.accent and has_garage:
+            parts.append(f"garage clad in {name(self.accent)}")
+        if not parts:
+            return None
+        return f"Facade zoning ({self.style.value}): " + "; ".join(parts) + "."
+
+
+def facade_zones(
+    spec: BuildingSpecification,
+    system: DesignSystemSnapshot | None,
+    config: LayoutConfig,
+    storeys: int,
+    color: str | None,
+) -> FacadeZones:
+    """Main facade finish plus the style's zones. A requested facade color covers the whole
+    facade, so it disables zoning; a zone equal to the main finish is no zone."""
+    style = system.style_tags[0] if system is not None else spec.style.architectural_style
+    main = config.facade_finishes[spec.style.facade_material]
+    rule = config.facade_zoning.get(style)
+    if color is not None or rule is None:
+        return FacadeZones(style, main, None, None)
+    plinth = rule.plinth if storeys > 1 and rule.plinth != main else None
+    accent = rule.accent if rule.accent != main else None
+    return FacadeZones(style, main, plinth, accent)
+
+
 def envelope(sk: Skeleton, pitched: bool) -> list[tuple[str, Point, Point, str]]:
     """Exterior wall loop of one storey, counter-clockwise: (key suffix, start, end, roof).
 
@@ -370,7 +422,9 @@ def _walls(ctx: _Context) -> None:
     finishes = finishes_of(ctx.system)
     top = sk.storeys - 1
     pitched = ctx.spec.style.roof.type != RoofType.FLAT
+    zones = facade_zones(ctx.spec, ctx.system, cfg, sk.storeys, color)
     for lv in range(sk.storeys):
+        face = zones.plinth if lv == 0 and zones.plinth else zones.main
         for side, start, end, roof in envelope(sk, pitched):
             ctx.walls.append(
                 WallPlan(
@@ -383,7 +437,7 @@ def _walls(ctx: _Context) -> None:
                     thickness=cfg.exterior_wall_thickness,
                     material=facade,
                     left=finishes.interior_wall,
-                    right=facade,
+                    right=face,
                     supports=[f"slab:L{lv + 1}"] if lv < top else [roof],
                     right_color=color,
                 )
@@ -415,7 +469,7 @@ def _walls(ctx: _Context) -> None:
                         thickness=cfg.exterior_wall_thickness,
                         material=facade,
                         left=finishes.interior_wall,
-                        right=facade,
+                        right=zones.accent or face,
                         supports=["roof:garage"],
                         right_color=color,
                     )
@@ -782,7 +836,36 @@ def _windows(ctx: _Context, doors: list[_Door], windows: list[_Window]) -> None:
         width = rnd(width)
         if height <= 0 or sill + height > wall_h + 1e-6:  # no room under the wall top
             return 0.0
-        offset = wall.place(seg, width, margin=cfg.window_margin)
+        # Facade composition (V3): on upper storeys, stand on a window axis of the storeys
+        # below (same facade line) where one fits the segment; reuse its width when it is close
+        # and not smaller, so a facade column keeps one size.
+        center = None
+        if level > 0 and wall.kind == WallKind.EXTERIOR:
+            lo, hi = sorted((seg.a0, seg.a1))
+            axes = sorted(
+                (
+                    (_plan_center(w), w.width)
+                    for w in windows
+                    if w.wall.level < level
+                    and w.wall.kind == WallKind.EXTERIOR
+                    and w.wall.horizontal == wall.horizontal
+                    and abs(w.wall.coord - wall.coord) < 1e-6
+                ),
+                key=lambda a: (abs(a[0] - (lo + hi) / 2), a[0]),
+            )
+            for axis, below in axes:
+                # Widest window centred on the axis inside the segment (5 cm grid); a window
+                # may narrow to 70 % for an axis (the remaining glazing goes to the next one).
+                room = 2 * min(axis - lo - cfg.window_margin, hi - cfg.window_margin - axis)
+                fit = math.floor(room / 0.05 + 1e-9) * 0.05
+                same = rnd(below) if width <= below <= width + 0.6 else width
+                for w_try in (same, width, min(width, fit)):
+                    if w_try <= fit + 1e-6 and w_try >= max(min_w, 0.7 * width) - 1e-6:
+                        center, width = axis, rnd(w_try)
+                        break
+                if center is not None:
+                    break
+        offset = wall.place(seg, width, margin=cfg.window_margin, center=center)
         if offset is None:
             return 0.0
         windows.append(
@@ -920,6 +1003,14 @@ def _windows(ctx: _Context, doors: list[_Door], windows: list[_Window]) -> None:
                     "window.service",
                 )
             )
+
+
+def _plan_center(w: _Window) -> float:
+    """Plan coordinate (x for horizontal walls, y otherwise) of a window's centre."""
+    (sx, sy), (ex, ey) = w.wall.start, w.wall.end
+    s0, s1 = (sx, ex) if w.wall.horizontal else (sy, ey)
+    sign = 1.0 if s1 >= s0 else -1.0
+    return s0 + sign * (w.offset + w.width / 2)
 
 
 def _point_on(wall: WallPlan, t: float) -> Point:
@@ -1125,6 +1216,7 @@ def build_model(
     elements += _slabs(ctx, levels)
     elements += _stairs_and_railings(ctx, levels, room_elements)
     elements += _roofs(ctx, levels)
+    elements += _canopies(ctx, levels, doors, windows)
     if furniture:
         palette = furniture_substitution(ctx.system)
         elements += [
@@ -1169,6 +1261,8 @@ def element_role(el: Element, recorded: Mapping[str, str]) -> str | None:
     if isinstance(el, Wall):
         return "wall.exterior" if el.properties.wall_kind == WallKind.EXTERIOR else "wall.interior"
     if isinstance(el, Slab):
+        if el.properties.slab_kind == SlabKind.CANOPY:
+            return None  # untyped, like rooms and furniture (no canopy role or type yet)
         if key == "slab:ground":
             return "slab.ground"
         if key == "slab:terrace":
@@ -1287,6 +1381,101 @@ def _slab(
         dimensions=SlabDimensions(thickness=thickness, area=area),
         properties=SlabProperties(slab_kind=kind, outline=rel, holes=hole_rel),
     )
+
+
+def _canopies(
+    ctx: _Context, levels: list[Level], doors: list[_Door], windows: list[_Window]
+) -> list[Element]:
+    """An entrance canopy (V3) over each entrance door: a thin slab cantilevered from the outer
+    face, `clearance` above the door head, reaching `side` beyond the jambs but stopping short
+    of any window whose head it would cut. Skipped where it does not fit under the next level
+    or would run into another wall (constraint slab.canopy validates the result)."""
+    cfg = ctx.config.entrance_canopy
+    if cfg is None:
+        return []
+    style = (
+        ctx.system.style_tags[0] if ctx.system is not None else ctx.spec.style.architectural_style
+    )
+    material = ctx.config.canopy_materials.get(style, "roof_trim")
+    out: list[Element] = []
+    for door in sorted(doors, key=lambda d: d.key):
+        if door.kind != DoorKind.ENTRANCE or door.wall.kind != WallKind.EXTERIOR:
+            continue
+        wall = door.wall
+        underside = door.height + cfg.clearance
+        top = underside + cfg.thickness
+        if top > ctx.wall_height + 1e-6:
+            continue
+        lo = max(0.0, door.offset - cfg.side)
+        hi = min(wall.length, door.offset + door.width + cfg.side)
+        for w in windows:
+            if w.wall is not wall or w.sill + w.height <= underside + 1e-6:
+                continue
+            if w.offset + w.width <= door.offset:  # window on the low side
+                lo = max(lo, w.offset + w.width + 0.05)
+            elif w.offset >= door.offset + door.width:  # on the high side
+                hi = min(hi, w.offset - 0.05)
+        outline = [
+            _outside(wall, lo, 0.0),
+            _outside(wall, hi, 0.0),
+            _outside(wall, hi, cfg.depth),
+            _outside(wall, lo, cfg.depth),
+        ]
+        nxt = outline[1:] + outline[:1]
+        signed = sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(outline, nxt, strict=True))
+        if signed < 0:  # counter-clockwise, as every outline in the model
+            outline.reverse()
+        poly = ShapelyPolygon(outline)
+        clash = any(
+            other.level == wall.level
+            and other is not wall
+            and poly.intersection(ShapelyPolygon(_wall_body(other))).area > 1e-4
+            for other in ctx.walls
+        )
+        if clash:
+            continue
+        key = "slab:canopy" if not out else f"slab:canopy:{len(out) + 1}"
+        slab = _slab(
+            ctx,
+            key,
+            "Entrance canopy",
+            levels[wall.level].id,
+            outline,
+            [],
+            cfg.thickness,
+            SlabKind.CANOPY,
+        )
+        out.append(
+            slab.model_copy(
+                update={
+                    "layer": Layer.ARCHITECTURE,
+                    "material_id": material,
+                    "position": slab.position.model_copy(update={"z": rnd(top)}),
+                }
+            )
+        )
+    return out
+
+
+def _outside(wall: WallPlan, t: float, d: float) -> Point:
+    """Point `t` along a wall's axis, `d` out from its outer (right, -v) face."""
+    (sx, sy), (ex, ey) = wall.start, wall.end
+    ux, uy = (ex - sx) / wall.length, (ey - sy) / wall.length
+    off = wall.thickness / 2 + d  # right face (-v) = exterior of counter-clockwise walls
+    return (rnd(sx + ux * t + uy * off), rnd(sy + uy * t - ux * off))
+
+
+def _wall_body(wall: WallPlan) -> list[Point]:
+    """Plan rectangle of a (centre-aligned) wall body."""
+    (sx, sy), (ex, ey) = wall.start, wall.end
+    ux, uy = (ex - sx) / wall.length, (ey - sy) / wall.length
+    h = wall.thickness / 2
+    return [
+        (sx - uy * h, sy + ux * h),
+        (ex - uy * h, ey + ux * h),
+        (ex + uy * h, ey - ux * h),
+        (sx + uy * h, sy - ux * h),
+    ]
 
 
 def _wall_thickness_at(ctx: _Context, level: int, x: float, y0: float, y1: float) -> float:
@@ -1635,7 +1824,7 @@ def _roof(
         level_id=level,
         position=Vec3(x=ox, y=oy, z=z),
         rotation=Rotation(),
-        material_id="roof",
+        material_id=ctx.config.roof_materials[roof_type],
         relationships=[],
         origin=Origin.GENERATED,
         semantic_key=key,

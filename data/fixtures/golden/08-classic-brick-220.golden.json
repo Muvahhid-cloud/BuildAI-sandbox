@@ -1,5 +1,5 @@
 {
-  "engine_version": "layout@1.7.0",
+  "engine_version": "layout@1.8.0",
   "seed": 0,
   "footprint_m": [
     8.45,
@@ -19,7 +19,7 @@
     "walls": 27,
     "doors": 15,
     "windows": 18,
-    "elements": 115,
+    "elements": 116,
     "facade_colors": [],
     "windows_by_facade": {
       "front": {
@@ -78,7 +78,7 @@
     "railing": 1,
     "roof": 2,
     "room": 15,
-    "slab": 2,
+    "slab": 3,
     "stair": 1,
     "wall": 27,
     "window": 18
@@ -185,6 +185,6 @@
     "LAYOUT_AREA_DEVIATION",
     "LAYOUT_AREA_DEVIATION"
   ],
-  "model_sha256": "a2dd4ccb1348fa0586da74be9023ffdc559cc59775190b3953b4c3b43441ab5e",
-  "geometry_sha256": "b277e5e4fc5f625f02cab697e325b46f289fc36e75fc00e7ce806016e5756af9"
+  "model_sha256": "f9566bbd5dc1587316f7137213da0fb320e27a09c061f60c20b9e1e192774a0e",
+  "geometry_sha256": "94702c54bf33a5c930a69c5e51056f71e7bdf590237e9ceddc4c6e15a893f2b3"
 }

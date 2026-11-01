@@ -86,7 +86,8 @@ def test_most_upper_windows_stand_on_a_window_below() -> None:
 
 def test_switching_the_grid_off_restores_the_v3_composition() -> None:
     """facade_grid_snap = 0 is the layout@1.8.0 behaviour (V3 axes, storeys bottom up)."""
-    off = DEFAULT_CONFIG.model_copy(update={"facade_grid_snap": 0.0})
+    # V5 adds the facade bays on top of the grid: both off is layout@1.8.0.
+    off = DEFAULT_CONFIG.model_copy(update={"facade_grid_snap": 0.0, "facade_bays": False})
     aligned = total = 0
     for name in MULTI:
         a, t = aligned_upper_windows(

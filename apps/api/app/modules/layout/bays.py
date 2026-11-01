@@ -10,7 +10,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from app.modules.layout.config import LayoutConfig
-from app.modules.layout.plan import rnd
+from app.modules.layout.plan import Skeleton, envelope, rnd
 
 EPS = 1e-6
 
@@ -71,3 +71,20 @@ def facade_lines(
             lo, hi = min(lo, extent[key][0]), max(hi, extent[key][1])
         extent[key] = (lo, hi)
     return {k: bays_of(lo, hi, config) for k, (lo, hi) in sorted(extent.items())}
+
+
+def skeleton_bays(sk: Skeleton, config: LayoutConfig) -> dict[tuple[bool, float], Bays]:
+    """Bay grid of every facade line of a skeleton's envelope (the planner's view; the
+    built walls give the same lines)."""
+    walls = []
+    for _, (x0, y0), (x1, y1), _roof in envelope(sk, pitched=False):
+        horizontal = abs(y1 - y0) < EPS
+        walls.append(
+            (
+                horizontal,
+                y0 if horizontal else x0,
+                x0 if horizontal else y0,
+                x1 if horizontal else y1,
+            )
+        )
+    return facade_lines(walls, config)

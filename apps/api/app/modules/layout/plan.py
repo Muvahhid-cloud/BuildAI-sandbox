@@ -11,7 +11,7 @@ it on the garden or street side.
 
 import math
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Any, Literal
 
 from app.modules.building.enums import RoomType, Zone
 from app.modules.layout.program import RoomRequest
@@ -244,6 +244,9 @@ class StripLayout:
     # (strip.end_wrap_depth) from this distance after its start; the corridor stops there, so
     # the room's door sits on that stretch (docs/3d-engine.md §16.10).
     wrap_from: float = 0.0
+    # The ordered units the band was laid out from (planner.Unit; V5 re-lays the chosen
+    # candidate's bands on the facade bays from them). Not part of the plan's geometry.
+    units: tuple[Any, ...] = ()
 
     @property
     def corridor_end(self) -> float:
@@ -345,3 +348,55 @@ def lane_faces(
     t1 = exterior if abs(x1 - sk.W) < EPS else interior
     # (x0 + t0/2 + x1 - t1/2) / 2, written so that a symmetric lane gives exactly its middle.
     return x0 + t0 / 2, x1 - t1 / 2, (x0 + x1) / 2 + (t0 - t1) / 4
+
+
+def envelope(
+    sk: Skeleton, pitched: bool
+) -> list[tuple[str, tuple[float, float], tuple[float, float], str]]:
+    """Exterior wall loop of one storey, counter-clockwise: (key suffix, start, end, roof).
+
+    Rectangle: S, E, N, W. L (docs/3d-engine.md §16.10): the main bar's walls keep their keys
+    (S, E, N = the garden wall beside the wing, W/E = the outer wall below the wing) and the
+    wing adds `wing:*` walls; the outer side is split where the wing starts so each wall
+    belongs to one volume and supports one roof (a pitched L has a main and a wing roof).
+    T (§16.12): S, E, then the garden wall east of the wing (N:E), the wing (stem) walls,
+    the garden wall west of it (N:W), W - eight walls, two inside corners."""
+    W, D = sk.W, sk.D  # noqa: N806 - plan dimension names, as on Skeleton
+    if not sk.has_wing:
+        corners = [(0.0, 0.0), (W, 0.0), (W, D), (0.0, D)]
+        return [
+            (side, corners[i], corners[(i + 1) % 4], "roof:main") for i, side in enumerate("SENW")
+        ]
+    wing_roof = "roof:wing" if pitched else "roof:main"
+    top = sk.depth_total
+    x0, x1 = sk.wing_x
+    if sk.topology == "t":
+        return [
+            ("S", (0.0, 0.0), (W, 0.0), "roof:main"),
+            ("E", (W, 0.0), (W, D), "roof:main"),
+            ("N:E", (W, D), (x1, D), "roof:main"),
+            ("wing:E", (x1, D), (x1, top), wing_roof),
+            ("wing:N", (x1, top), (x0, top), wing_roof),
+            ("wing:W", (x0, top), (x0, D), wing_roof),
+            ("N:W", (x0, D), (0.0, D), "roof:main"),
+            ("W", (0.0, D), (0.0, 0.0), "roof:main"),
+        ]
+    if sk.wing_side == "west":
+        return [
+            ("S", (0.0, 0.0), (W, 0.0), "roof:main"),
+            ("E", (W, 0.0), (W, D), "roof:main"),
+            ("N", (W, D), (x1, D), "roof:main"),
+            ("wing:E", (x1, D), (x1, top), wing_roof),
+            ("wing:N", (x1, top), (0.0, top), wing_roof),
+            ("wing:W", (0.0, top), (0.0, D), wing_roof),
+            ("W", (0.0, D), (0.0, 0.0), "roof:main"),
+        ]
+    return [
+        ("S", (0.0, 0.0), (W, 0.0), "roof:main"),
+        ("E", (W, 0.0), (W, D), "roof:main"),
+        ("wing:E", (W, D), (W, top), wing_roof),
+        ("wing:N", (W, top), (x0, top), wing_roof),
+        ("wing:W", (x0, top), (x0, D), wing_roof),
+        ("N", (x0, D), (0.0, D), "roof:main"),
+        ("W", (0.0, D), (0.0, 0.0), "roof:main"),
+    ]

@@ -18,7 +18,7 @@ search as soft preferences and are reported with their review status.
 
 import math
 import uuid
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field, replace
 
 from app.modules.building.design import (
@@ -48,6 +48,7 @@ from app.modules.layout.planner import (
     SearchInput,
     assign_levels,
     design_stair,
+    rebay,
     search,
     unmet_pairs,
 )
@@ -402,6 +403,8 @@ def generate_layout(
                 for check in best.evaluation.unmet_must
             ],
         )
+    if config.facade_bays:
+        best = _on_bays(best, inp, config, build, valid, program, spec, gfa)
     cand, model = best.candidate, best.model
     topology = _topology_report(choice, best, valid, by_topology, inp, config)
     notes.append(f"Footprint: {topology.generated.replace('_', '-')} — {topology.explanation}")
@@ -473,6 +476,39 @@ class _Built:
     model: BuildingModel
     issues: list[Issue]
     evaluation: DesignEvaluation
+
+
+def _on_bays(
+    best: _Built,
+    inp: SearchInput,
+    config: LayoutConfig,
+    build: Callable[[Candidate], None],
+    valid: list[_Built],
+    program: Program,
+    spec: BuildingSpecification,
+    gfa: float,
+) -> _Built:
+    """V5: the chosen design with its rooms on whole facade bays where they fit, kept only if
+    it is valid, meets every MUST the original meets, scores at least as well on the design
+    evaluation and adds no deviation from the requested areas; otherwise the original."""
+    snapped = rebay(best.candidate, inp, config)
+    if snapped is None:
+        return best
+    before = len(valid)
+    build(snapped)
+    if len(valid) == before:
+        return best
+    alt = valid.pop()
+    if (
+        len(alt.evaluation.unmet_must) <= len(best.evaluation.unmet_must)
+        and round(alt.evaluation.score, 4) >= round(best.evaluation.score, 4)
+        and len(_deviations(alt.candidate, program, spec, gfa, alt.evaluation))
+        <= len(_deviations(best.candidate, program, spec, gfa, best.evaluation))
+    ):
+        # The variant takes the original's place among the built candidates (reports).
+        valid[next(i for i, b in enumerate(valid) if b is best)] = alt
+        return alt
+    return best
 
 
 def _rank(b: _Built, preferred: str | None = None) -> tuple[int, int, float, float, int]:

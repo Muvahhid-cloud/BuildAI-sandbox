@@ -11,7 +11,10 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.modules.building.enums import RoofType, RoomType
 from app.modules.building.specification import ArchitecturalStyle, FacadeMaterial, WindowStyle
 
-ENGINE_VERSION = "layout@1.9.0"  # 1.9.0: facade grid (V4): partitions of the storeys snap to
+ENGINE_VERSION = "layout@1.10.0"  # 1.10.0: facade bay grid (V5): bays per facade line,
+# windows on bay axes with one width per facade and storey, rooms snap to whole bays where
+# their minimums and area ranges allow.
+# 1.9.0: facade grid (V4): partitions of the storeys snap to
 # each other's facade grid, windows are placed top storey first and stack on shared axes,
 # garden/terrace doors stand on an upper window axis, rhythm windows below upper axes.
 # 1.8.0: architectural design quality (V3): BuildingModel
@@ -171,12 +174,14 @@ class LayoutConfig(_Config):
     # Facade bay grid (V5, docs/3d-engine.md §16.15): each facade line is divided into equal
     # bays of bay_min_m..bay_max_m; windows stand on the bay centres with one width per facade
     # and storey (at most bay_window_share of a bay). False reproduces layout@1.9.0 exactly
-    # (step 1 of V5 lands switched off; it is switched on with rooms on whole bays).
-    facade_bays: bool = False
+    facade_bays: bool = True
     bay_min_m: float = 3.0
     bay_max_m: float = 4.2
     bay_window_share: float = 0.6
     bay_windows_per_room: int = 4
+    # Stair, hall and corridor windows on bay axes too; off = they follow the windows of the
+    # other storeys (V4 axis rule), which stacks them better where the hall below is short.
+    bay_circulation_windows: bool = False
     lintel_min: float = 0.2  # wall above the highest opening
 
     # Garage, balconies, terraces

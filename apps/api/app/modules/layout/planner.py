@@ -15,12 +15,13 @@ proportions and adjacency; the best ones go on to be built and validated.
 import itertools
 import math
 import random
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Literal
 
 from app.modules.building.enums import RoomType
 from app.modules.building.specification import BuildingSpecification, DesignPriority
+from app.modules.layout.bays import Bays, skeleton_bays
 from app.modules.layout.config import LayoutConfig
 from app.modules.layout.constraints import flights_fit_lanes
 from app.modules.layout.patterns import NO_GUIDANCE, PatternGuidance
@@ -707,6 +708,18 @@ def facade_grid(levels: Sequence[LevelLayout]) -> dict[tuple[str, float], list[f
     return {k: sorted(v) for k, v in grid.items()}
 
 
+def _with_bays(
+    grid: Mapping[tuple[str, float], Sequence[float]],
+    bays: Mapping[tuple[bool, float], Bays],
+) -> dict[tuple[str, float], list[float]]:
+    """The facade grid plus the bay boundaries of each facade line (V5)."""
+    out = {k: list(v) for k, v in grid.items()}
+    for (horizontal, coord), b in bays.items():
+        key = ("h" if horizontal else "v", coord)
+        out[key] = sorted({*out.get(key, []), *b.lines})
+    return out
+
+
 def _ground_on_upper_grid(
     sk: Skeleton,
     levels: list[LevelLayout],
@@ -889,7 +902,7 @@ def _layout_strip(
         if not p.fixed:
             p.column.width = rnd(ints[i] * g)
         columns.append(p.column)
-    return StripLayout(strip, columns, wrap_from)
+    return StripLayout(strip, columns, wrap_from, tuple(units))
 
 
 def _snap_to_grid(
@@ -1724,6 +1737,43 @@ def _place_group(
     if hall_side == "west":
         return gx0, (gx0, rnd(gx0 + hall_w)), rnd(gx0 + hall_w)
     return gx0, (rnd(gx0 + core_w), rnd(gx0 + core_w + hall_w)), gx0
+
+
+def rebay(cand: Candidate, inp: SearchInput, config: LayoutConfig) -> Candidate | None:
+    """V5: the chosen candidate with its bands laid out again on the facade bays (partitions
+    snap to bay boundaries where every room keeps its minimums and permitted area range), or
+    None when nothing moves. The search itself never sees the bays, so which candidates are
+    built and ranked is unchanged; the engine keeps this variant only if it is not worse."""
+    sk = cand.skeleton
+    bays = skeleton_bays(sk, config)
+    grid = _with_bays({}, bays)
+    zoning = Zoning.of(inp.program, inp.wishes, inp.guidance)
+    levels: list[LevelLayout] = []
+    moved = False
+    for lvl in cand.levels:
+        layouts: list[StripLayout] = []
+        for lay in lvl.strips:
+            line = facade_line(lay.strip)
+            lines = grid.get((line[0], rnd(line[1])), ())
+            again = (
+                layout_strip(lay.strip, list(lay.units), config, lines)
+                if lines and lay.units
+                else None
+            )
+            if again is not None and [c.width for c in again.columns] != [
+                c.width for c in lay.columns
+            ]:
+                moved = True
+                layouts.append(again)
+            else:
+                layouts.append(lay)
+        cuts = corridor_cuts(sk, layouts, zoning, config)
+        levels.append(LevelLayout(lvl.index, layouts, lvl.merged_strips, cuts))
+    if not moved:
+        return None
+    target = inp.floor_area_per_storey * inp.spec.targets.storeys
+    score, areas = score_candidate(levels, inp.program, sk, target, zoning, config.l_wing_ratio)
+    return Candidate(cand.order, sk, levels, score, areas)
 
 
 def search(inp: SearchInput, config: LayoutConfig, seed: int) -> list[Candidate]:

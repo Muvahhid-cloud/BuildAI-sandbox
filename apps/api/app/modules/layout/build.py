@@ -94,7 +94,7 @@ from app.modules.building.types import (
 from app.modules.layout.bays import Bays, facade_lines
 from app.modules.layout.config import LayoutConfig
 from app.modules.layout.furnish import furnish
-from app.modules.layout.plan import Rect, Region, Segment, Skeleton, lane_faces, rnd
+from app.modules.layout.plan import Rect, Region, Segment, envelope, lane_faces, rnd
 from app.modules.layout.program import HABITABLE, WET
 from app.modules.layout.regions import (
     LevelRegions,
@@ -365,56 +365,6 @@ def facade_zones(
     plinth = rule.plinth if storeys > 1 and rule.plinth != main else None
     accent = rule.accent if rule.accent != main else None
     return FacadeZones(style, main, plinth, accent)
-
-
-def envelope(sk: Skeleton, pitched: bool) -> list[tuple[str, Point, Point, str]]:
-    """Exterior wall loop of one storey, counter-clockwise: (key suffix, start, end, roof).
-
-    Rectangle: S, E, N, W. L (docs/3d-engine.md §16.10): the main bar's walls keep their keys
-    (S, E, N = the garden wall beside the wing, W/E = the outer wall below the wing) and the
-    wing adds `wing:*` walls; the outer side is split where the wing starts so each wall
-    belongs to one volume and supports one roof (a pitched L has a main and a wing roof).
-    T (§16.12): S, E, then the garden wall east of the wing (N:E), the wing (stem) walls,
-    the garden wall west of it (N:W), W - eight walls, two inside corners."""
-    W, D = sk.W, sk.D  # noqa: N806 - plan dimension names, as on Skeleton
-    if not sk.has_wing:
-        corners = [(0.0, 0.0), (W, 0.0), (W, D), (0.0, D)]
-        return [
-            (side, corners[i], corners[(i + 1) % 4], "roof:main") for i, side in enumerate("SENW")
-        ]
-    wing_roof = "roof:wing" if pitched else "roof:main"
-    top = sk.depth_total
-    x0, x1 = sk.wing_x
-    if sk.topology == "t":
-        return [
-            ("S", (0.0, 0.0), (W, 0.0), "roof:main"),
-            ("E", (W, 0.0), (W, D), "roof:main"),
-            ("N:E", (W, D), (x1, D), "roof:main"),
-            ("wing:E", (x1, D), (x1, top), wing_roof),
-            ("wing:N", (x1, top), (x0, top), wing_roof),
-            ("wing:W", (x0, top), (x0, D), wing_roof),
-            ("N:W", (x0, D), (0.0, D), "roof:main"),
-            ("W", (0.0, D), (0.0, 0.0), "roof:main"),
-        ]
-    if sk.wing_side == "west":
-        return [
-            ("S", (0.0, 0.0), (W, 0.0), "roof:main"),
-            ("E", (W, 0.0), (W, D), "roof:main"),
-            ("N", (W, D), (x1, D), "roof:main"),
-            ("wing:E", (x1, D), (x1, top), wing_roof),
-            ("wing:N", (x1, top), (0.0, top), wing_roof),
-            ("wing:W", (0.0, top), (0.0, D), wing_roof),
-            ("W", (0.0, D), (0.0, 0.0), "roof:main"),
-        ]
-    return [
-        ("S", (0.0, 0.0), (W, 0.0), "roof:main"),
-        ("E", (W, 0.0), (W, D), "roof:main"),
-        ("wing:E", (W, D), (W, top), wing_roof),
-        ("wing:N", (W, top), (x0, top), wing_roof),
-        ("wing:W", (x0, top), (x0, D), wing_roof),
-        ("N", (x0, D), (0.0, D), "roof:main"),
-        ("W", (0.0, D), (0.0, 0.0), "roof:main"),
-    ]
 
 
 def _walls(ctx: _Context) -> None:
@@ -717,19 +667,28 @@ def _openings(ctx: _Context) -> tuple[list[_Door], list[_Window]]:
         """Centres of the habitable rooms' facade spans on the storeys above `level`: where
         their windows will stand (V4 facade grid; empty when the grid is off). With the bay
         grid (V5) the facade's bay axes."""
-        if cfg.facade_bays:
-            line = bays.get((True, rnd(sk.D if side == "north" else 0.0)))
-            return line.axes if line is not None else []
-        if cfg.facade_grid_snap <= 0:
+        if cfg.facade_grid_snap <= 0 and not cfg.facade_bays:
             return []
+        line = bays.get((True, rnd(sk.D if side == "north" else 0.0)))
         out: set[float] = set()
         for lvl in ctx.plan.levels[level + 1 :]:
             for r in lvl.regions:
                 if r.kind != "room" or r.room_type not in HABITABLE:
                     continue
                 span = facade_span(r, side, sk)
-                if span is not None:
-                    out.add(rnd((span.x0 + span.x1) / 2))
+                if span is None:
+                    continue
+                # V5: the bay axes the room's windows will take, else (as V4) its centre.
+                inner = (
+                    [
+                        a
+                        for a in line.axes
+                        if span.x0 + cfg.window_margin < a < span.x1 - cfg.window_margin
+                    ]
+                    if line is not None
+                    else []
+                )
+                out.update(inner or [rnd((span.x0 + span.x1) / 2)])
         return sorted(out)
 
     for att in ctx.plan.attachments:
@@ -1179,6 +1138,7 @@ def _windows(
                     if (
                         width >= min_w - 1e-6
                         and grid
+                        and cfg.bay_circulation_windows
                         and on_bay(
                             f"window:{region.key}:{side}:{n}",
                             lv,
@@ -1288,6 +1248,12 @@ def _rhythm_windows(
             sill, height = dims(lv, style)
             if height <= 0 or width < min_w - 1e-6:
                 continue
+            # V5: with the bay grid, the widest window that fits exactly on the axis (down to
+            # the rules' minimum width) when the upper one's width does not.
+            room = 2 * min(axis - lo - cfg.window_margin, hi - cfg.window_margin - axis)
+            fit = rnd(math.floor(room / 0.05 + 1e-9) * 0.05)
+            if cfg.facade_bays and min_w - 1e-6 <= fit < width:
+                width = fit
             offset = wall.place(seg, width, margin=cfg.window_margin, center=axis)
             if offset is None:
                 continue

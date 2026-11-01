@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { Box3, Vector3 } from "three";
+import { Box3, type Matrix4, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
 
 import { FURNITURE_PLACEHOLDERS } from "../builders/furniture/placeholders";
@@ -11,7 +11,7 @@ import { fitToDimensions, fitToHeight, furnitureModel, MODELS, modelFiles } from
 const MATERIALS_DIR = resolve(process.cwd(), "../../data/materials");
 
 /** Corners of a model's glTF bounds mapped through `m`. */
-function mappedBox(id: string, m: import("three").Matrix4): Box3 {
+function mappedBox(id: string, m: Matrix4): Box3 {
   const b = MODELS.get(id)!.bounds;
   const box = new Box3();
   for (const x of [b.min[0], b.max[0]])

@@ -103,6 +103,12 @@ describe("site plan (V2)", () => {
       const inside =
         p.x > bounds.min.x && p.x < bounds.max.x && p.y > bounds.min.y && p.y < bounds.max.y;
       expect(inside, `${p.kind} ${p.slot}`).toBe(false);
+      if (p.kind === "tree") {
+        // Crowns (≈ 2.4 m radius) stay clear of every facade.
+        const dx = Math.max(bounds.min.x - p.x, 0, p.x - bounds.max.x);
+        const dy = Math.max(bounds.min.y - p.y, 0, p.y - bounds.max.y);
+        expect(Math.hypot(dx, dy), `tree ${p.slot}`).toBeGreaterThan(3.5);
+      }
       for (const s of plan.strips) {
         for (let i = 0; i + 1 < s.points.length; i++) {
           const [[ax, ay], [bx, by]] = [s.points[i], s.points[i + 1]];

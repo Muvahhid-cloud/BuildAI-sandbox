@@ -4,7 +4,7 @@ Third-party image assets used by the 3D viewer. Only **CC0** assets from
 [ambientCG](https://ambientcg.com) and [Poly Haven](https://polyhaven.com) are allowed
 (decision 2026-10-31, "V1 Visual quality"; models added by "V2 Furniture and site"). About 1K
 resolution; the whole folder stays under ~40 MB (now ≈ 23 MB: textures 17.4 MB, HDRI 1.5 MB,
-models 3.4 MB).
+models 3.1 MB).
 
 - Files live in `data/materials/textures/<slot>/{albedo,normal,roughness}.jpg` and
   `data/materials/hdri/`. The material library (`library.json`) references them by these paths
@@ -91,7 +91,6 @@ width × depth × height from the BuildingModel.
 | `models/dining_chair_02.glb` | chair | Dining Chair 02 (James Ray Cock) | https://polyhaven.com/a/dining_chair_02 | 190 KB, 22k tris | CC0 |
 | `models/modern_coffee_table_01.glb` | coffee_table | Modern Coffee Table 01 (Amin) | https://polyhaven.com/a/modern_coffee_table_01 | 73 KB, 4.5k tris | CC0 |
 | `models/side_table_01.glb` | nightstand | Side Table 01 (James Ray Cock) | https://polyhaven.com/a/side_table_01 | 83 KB, 2.8k tris | CC0 |
-| `models/modern_wooden_cabinet.glb` | tv_unit | Modern Wooden Cabinet (Patrik Pangerl) | https://polyhaven.com/a/modern_wooden_cabinet | 322 KB, 25k tris | CC0 |
 | `models/wooden_display_shelves_01.glb` | bookshelf | Wooden Display Shelves 01 (James Ray Cock) | https://polyhaven.com/a/wooden_display_shelves_01 | 77 KB, 3.2k tris | CC0 |
 | `models/tree_small_02.glb` | site trees | Tree Small 02 (Rico Cilliers) | https://polyhaven.com/a/tree_small_02 | 926 KB, 41k tris (simplified from 2.1M, ratio 0.02) | CC0 |
 | `models/island_tree_01.glb` | site trees | Island Tree 01 (Rob Tuytel, Rico Cilliers) | https://polyhaven.com/a/island_tree_01 | 1.24 MB, 38k tris (from 1.6M, ratio 0.025) | CC0 |
@@ -107,5 +106,6 @@ procedural placeholder until a CC0 model is added to `models.json`:
 |---|---|
 | bed | TODO — Poly Haven only has `GothicBed_01`, `old_bed_frame`, `vintage_day_bed` (style mismatch) |
 | wardrobe | TODO — no wardrobe; cabinets are too low to stretch to 2 m+ |
+| tv_unit | Kept as placeholder on purpose: it also draws the TV screen; Poly Haven's `modern_wooden_cabinet` would show a bare sideboard (tried and dropped) |
 | kitchen_counter, kitchen_island, fridge | TODO — not in the Poly Haven catalogue |
 | toilet, basin, bathtub, shower | TODO — not in the Poly Haven catalogue |

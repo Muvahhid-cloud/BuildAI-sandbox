@@ -2,7 +2,7 @@
 
 import type { ThreeEvent } from "@react-three/fiber";
 import { memo, useMemo } from "react";
-import { Mesh } from "three";
+import { Mesh, MeshBasicMaterial } from "three";
 
 import type { RenderDescriptor } from "@/engine/builders/types";
 import { materialCache } from "@/engine/materials/material-cache";
@@ -14,24 +14,34 @@ import "./textures";
 
 // Hidden and ghosted meshes must not be pickable.
 const NO_RAYCAST = () => undefined;
+/** Proxy for an element drawn by a glTF model: not rendered, still picked and outlined. */
+const PROXY_MATERIAL = new MeshBasicMaterial({ visible: false });
 
 interface Props {
   descriptor: RenderDescriptor;
   mode: VisibilityMode;
   selected: boolean;
+  /** The element is drawn by a model (V2): keep this mesh only as the invisible pick proxy. */
+  proxy?: boolean;
 }
 
 /**
  * One mesh per render descriptor. Geometry and materials are shared/cached, so a re-render
  * only swaps references. Memoized: it re-renders only when its visibility or selection changes.
  */
-export const ElementMesh = memo(function ElementMesh({ descriptor: d, mode, selected }: Props) {
+export const ElementMesh = memo(function ElementMesh({
+  descriptor: d,
+  mode,
+  selected,
+  proxy = false,
+}: Props) {
   const select = useSelectionStore((s) => s.select);
   const variant = mode === "ghost" ? "ghost" : selected ? "selected" : "default";
   const material = useMemo(() => {
+    if (proxy) return PROXY_MATERIAL;
     const list = d.materials.map((id) => materialCache.get(id, variant));
     return list.length === 1 ? list[0] : list;
-  }, [d.materials, variant]);
+  }, [d.materials, variant, proxy]);
   const userData = useMemo(() => elementUserData(d.elementId, d.part), [d.elementId, d.part]);
   const pickable = mode === "visible";
 
@@ -42,8 +52,8 @@ export const ElementMesh = memo(function ElementMesh({ descriptor: d, mode, sele
       matrix={d.matrix}
       matrixAutoUpdate={false}
       visible={mode !== "hidden"}
-      castShadow={d.castShadow && pickable}
-      receiveShadow={pickable}
+      castShadow={d.castShadow && pickable && !proxy}
+      receiveShadow={pickable && !proxy}
       renderOrder={d.part === "glass" ? 1 : 0}
       userData={userData}
       dispose={null /* geometry/materials are owned by the scene graph and material cache */}

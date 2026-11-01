@@ -168,14 +168,15 @@ export function planSite(index: ModelIndex, bounds: Box3): SitePlan {
     y > streetY + 1;
 
   const plants: SitePlant[] = [];
+  // Clear of the facades by more than a crown radius (~2.4 m), so crowns never cut a wall.
   const treeSlots: P2[] = [
-    [min.x - 3.2, min.y - 3.6],
-    [max.x + 3.4, min.y - 3.0],
-    [min.x - 3.0, max.y + 4.2],
-    [max.x + 3.6, max.y + 3.4],
+    [min.x - 4.2, min.y - 4.0],
+    [max.x + 4.6, min.y - 4.4],
+    [min.x - 4.0, max.y + 4.6],
+    [max.x + 4.4, max.y + 4.0],
   ];
   treeSlots.forEach(([x, y], slot) => {
-    if (!free(x, y, TREE_CLEARANCE, 2.0)) return;
+    if (!free(x, y, TREE_CLEARANCE, 3.5)) return;
     const f = hashFraction(`tree:${slot}`);
     plants.push({
       kind: "tree",

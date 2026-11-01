@@ -7,7 +7,7 @@ semantic keys (ID stability across regeneration, docs/building-model.md §7).
 
 import math
 import uuid
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -576,13 +576,25 @@ def _openings(ctx: _Context) -> tuple[list[_Door], list[_Window]]:
         prefer: Literal["center", "low", "high"] = "center",
         margin: float | None = None,
         role: str | None = None,
+        axes: Sequence[float] = (),
     ) -> None:
         wall = _wall_on(ctx, level, seg)
         if size[1] > ctx.wall_height + 1e-6:  # guaranteed by engine.opening_fit_issues
             raise BuildError(f"Door {key} ({size[1]} m) is taller than the walls")
         margin = cfg.door_margin if margin is None else margin
         width = size[0]
-        offset = wall.place(seg, width, margin=margin, prefer=prefer)
+        offset = None
+        # Facade grid (V4): stand under a window axis of the storey above, at full width only.
+        mid = (seg.a0 + seg.a1) / 2
+        for axis in sorted(axes, key=lambda a: (abs(a - mid), a)):
+            offset = wall.place(seg, width, margin=margin, center=axis)
+            if offset is not None and abs(wall.param(axis) - (offset + width / 2)) <= 1e-3:
+                break
+            if offset is not None:
+                wall.occupied.pop()
+            offset = None
+        if offset is None:
+            offset = wall.place(seg, width, margin=margin, prefer=prefer)
         if offset is None and min_width < width:
             width = min_width
             offset = wall.place(seg, width, margin=margin, prefer=prefer)
@@ -696,6 +708,22 @@ def _openings(ctx: _Context) -> tuple[list[_Door], list[_Window]]:
         )
 
     sliding = sizes["door.sliding"]
+
+    def axes_above(level: int, side: Literal["north", "south"]) -> list[float]:
+        """Centres of the habitable rooms' facade spans on the storeys above `level`: where
+        their windows will stand (V4 facade grid; empty when the grid is off)."""
+        if cfg.facade_grid_snap <= 0:
+            return []
+        out: set[float] = set()
+        for lvl in ctx.plan.levels[level + 1 :]:
+            for r in lvl.regions:
+                if r.kind != "room" or r.room_type not in HABITABLE:
+                    continue
+                span = facade_span(r, side, sk)
+                if span is not None:
+                    out.add(rnd((span.x0 + span.x1) / 2))
+        return sorted(out)
+
     for att in ctx.plan.attachments:
         host = ctx.plan.levels[att.level].get(att.host)
         span = facade_span(host, att.side, sk) if host is not None else None
@@ -714,6 +742,7 @@ def _openings(ctx: _Context) -> tuple[list[_Door], list[_Window]]:
             "glass",
             min_width=min(1.6, rnd(width)),
             margin=0.25,
+            axes=axes_above(att.level, att.side),
         )
     # Garden door from the main living space when there is no terrace.
     if not any(a.kind == "terrace" for a in ctx.plan.attachments):
@@ -745,6 +774,7 @@ def _openings(ctx: _Context) -> tuple[list[_Door], list[_Window]]:
                     "glass",
                     min_width=1.6,
                     margin=0.25,
+                    axes=axes_above(0, "north"),
                 )
             break
 
@@ -837,16 +867,17 @@ def _windows(ctx: _Context, doors: list[_Door], windows: list[_Window]) -> None:
         if height <= 0 or sill + height > wall_h + 1e-6:  # no room under the wall top
             return 0.0
         # Facade composition (V3): on upper storeys, stand on a window axis of the storeys
-        # below (same facade line) where one fits the segment; reuse its width when it is close
-        # and not smaller, so a facade column keeps one size.
+        # below (V4 facade grid: of every storey placed before, top storey first) where one
+        # fits the segment; reuse its width when it is close and not smaller, so a facade
+        # column keeps one size.
         center = None
-        if level > 0 and wall.kind == WallKind.EXTERIOR:
+        if wall.kind == WallKind.EXTERIOR and (level > 0 or cfg.facade_grid_snap > 0):
             lo, hi = sorted((seg.a0, seg.a1))
             axes = sorted(
                 (
                     (_plan_center(w), w.width)
                     for w in windows
-                    if w.wall.level < level
+                    if (w.wall.level != level if cfg.facade_grid_snap > 0 else w.wall.level < level)
                     and w.wall.kind == WallKind.EXTERIOR
                     and w.wall.horizontal == wall.horizontal
                     and abs(w.wall.coord - wall.coord) < 1e-6
@@ -885,7 +916,13 @@ def _windows(ctx: _Context, doors: list[_Door], windows: list[_Window]) -> None:
         return total
 
     min_w = rules.windows.min_width_m
-    for level in ctx.plan.levels:
+    # V4 facade grid: the top storey first, so the larger rooms below take its window axes.
+    order = (
+        sorted(ctx.plan.levels, key=lambda lvl: -lvl.index)
+        if cfg.facade_grid_snap > 0
+        else ctx.plan.levels
+    )
+    for level in order:
         lv = level.index
         for region in level.regions:
             segments = _facade_segments(ctx, region)
@@ -942,6 +979,8 @@ def _windows(ctx: _Context, doors: list[_Door], windows: list[_Window]) -> None:
                     if got > 0:
                         needed -= got
                         n += 1
+                if cfg.facade_grid_snap > 0:
+                    n = _rhythm_windows(ctx, region, segments, windows, side_style, dims, n)
             elif region.kind == "room" and rtype in SERVICE_WINDOWS:
                 w, h, sill = cfg.service_window
                 side, seg = max(segments, key=lambda s: (s[1].length, s[0]))
@@ -1003,6 +1042,70 @@ def _windows(ctx: _Context, doors: list[_Door], windows: list[_Window]) -> None:
                     "window.service",
                 )
             )
+
+
+def _rhythm_windows(
+    ctx: _Context,
+    region: Region,
+    segments: list[tuple[str, Segment]],
+    windows: list[_Window],
+    side_style: Mapping[str, WindowStyle],
+    dims: Callable[[int, WindowStyle], tuple[float, float]],
+    n: int,
+) -> int:
+    """Facade grid (V4): a habitable room also takes a window on every window axis of the
+    storeys above that falls on its facade and has no opening of this storey yet, when one of
+    the axis window's width fits there exactly (clear of doors, other windows and junctions).
+    Windows then stack in columns and repeat in the rhythm the upper rooms set. Extra glazing
+    only: the room's required glazing is placed before. Returns the next window number."""
+    cfg, lv = ctx.config, region.level
+    min_w = ctx.profile.windows.min_width_m
+    for side, seg in segments:
+        wall = _wall_on(ctx, lv, seg)
+        if wall.kind != WallKind.EXTERIOR:
+            continue
+        lo, hi = sorted((seg.a0, seg.a1))
+        on_line = [
+            w
+            for w in windows
+            if w.wall.kind == WallKind.EXTERIOR
+            and w.wall.horizontal == wall.horizontal
+            and abs(w.wall.coord - wall.coord) < 1e-6
+        ]
+        here = [_plan_center(w) for w in on_line if w.wall.level == lv]
+        axes = sorted({(rnd(_plan_center(w)), rnd(w.width)) for w in on_line if w.wall.level > lv})
+        for axis, width in axes:
+            if not lo < axis < hi or any(abs(c - axis) < 0.05 for c in here):
+                continue
+            style = side_style[side]
+            sill, height = dims(lv, style)
+            if height <= 0 or width < min_w - 1e-6:
+                continue
+            offset = wall.place(seg, width, margin=cfg.window_margin, center=axis)
+            if offset is None:
+                continue
+            got = offset + width / 2
+            if abs(wall.param(axis) - got) > 1e-3:  # not on the axis: give the space back
+                wall.occupied.pop()
+                continue
+            preset = cfg.window_presets[style]
+            windows.append(
+                _Window(
+                    f"window:{region.key}:{side}:{n}",
+                    wall,
+                    offset,
+                    width,
+                    height,
+                    sill,
+                    WindowKind.CASEMENT,
+                    min(12, max(0, math.ceil(width / preset.mullion_spacing) - 1)),
+                    WINDOW_STYLE_ROLE[style],
+                    style,
+                )
+            )
+            here.append(axis)
+            n += 1
+    return n
 
 
 def _plan_center(w: _Window) -> float:

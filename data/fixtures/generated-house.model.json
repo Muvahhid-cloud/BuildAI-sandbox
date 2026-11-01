@@ -7,7 +7,7 @@
     "description": "Two-storey family house of about 280 m² with four bedrooms, three bathrooms, a large living room open to the kitchen, a two-car garage and a balcony on the upper floor."
   },
   "units": "m",
-  "engine_version": "layout@1.8.0",
+  "engine_version": "layout@1.9.0",
   "seed": 0,
   "levels": [
     {
@@ -3406,7 +3406,7 @@
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
-        "x": 3.0,
+        "x": 2.0,
         "y": 0.0,
         "z": 0.0
       },
@@ -3440,348 +3440,6 @@
         "door_kind": "sliding",
         "swing": "sliding",
         "frame_material_id": "window_frame"
-      }
-    },
-    {
-      "id": "55cb23e1-8834-53d4-9870-d3c72a099f8f",
-      "name": "WN1-01",
-      "layer": "architecture",
-      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
-      "position": {
-        "x": 6.9,
-        "y": 0.0,
-        "z": 1.0
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "6113f1a9-f082-5a05-90ee-40d6a3bb43ac"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:corridor_0:E:0",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 0.6,
-        "height": 1.2
-      },
-      "properties": {
-        "window_kind": "fixed",
-        "frame_material_id": "window_frame",
-        "mullions": 0,
-        "size_class": null
-      }
-    },
-    {
-      "id": "8774722b-4d06-5bb9-b024-700d89a5f33c",
-      "name": "WN1-02",
-      "layer": "architecture",
-      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
-      "position": {
-        "x": 1.75,
-        "y": 0.0,
-        "z": 1.0
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "6945cb57-11ce-5e95-b7c5-e56cd8290444"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:hall_0:S:0",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 1.0,
-        "height": 1.2
-      },
-      "properties": {
-        "window_kind": "fixed",
-        "frame_material_id": "window_frame",
-        "mullions": 0,
-        "size_class": null
-      }
-    },
-    {
-      "id": "f7736aff-d583-511b-a2e0-6d7aa454204d",
-      "name": "WN1-03",
-      "layer": "architecture",
-      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
-      "position": {
-        "x": 8.775,
-        "y": 0.0,
-        "z": 0.6
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "e6328597-b96e-52da-8c3f-4f7d58493cac"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:study:N:0",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 1.45,
-        "height": 1.8
-      },
-      "properties": {
-        "window_kind": "casement",
-        "frame_material_id": "window_frame",
-        "mullions": 1,
-        "size_class": "large"
-      }
-    },
-    {
-      "id": "efdc2fa0-7bd3-5653-8012-2691a3b87631",
-      "name": "WN1-04",
-      "layer": "architecture",
-      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
-      "position": {
-        "x": 2.4,
-        "y": 0.0,
-        "z": 0.6
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "34c244a9-70c8-5031-bb2d-5796fb387608"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:study:W:1",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 0.6,
-        "height": 1.8
-      },
-      "properties": {
-        "window_kind": "casement",
-        "frame_material_id": "window_frame",
-        "mullions": 0,
-        "size_class": "large"
-      }
-    },
-    {
-      "id": "9aaf6112-9069-5f1b-8c7c-f3ab10208b89",
-      "name": "WN1-05",
-      "layer": "architecture",
-      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
-      "position": {
-        "x": 0.95,
-        "y": 0.0,
-        "z": 0.6
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "e6328597-b96e-52da-8c3f-4f7d58493cac"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:living:N:0",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 1.9,
-        "height": 1.8
-      },
-      "properties": {
-        "window_kind": "casement",
-        "frame_material_id": "window_frame",
-        "mullions": 1,
-        "size_class": "large"
-      }
-    },
-    {
-      "id": "d939723e-9aa7-5998-8237-08880d85da0b",
-      "name": "WN1-06",
-      "layer": "architecture",
-      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
-      "position": {
-        "x": 10.2,
-        "y": 0.0,
-        "z": 0.6
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "6113f1a9-f082-5a05-90ee-40d6a3bb43ac"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:living:E:1",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 0.6,
-        "height": 1.8
-      },
-      "properties": {
-        "window_kind": "casement",
-        "frame_material_id": "window_frame",
-        "mullions": 0,
-        "size_class": "large"
-      }
-    },
-    {
-      "id": "02cb8eb8-46b2-5df4-8973-59322b481a79",
-      "name": "WN1-07",
-      "layer": "architecture",
-      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
-      "position": {
-        "x": 3.7,
-        "y": 0.0,
-        "z": 0.6
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "6945cb57-11ce-5e95-b7c5-e56cd8290444"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:dining:S:0",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 2.3,
-        "height": 1.8
-      },
-      "properties": {
-        "window_kind": "casement",
-        "frame_material_id": "window_frame",
-        "mullions": 1,
-        "size_class": "large"
-      }
-    },
-    {
-      "id": "5bf1e59a-6e39-5e3d-a2cf-4f9c0a0f83b9",
-      "name": "WN1-08",
-      "layer": "architecture",
-      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
-      "position": {
-        "x": 7.125,
-        "y": 0.0,
-        "z": 0.6
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "6945cb57-11ce-5e95-b7c5-e56cd8290444"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:kitchen:S:0",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 2.65,
-        "height": 1.8
-      },
-      "properties": {
-        "window_kind": "casement",
-        "frame_material_id": "window_frame",
-        "mullions": 2,
-        "size_class": "large"
-      }
-    },
-    {
-      "id": "f63b29ab-8dde-5041-a4a9-8ef051870ec4",
-      "name": "WN1-09",
-      "layer": "architecture",
-      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
-      "position": {
-        "x": 3.0,
-        "y": 0.0,
-        "z": 0.6
-      },
-      "rotation": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "material_id": "glass",
-      "relationships": [
-        {
-          "kind": "hosted_by",
-          "target_id": "6113f1a9-f082-5a05-90ee-40d6a3bb43ac"
-        }
-      ],
-      "origin": "generated",
-      "locked": false,
-      "semantic_key": "window:kitchen:E:1",
-      "type_ref": null,
-      "type": "window",
-      "dimensions": {
-        "width": 0.6,
-        "height": 1.8
-      },
-      "properties": {
-        "window_kind": "casement",
-        "frame_material_id": "window_frame",
-        "mullions": 0,
-        "size_class": "large"
       }
     },
     {
@@ -4056,7 +3714,7 @@
       "layer": "architecture",
       "level_id": "312ade1f-56d5-5aa7-afc5-2e1430d570d9",
       "position": {
-        "x": 3.8,
+        "x": 3.7,
         "y": 0.0,
         "z": 0.9
       },
@@ -4078,7 +3736,7 @@
       "type_ref": null,
       "type": "window",
       "dimensions": {
-        "width": 2.1,
+        "width": 2.2,
         "height": 1.7
       },
       "properties": {
@@ -4203,8 +3861,426 @@
       }
     },
     {
-      "id": "c9b004cc-0edc-519c-ad68-b064d08a6ae2",
+      "id": "55cb23e1-8834-53d4-9870-d3c72a099f8f",
+      "name": "WN1-01",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 6.9,
+        "y": 0.0,
+        "z": 1.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6113f1a9-f082-5a05-90ee-40d6a3bb43ac"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:corridor_0:E:0",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 0.6,
+        "height": 1.2
+      },
+      "properties": {
+        "window_kind": "fixed",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": null
+      }
+    },
+    {
+      "id": "8774722b-4d06-5bb9-b024-700d89a5f33c",
+      "name": "WN1-02",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 1.75,
+        "y": 0.0,
+        "z": 1.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6945cb57-11ce-5e95-b7c5-e56cd8290444"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:hall_0:S:0",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.0,
+        "height": 1.2
+      },
+      "properties": {
+        "window_kind": "fixed",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": null
+      }
+    },
+    {
+      "id": "f7736aff-d583-511b-a2e0-6d7aa454204d",
+      "name": "WN1-03",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 8.775,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "e6328597-b96e-52da-8c3f-4f7d58493cac"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:study:N:0",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.45,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "efdc2fa0-7bd3-5653-8012-2691a3b87631",
+      "name": "WN1-04",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 2.4,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "34c244a9-70c8-5031-bb2d-5796fb387608"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:study:W:1",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 0.6,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "9aaf6112-9069-5f1b-8c7c-f3ab10208b89",
+      "name": "WN1-05",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 4.55,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "e6328597-b96e-52da-8c3f-4f7d58493cac"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:living:N:0",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 1.9,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "d939723e-9aa7-5998-8237-08880d85da0b",
+      "name": "WN1-06",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 10.2,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6113f1a9-f082-5a05-90ee-40d6a3bb43ac"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:living:E:1",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 0.6,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "1a8997d1-1f01-5a4e-baf1-3b398d30d717",
+      "name": "WN1-07",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 1.25,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "e6328597-b96e-52da-8c3f-4f7d58493cac"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:living:N:2",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 0.6,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "02cb8eb8-46b2-5df4-8973-59322b481a79",
+      "name": "WN1-08",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 3.7,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6945cb57-11ce-5e95-b7c5-e56cd8290444"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:dining:S:0",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 2.2,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 1,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "5bf1e59a-6e39-5e3d-a2cf-4f9c0a0f83b9",
+      "name": "WN1-09",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 8.1,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6945cb57-11ce-5e95-b7c5-e56cd8290444"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:kitchen:S:0",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 2.2,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 2,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "f63b29ab-8dde-5041-a4a9-8ef051870ec4",
       "name": "WN1-10",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 3.0,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6113f1a9-f082-5a05-90ee-40d6a3bb43ac"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:kitchen:E:1",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 0.6,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "0fc571fc-8132-5ac0-908f-730c22ba4cf2",
+      "name": "WN1-11",
+      "layer": "architecture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 6.6,
+        "y": 0.0,
+        "z": 0.6
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "glass",
+      "relationships": [
+        {
+          "kind": "hosted_by",
+          "target_id": "6945cb57-11ce-5e95-b7c5-e56cd8290444"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "window:kitchen:S:2",
+      "type_ref": null,
+      "type": "window",
+      "dimensions": {
+        "width": 0.8,
+        "height": 1.8
+      },
+      "properties": {
+        "window_kind": "casement",
+        "frame_material_id": "window_frame",
+        "mullions": 0,
+        "size_class": "large"
+      }
+    },
+    {
+      "id": "c9b004cc-0edc-519c-ad68-b064d08a6ae2",
+      "name": "WN1-12",
       "layer": "architecture",
       "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
       "position": {
@@ -5010,6 +5086,43 @@
       },
       "properties": {
         "furniture_kind": "coffee_table",
+        "asset_id": null
+      }
+    },
+    {
+      "id": "c3b59635-60e6-52a2-989d-f3c3f72949fa",
+      "name": "Armchair",
+      "layer": "furniture",
+      "level_id": "d6907209-671e-5301-8c4b-b82801fd97ed",
+      "position": {
+        "x": 5.55,
+        "y": 12.45,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "material_id": "fabric",
+      "relationships": [
+        {
+          "kind": "located_in",
+          "target_id": "2b7f642a-b0fd-54cf-88ec-80cb6a4087db"
+        }
+      ],
+      "origin": "generated",
+      "locked": false,
+      "semantic_key": "furniture:living:armchair:1",
+      "type_ref": null,
+      "type": "furniture",
+      "dimensions": {
+        "width": 0.85,
+        "depth": 0.85,
+        "height": 0.8
+      },
+      "properties": {
+        "furniture_kind": "armchair",
         "asset_id": null
       }
     },
@@ -5978,7 +6091,7 @@
   ],
   "metadata": {
     "source": "layout",
-    "generator": "layout@1.8.0 · rules generic-residential@1"
+    "generator": "layout@1.9.0 · rules generic-residential@1"
   },
   "types": [],
   "assemblies": [],

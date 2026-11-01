@@ -22,6 +22,7 @@ from app.modules.building.elements import Room
 from app.modules.building.fingerprint import geometry_sha256
 from app.modules.building.specification import BuildingSpecification
 from app.modules.building.summary import summarize
+from app.modules.layout.config import DEFAULT_CONFIG, LayoutConfig
 from app.modules.layout.engine import LayoutResult, generate_layout
 from app.modules.rules.loader import load_rules_profile
 
@@ -37,7 +38,12 @@ GENERATED_T_FIXTURE = "generated-t-house.model.json"
 GENERATED_T_FIXTURE_SPEC = "12-t-shaped-bungalow-170.spec.json"
 
 
-def generate_reference(data_dir: Path, spec_path: Path, seed: int = GOLDEN_SEED) -> LayoutResult:
+def generate_reference(
+    data_dir: Path,
+    spec_path: Path,
+    seed: int = GOLDEN_SEED,
+    config: LayoutConfig = DEFAULT_CONFIG,
+) -> LayoutResult:
     spec = BuildingSpecification.model_validate_json(spec_path.read_text(encoding="utf-8"))
     library = json.loads((data_dir / "materials" / "library.json").read_text(encoding="utf-8"))
     return generate_layout(
@@ -45,6 +51,7 @@ def generate_reference(data_dir: Path, spec_path: Path, seed: int = GOLDEN_SEED)
         load_rules_profile(data_dir, RULES_REF),
         id_namespace=GOLDEN_NAMESPACE,
         seed=seed,
+        config=config,
         material_ids={m["id"] for m in library["materials"]},
     )
 

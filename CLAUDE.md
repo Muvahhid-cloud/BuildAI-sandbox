@@ -136,6 +136,10 @@ Local environment notes (dev machine is Windows): `uv` may only be available as 
 - Design: `docs/3d-engine.md` §16.13 and §23, `docs/building-model.md` (schema 1.3.0). Facade zoning changes **finishes only** (`finish_right_id`); wall cores keep the spec's facade material (the benchmark checks them). A requested facade colour disables zoning. Zoning and canopy material follow the architectural style (an approved design system's first style tag first) via `LayoutConfig` — design systems are drafts and carry no zoning yet.
 - Entrance canopies are `slab_kind: canopy` slabs: untyped, no `supports` relationship, excluded from the floor-slab checks, validated by `slab.canopy`. Gable-end infill and parapet finishes are derived by the web roof builder from the roof's supporting walls (not stored).
 
+## Facade grid notes (layout@1.9.0, V4)
+
+- Design: `docs/3d-engine.md` §16.14. Partitions snap to the other storeys' facade grid only where every room keeps its minimum width/area and permitted area range (never relax a requirement or a rules limit to align a window). `facade_grid_snap = 0` must keep reproducing layout@1.8.0 (test). Alignment is measured on the built model in `tests/layout/test_facade_grid.py`; never weaken its threshold to match output.
+
 ## Knowledge notes (Phase 3.5)
 
 - Design: `docs/knowledge.md`. Steps K1 Foundation → K2 Families/Types/Assemblies → K3 Design Systems → K4 Templates → K5 Knowledge API and Units → K6 Optional Structural Elements; don't rename, merge or start a step before the previous one is reviewed.

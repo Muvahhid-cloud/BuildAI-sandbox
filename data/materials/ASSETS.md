@@ -1,9 +1,10 @@
-# Material assets (textures and HDRI)
+# Material assets (textures, HDRI and 3D models)
 
 Third-party image assets used by the 3D viewer. Only **CC0** assets from
 [ambientCG](https://ambientcg.com) and [Poly Haven](https://polyhaven.com) are allowed
-(decision 2026-10-31, "V1 Visual quality"). About 1K resolution; the whole folder stays under
-~40 MB (now ≈ 17.3 MB: textures 15.7 MB, HDRI 1.5 MB).
+(decision 2026-10-31, "V1 Visual quality"; models added by "V2 Furniture and site"). About 1K
+resolution; the whole folder stays under ~40 MB (now ≈ 23 MB: textures 17.4 MB, HDRI 1.5 MB,
+models 3.4 MB).
 
 - Files live in `data/materials/textures/<slot>/{albedo,normal,roughness}.jpg` and
   `data/materials/hdri/`. The material library (`library.json`) references them by these paths
@@ -33,6 +34,7 @@ Downloaded 2026-11-01. Licence of every asset: **CC0 1.0** (https://polyhaven.co
 | `textures/wall_tile/` | tile | Long White Tiles (Jenelle van Heerden, Sergej Majboroda) | https://polyhaven.com/a/long_white_tiles | 1.27 m | albedo, normal, roughness | CC0 |
 | `textures/roof_tiles/` | roof | Grey Roof Tiles 02 (Rob Tuytel) | https://polyhaven.com/a/grey_roof_tiles_02 | 1.50 m | albedo, normal, roughness (tint `#8f949b` toward anthracite) | CC0 |
 | `textures/concrete/` | concrete | Concrete Wall 004 (Dario Barresi, Charlotte Baglioni) | https://polyhaven.com/a/concrete_wall_004 | 2.00 m | albedo, normal, roughness (tint `#dde1ff` neutralises its olive cast; the most neutral of 9 Poly Haven concretes measured) | CC0 |
+| `textures/paving/` | site_paving (site path and driveway, V2) | Concrete Pavers (Amal Kumar) | https://polyhaven.com/a/concrete_pavers | 1.92 m | albedo, normal, roughness (tint `#e8e8ec`, slightly cooler) | CC0 |
 | `textures/grass/` | site_grass | Leafy Grass (Charlotte Baglioni) | https://polyhaven.com/a/leafy_grass | 2.00 m | albedo, normal, roughness (tint `#bfffb3` toward green; every Poly Haven grass averages olive/brown) | CC0 |
 
 Scale check (2026-11-01): the repeat period measured on the albedo maps at these tile sizes is
@@ -62,3 +64,48 @@ sphere, of eight Poly Haven 1K candidates:
 
 History: until 2026-11-01 a 512×256 EXR of the same HDRI from the npm package `@pmndrs/assets`
 was used because polyhaven.com was blocked in the build environment; it has been removed.
+
+## 3D models (V2 Furniture and site)
+
+Downloaded 2026-11-01 from the Poly Haven models section as 1K glTF; licence of every asset
+**CC0 1.0** (https://polyhaven.com/license). Listed in `data/materials/models.json` (furniture kinds,
+yaw correction, glTF bounds). Packed with
+[glTF-Transform](https://gltf-transform.dev) 4.5 (a build-time tool, not a project dependency):
+
+```
+gltf-transform optimize <id>_1k.gltf <id>.glb --compress meshopt --texture-compress webp \
+  --texture-size 512 --simplify false                     # furniture
+gltf-transform optimize <id>_1k.gltf <id>.glb --compress meshopt --texture-compress webp \
+  --texture-size 512 --simplify-ratio <r> --simplify-error 0.02   # vegetation (r below)
+```
+
+The viewer decodes meshopt with three's bundled `MeshoptDecoder` (no CDN). Embedded materials are
+the assets' own (see CLAUDE.md, recorded exception); furniture is fitted to the element's
+width × depth × height from the BuildingModel.
+
+| File | Used for | Asset (authors) | Source URL | Packed | Licence |
+|---|---|---|---|---|---|
+| `models/sofa_02.glb` | sofa | Sofa 02 (Kirill Sannikov) | https://polyhaven.com/a/sofa_02 | 79 KB, 2.7k tris | CC0 |
+| `models/modern_arm_chair_01.glb` | armchair | Modern Arm Chair 01 (Vibrant Nordic) | https://polyhaven.com/a/modern_arm_chair_01 | 147 KB, 8.9k tris | CC0 |
+| `models/wooden_table_02.glb` | dining_table, desk | Wooden Table 02 (Serhii Khromov) | https://polyhaven.com/a/wooden_table_02 | 63 KB, 0.2k tris | CC0 |
+| `models/dining_chair_02.glb` | chair | Dining Chair 02 (James Ray Cock) | https://polyhaven.com/a/dining_chair_02 | 190 KB, 22k tris | CC0 |
+| `models/modern_coffee_table_01.glb` | coffee_table | Modern Coffee Table 01 (Amin) | https://polyhaven.com/a/modern_coffee_table_01 | 73 KB, 4.5k tris | CC0 |
+| `models/side_table_01.glb` | nightstand | Side Table 01 (James Ray Cock) | https://polyhaven.com/a/side_table_01 | 83 KB, 2.8k tris | CC0 |
+| `models/modern_wooden_cabinet.glb` | tv_unit | Modern Wooden Cabinet (Patrik Pangerl) | https://polyhaven.com/a/modern_wooden_cabinet | 322 KB, 25k tris | CC0 |
+| `models/wooden_display_shelves_01.glb` | bookshelf | Wooden Display Shelves 01 (James Ray Cock) | https://polyhaven.com/a/wooden_display_shelves_01 | 77 KB, 3.2k tris | CC0 |
+| `models/tree_small_02.glb` | site trees | Tree Small 02 (Rico Cilliers) | https://polyhaven.com/a/tree_small_02 | 926 KB, 41k tris (simplified from 2.1M, ratio 0.02) | CC0 |
+| `models/island_tree_01.glb` | site trees | Island Tree 01 (Rob Tuytel, Rico Cilliers) | https://polyhaven.com/a/island_tree_01 | 1.24 MB, 38k tris (from 1.6M, ratio 0.025) | CC0 |
+| `models/searsia_burchellii.glb` | site shrubs | Searsia Burchellii (James Ray Cock, Jenelle van Heerden) — the small variant only (`Cube.016`) | https://polyhaven.com/a/searsia_burchellii | 273 KB, 11k tris (ratio 0.25) | CC0 |
+
+### TODO — furniture kinds without a model (box placeholder)
+
+Poly Haven has no suitable CC0 model for these kinds (checked 2026-11-01: no sanitary ware,
+kitchen units or appliances, and only period/rustic beds and no wardrobe). They keep the
+procedural placeholder until a CC0 model is added to `models.json`:
+
+| Kind | Status |
+|---|---|
+| bed | TODO — Poly Haven only has `GothicBed_01`, `old_bed_frame`, `vintage_day_bed` (style mismatch) |
+| wardrobe | TODO — no wardrobe; cabinets are too low to stretch to 2 m+ |
+| kitchen_counter, kitchen_island, fridge | TODO — not in the Poly Haven catalogue |
+| toilet, basin, bathtub, shower | TODO — not in the Poly Haven catalogue |

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "description": "CC0 glTF models used by the 3D viewer (V2). Files live in data/materials/models (meshopt + WebP, see ASSETS.md). bounds = the glTF scene bounding box (Y-up, meters) as packed; yaw_deg turns the model about its up axis so its front faces glTF +Z before it is fitted (front = -y in the furniture frame). Furniture is fitted to the element's width x depth x height (the BuildingModel stays the source of truth); vegetation keeps its proportions and is scaled to the site plan's height. Materials are embedded in the CC0 assets.",
+  "models": [
+    {"id": "sofa_02", "name": "Sofa 02", "file": "models/sofa_02.glb", "use": "furniture", "kinds": ["sofa"], "yaw_deg": 0, "bounds": {"min": [-0.90332, 0.00018, -0.47764], "max": [0.90385, 0.70972, 0.33999]}},
+    {"id": "modern_arm_chair_01", "name": "Modern Arm Chair 01", "file": "models/modern_arm_chair_01.glb", "use": "furniture", "kinds": ["armchair"], "yaw_deg": 0, "bounds": {"min": [-0.4068, 0.00038, -0.57543], "max": [0.41353, 1.02323, 0.41109]}},
+    {"id": "wooden_table_02", "name": "Wooden Table 02", "file": "models/wooden_table_02.glb", "use": "furniture", "kinds": ["dining_table", "desk"], "yaw_deg": 0, "bounds": {"min": [-0.56721, -0.00012, -0.35303], "max": [0.56721, 0.79941, 0.35303]}},
+    {"id": "dining_chair_02", "name": "Dining Chair 02", "file": "models/dining_chair_02.glb", "use": "furniture", "kinds": ["chair"], "yaw_deg": 0, "bounds": {"min": [-0.21681, 0.00129, -0.33105], "max": [0.21681, 0.97466, 0.24542]}},
+    {"id": "modern_coffee_table_01", "name": "Modern Coffee Table 01", "file": "models/modern_coffee_table_01.glb", "use": "furniture", "kinds": ["coffee_table"], "yaw_deg": 90, "bounds": {"min": [-0.29997, -0.00011, -0.60067], "max": [0.29997, 0.38988, 0.60116]}},
+    {"id": "side_table_01", "name": "Side Table 01", "file": "models/side_table_01.glb", "use": "furniture", "kinds": ["nightstand"], "yaw_deg": 0, "bounds": {"min": [-0.275, -0.00236, -0.22502], "max": [0.275, 0.54831, 0.22502]}},
+    {"id": "modern_wooden_cabinet", "name": "Modern Wooden Cabinet", "file": "models/modern_wooden_cabinet.glb", "use": "furniture", "kinds": ["tv_unit"], "yaw_deg": 0, "bounds": {"min": [-1.22, 0.00004, -0.27003], "max": [1.22, 0.68013, 0.25003]}},
+    {"id": "wooden_display_shelves_01", "name": "Wooden Display Shelves 01", "file": "models/wooden_display_shelves_01.glb", "use": "furniture", "kinds": ["bookshelf"], "yaw_deg": 90, "bounds": {"min": [-0.1857, 0.00044, -0.5389], "max": [0.1857, 1.55662, 0.5389]}},
+    {"id": "tree_small_02", "name": "Tree Small 02", "file": "models/tree_small_02.glb", "use": "tree", "kinds": [], "yaw_deg": 0, "bounds": {"min": [-1.29545, -0.02403, -1.34217], "max": [1.58826, 4.52098, 2.85885]}},
+    {"id": "island_tree_01", "name": "Island Tree 01", "file": "models/island_tree_01.glb", "use": "tree", "kinds": [], "yaw_deg": 0, "bounds": {"min": [-2.32598, -0.01643, -2.57182], "max": [2.41057, 5.00712, 2.23403]}},
+    {"id": "searsia_burchellii", "name": "Searsia Burchellii (small)", "file": "models/searsia_burchellii.glb", "use": "bush", "kinds": [], "yaw_deg": 0, "bounds": {"min": [-0.81384, 0.01654, -1.13426], "max": [0.82127, 1.90037, 1.13656]}}
+  ]
+}

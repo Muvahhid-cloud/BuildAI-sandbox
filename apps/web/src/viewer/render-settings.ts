@@ -4,7 +4,7 @@ import { MATERIAL_ASSET_BASE } from "@/engine/materials/library";
 
 export const RENDER = {
   /** Local HDRI (data/materials/hdri, see ASSETS.md); never a runtime CDN. .hdr or .exr. */
-  hdriUrl: `${MATERIAL_ASSET_BASE}hdri/potsdamer_platz_512.exr`,
+  hdriUrl: `${MATERIAL_ASSET_BASE}hdri/potsdamer_platz_1k.hdr`,
   /** Image-based light strength (diffuse + reflections). */
   environmentIntensity: 0.75,
   /** Tone mapping exposure (ACES Filmic). */

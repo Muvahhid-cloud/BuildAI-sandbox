@@ -719,7 +719,9 @@ parameters) live in one file, `viewer/render-settings.ts`.
 
 - `data/materials/library.json` stays the only material source. A preset may carry
   `textures: { albedo, normal, roughness, tile_size_m: [u, v], tint? }` (paths relative to
-  `data/materials`), `shading: "glass"` and `env_intensity`. Every asset is recorded in
+  `data/materials`), `shading: "glass"` and `env_intensity`. `tile_size_m` is the asset's
+  published real-world size; the measured repeat (≈ 70 mm brick courses, 300 mm floor tiles,
+  136 mm slate courses, 212 mm boards) is recorded in ASSETS.md. Every asset is recorded in
   `data/materials/ASSETS.md` (CC0 only: ambientCG, Poly Haven); a test keeps the library and
   ASSETS.md in sync and checks that every slot marked present ships its files.
 - `MaterialCache` gets an injected `TextureSource` (the engine does no I/O; `viewer/textures.ts`
@@ -763,10 +765,11 @@ changes). Shadows stay PCF 2048². "Effects" turns post-processing off on slow d
 
 ### 21.6 Limitations (V1 step 1)
 
-- Texture files are not shipped yet: ambientCG and Poly Haven were blocked by the build
-  environment's network policy, so every texture slot in `ASSETS.md` is TODO and renders in its
-  flat colour. The HDRI is the 512×256 EXR of Poly Haven "Potsdamer Platz" redistributed in
-  `@pmndrs/assets` (CC0), not the 1K `.hdr`.
+- Assets (2026-11-01): nine 1K CC0 texture sets and the 1K Poly Haven "Potsdamer Platz" `.hdr`,
+  all from Poly Haven (≈ 17 MB, `data/materials/ASSETS.md`). ambientCG's download CDN is not
+  reachable from the build environment, so none of its sets is used. Painted interior plaster has
+  relief maps only (flat paint colour); grass and concrete use tints to correct the assets'
+  colour cast.
 - UVs start at each element's local origin: textures are continuous along a wall but not across
   wall corners or between elements.
 - No transmission/refraction in glass, no screen-space reflections, no bloom; interior views get

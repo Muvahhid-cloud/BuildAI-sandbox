@@ -59,7 +59,9 @@ describe("material library textures", () => {
     ]) {
       const t = materialPreset(id).textures;
       expect(t, id).toBeDefined();
-      expect(t!.albedo && t!.normal && t!.roughness, id).toBeTruthy();
+      expect(t!.normal && t!.roughness, id).toBeTruthy();
+      // Painted interior plaster keeps its flat (paint) colour: relief maps only.
+      if (id !== "interior_wall") expect(t!.albedo, id).toBeTruthy();
       expect(t!.tile_size_m[0]).toBeGreaterThan(0.1);
       expect(t!.tile_size_m[1]).toBeLessThan(10);
     }
@@ -76,6 +78,13 @@ describe("material library textures", () => {
       const folder = file.split("/").slice(0, 2).join("/");
       expect(assets, folder).toContain(`${folder}/`);
     }
+  });
+
+  it("ships every referenced texture file and HDRI (no slot is TODO any more)", () => {
+    for (const file of libraryTextureFiles()) {
+      expect(existsSync(`${MATERIALS_DIR}${file}`), file).toBe(true);
+    }
+    expect(readFileSync(`${MATERIALS_DIR}ASSETS.md`, "utf-8")).not.toMatch(/\|\s*TODO\s*\|/);
   });
 
   it("ships every texture file that ASSETS.md lists as present", () => {

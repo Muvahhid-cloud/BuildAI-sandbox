@@ -25,9 +25,15 @@ export function saveEdits(
   versionId: string,
   operations: readonly EditOperation[],
   label?: string,
+  /** An AI-assisted modification (Phase 5): stored with source `ai_modification` and its request. */
+  ai?: { prompt: string },
 ) {
   return apiRequest(base(projectId, versionId), versionSchema, {
     method: "POST",
-    body: { operations, ...(label ? { label } : {}) },
+    body: {
+      operations,
+      ...(label ? { label } : {}),
+      ...(ai ? { origin: "ai_modification", prompt: ai.prompt } : {}),
+    },
   });
 }

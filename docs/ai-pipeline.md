@@ -155,4 +155,63 @@ Deviations are never hidden: the completed record lists all warnings (AI conflic
 - No prompt eval suite yet (the roadmap's ~50-prompt eval is deferred); the mock prompts are covered by parametrized tests.
 - Generation runs in-process (ADR-010): a restart fails running generations (`JOB_INTERRUPTED`).
 - Rate limiting is per user per hour in the database; there is no token budget/spend tracking (no prices in code).
-- Refining an existing design in natural language (modification operations) is Phase 5.
+- Refining an existing design in natural language: see §11 (Phase 5).
+
+## 11. AI-assisted modification (Phase 5)
+
+Change an existing design in plain language ("make the kitchen 2 metres wider, move the bathroom
+wall, add another window to the master bedroom, and increase the living room size"). The AI only
+**interprets**; every geometric decision is made by the deterministic editing engine of Phase 3.6
+D2 and judged by the same validation as a manual edit. Nothing is stored until the user applies.
+
+```
+request + session ops ─▶ model digest (refs R1.., O1..) ─▶ AI: ModificationDraft (structured output)
+   ─▶ Pydantic + reference check (≤ AI_MAX_REPAIRS repair calls; invalid output never accepted)
+   ─▶ resolver: per change → questions | typed D2 operations | refusal with the editor's reason
+   ─▶ evaluate_edits(base, session ops + new ops) ─▶ preview model + measured diff
+   ─▶ user answers (POST …/modify/resolve, no AI call) ─▶ … ─▶ Apply = POST …/edits (origin ai_modification)
+```
+
+- **Digest** (`ai/modification_context.py`): rooms with a reference, name, type, floor, area,
+  extent and, per side, what lies beyond it (neighbour refs or a facade); doors and windows with a
+  reference, rooms, outward side and sizes. No ids, no coordinates reach the model. The resolver
+  maps references back with the same function on the same (session) model.
+- **Output** (`ai/schemas/modification.py`): `ModificationDraft {understanding, changes[],
+  unsupported[]}`; a change is an action (`resize_room`, `move_wall`, `add_window`, `add_door`,
+  `remove_opening`, `resize_opening`, `rename_room`, `set_room_type`, `remove_wall`) with
+  references and only the numbers the user stated. Unknown values stay null — a null becomes a
+  question, never a guess. What no action can express goes into `unsupported` with a reason.
+- **Prompt** `building-modification@1` (`ai/prompts/modification.py`): static system prompt, the
+  digest and the quoted untrusted request in the user turn. The generation prompt is unchanged.
+- **Mock** (`ai/providers/mock_modification.py`): a deterministic English reader over the same
+  digest, used in development, tests and CI; rooms with the same name ("Bathroom" on two floors)
+  stay unresolved, unknown clauses become `unsupported`.
+- **Resolver** (`modules/modification/resolve.py`, pure): changes are resolved in order on the model
+  the earlier ones produced. Missing room/direction/amount/side/opening/merge choice → a question
+  with options; several valid placements → the user chooses; a single valid placement is used and
+  said so. A side that moves an **exterior facade** (footprint, every storey, slabs, roof) always
+  needs an explicit yes. Windows go in the longest free stretch of an exterior wall of the room
+  (profile clearance), sized like the room's other windows unless the user gave a size; doors in
+  the shared interior wall. Every candidate is checked with `editing.evaluate_edits` (model
+  invariants, rules profile, circulation, reachability, MUST requirements of the spec); refusals
+  carry its reason. Answers re-run only the resolver on the returned draft (re-validated), so the
+  interpretation cannot drift between rounds.
+- **API**: `POST /projects/{id}/versions/{vid}/modify/plan` (`{prompt, operations}` → plan) and
+  `…/modify/resolve` (`{prompt, draft, answers, operations}` → plan, no AI call). The plan holds
+  `status` (`ready | partial | needs_clarification | nothing_to_apply`), the changes with their
+  status and operations, questions, unsupported requests, the new operations, the validated preview
+  (`EditPreviewOut`) and a measured diff (`building/diff.py`). Errors: 503 `AI_UNAVAILABLE`, 504
+  `AI_TIMEOUT`, 422 `AI_MODIFICATION_INVALID`, 409 `EDIT_SESSION_INVALID`.
+- **Apply / undo**: applying is a normal edit save with `origin: ai_modification` and the request as
+  the version's `prompt` (label "AI changes on v<n>"). Undo = `POST …/versions/{vid}/restore`: a new
+  version with the earlier model (versions stay immutable).
+- **Web**: "Modify with AI" drawer (`features/modification/components/ModifyPanel.tsx`): request,
+  questions as option buttons/number fields, planned/refused/unsupported per change, measured
+  changes, warnings; the candidate is loaded into the building store so the plan and 3D show it,
+  with the touched elements in amber (`stores/highlight-store.ts`); Discard restores the session's
+  model. "Compare" drawer: measured diff between two versions (`GET /projects/{id}/compare`).
+- **Limits**: synchronous request (the web proxy timeout is raised to 300 s); no ai_runs rows for
+  modification calls yet; no per-user rate limit on modifications yet; walls cannot be added or
+  split, facade thickness/finish and multi-facade moves are not offered to the AI (unsupported);
+  a slow model can exceed `AI_TIMEOUT_SECONDS` (observed with `anthropic/claude-opus-5.5` via
+  OpenRouter at 120 s: answered with 504 `AI_TIMEOUT`).

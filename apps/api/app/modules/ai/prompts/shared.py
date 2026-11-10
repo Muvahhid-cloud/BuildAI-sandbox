@@ -140,7 +140,7 @@ def output_schema_json() -> dict[str, Any]:
 SCHEMA_IN_PROMPT_VERSION = "schema-in-prompt@1"
 
 
-def schema_in_prompt_block(schema: dict[str, Any]) -> str:
+def schema_in_prompt_block(schema: dict[str, Any], output_name: str | None = None) -> str:
     """System-prompt appendix for providers whose structured outputs cannot compile the schema.
 
     Used only as a fallback (providers/openrouter.py): the answer is still parsed with
@@ -152,8 +152,9 @@ def schema_in_prompt_block(schema: dict[str, Any]) -> str:
             "<response_schema>",
             json.dumps(schema, ensure_ascii=False, separators=(",", ":")),
             "</response_schema>",
-            f"The response schema above is the JSON Schema of `{OUTPUT_NAME}`. Answer with"
-            " exactly one JSON object that validates against it: no text before or after it,"
+            f"The response schema above is the JSON Schema of `{output_name or OUTPUT_NAME}`."
+            " Answer with exactly one JSON object that validates against it: no text before or"
+            " after it,"
             " no Markdown code fences, no comments. Respect every enum, minimum, maximum and"
             " length limit in the schema and omit properties you do not need.",
         ]

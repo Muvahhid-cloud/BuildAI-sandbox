@@ -11,6 +11,7 @@ from app.modules.ai.schemas.generation import GenerationOptions
 class AITask(StrEnum):
     GENERATE_SPECIFICATION = "generate_specification"
     REPAIR_SPECIFICATION = "repair_specification"
+    PLAN_MODIFICATION = "plan_modification"
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,8 @@ class StructuredRequest:
     # The user's original request, for providers that do not run a language model (mock).
     user_prompt: str = ""
     options: GenerationOptions | None = None
+    # Modification requests: the model digest (for providers that do not run a model: mock).
+    modification_context: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)

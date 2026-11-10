@@ -17,6 +17,8 @@ import { GenerationHistory } from "@/features/ai/components/GenerationHistory";
 import { GenerationSummary } from "@/features/ai/components/GenerationSummary";
 import { hasUnsavedEdits, useEditStore } from "@/features/editing/store";
 import { GenerationPanel } from "@/features/generation/components/GenerationPanel";
+import { ComparePanel } from "@/features/modification/components/ComparePanel";
+import { ModifyPanel } from "@/features/modification/components/ModifyPanel";
 import { projectKeys, useProject } from "@/features/projects/api";
 import { useImportDemo, useVersion, useVersions, versionKeys } from "@/features/versions/api";
 import { ReportPanel } from "@/features/versions/components/ReportPanel";
@@ -29,7 +31,7 @@ import { useViewerStore } from "@/stores/viewer-store";
 
 import { BuildingEditor } from "./BuildingEditor";
 
-type Drawer = "none" | "generate" | "report" | "history";
+type Drawer = "none" | "generate" | "report" | "history" | "modify" | "compare";
 type DesignMode = "ai" | "form";
 
 /**
@@ -206,6 +208,16 @@ export function ProjectEditor({
           {p.region_code} · {p.currency} · rules {p.rules_profile_id}
         </span>
         <div className="ml-auto flex items-center gap-2">
+          {version.data && (
+            <DrawerButton drawer={drawer} value="modify" onToggle={setDrawer}>
+              Modify with AI
+            </DrawerButton>
+          )}
+          {(versions.data?.length ?? 0) > 1 && (
+            <DrawerButton drawer={drawer} value="compare" onToggle={setDrawer}>
+              Compare
+            </DrawerButton>
+          )}
           <DrawerButton drawer={drawer} value="history" onToggle={setDrawer}>
             History
           </DrawerButton>
@@ -300,7 +312,11 @@ export function ProjectEditor({
                 ? "Generate a new design"
                 : drawer === "history"
                   ? "Generation history"
-                  : "Design report"
+                  : drawer === "modify"
+                    ? "Modify with AI"
+                    : drawer === "compare"
+                      ? "Compare versions"
+                      : "Design report"
             }
             className="absolute inset-y-0 right-0 z-20 flex w-full max-w-[520px] flex-col border-l border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-950"
           >
@@ -325,6 +341,20 @@ export function ProjectEditor({
                   )}
                 </div>
               </>
+            ) : drawer === "modify" ? (
+              <ModifyPanel
+                projectId={projectId}
+                versionNumber={version.data?.number ?? null}
+                onSaved={(v) => void onEditsSaved(v)}
+                onClose={() => setDrawer("none")}
+              />
+            ) : drawer === "compare" ? (
+              <ComparePanel
+                projectId={projectId}
+                versions={versions.data ?? []}
+                shownVersionId={version.data?.id ?? null}
+                onClose={() => setDrawer("none")}
+              />
             ) : drawer === "history" ? (
               <GenerationHistory
                 projectId={projectId}

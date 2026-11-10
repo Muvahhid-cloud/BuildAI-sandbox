@@ -22,8 +22,10 @@ Initial market: **Kazakhstan (KZT)**. Costing (planned) is currency-agnostic.
 | Title (EN) | Development and Implementation of an Intelligent BIM-Based 3D Platform for AI-Assisted Generative Building Design |
 | Title (RU) | «Разработка и внедрение интеллектуальной BIM-ориентированной 3D-платформы BuildAI 3D для генеративного проектирования зданий с применением искусственного интеллекта» |
 | Team | SE-2406 |
-| Students | Турсуналиев Зайниддин Хайдаралиевич · Усманов |
+| Students | Турсуналиев Зайниддин Хайдаралиевич · Усманов Эсанжон Амонджонович |
 | Supervisor | Танырбергенова Камила Ислямовна |
+| Pre-defense documentation | [docs/pre-defense-1/](docs/pre-defense-1/README.md) (proposal, user-evidence protocol, literature review, comparisons, requirements, diagrams, UX evidence, evaluation plan, risks, checklist) |
+| Repository remote / issue tracker | Not configured yet (see [docs/pre-defense-1/10_project_management_and_risks.md](docs/pre-defense-1/10_project_management_and_risks.md) §6) |
 
 BuildAI 3D is an early-stage conceptual design and visualization prototype. It doesn't produce construction-ready or professionally certified designs (see [Disclaimer](#disclaimer)).
 
@@ -39,6 +41,16 @@ BuildAI 3D is an early-stage conceptual design and visualization prototype. It d
 | Quantities and cost, NL modification, version compare, MEP, reports, IFC export | Planned / not started |
 
 Checks on `main` (2026-10-20): web 135 tests passed; API 582 passed, 2 skipped (live-provider tests); lint and typecheck clean. The Anthropic provider has never been called live, and the OpenRouter provider was live-tested once. Docker Compose and CI haven't been verified (no Docker on the dev machine, no remote).
+
+## Screenshots
+
+Real captures of the running app (`main`, offline mock AI provider,). More are in [docs/pre-defense-1/08_ux_prototype.md](docs/pre-defense-1/08_ux_prototype.md).
+
+| Describe a building in plain language | Generated 3D building with requested-vs-generated summary |
+|---|---|
+| ![AI generator on the projects dashboard](docs/pre-defense-1/assets/screenshots/02-projects-dashboard-ai-generator.png) | ![Generated two-storey house with generation summary](docs/pre-defense-1/assets/screenshots/05-generated-model-summary.png) |
+| **Select an element and inspect its properties** | **Design report: assumptions, geometry and rules checks** |
+| ![Selected panoramic window with its properties and host wall](docs/pre-defense-1/assets/screenshots/06-element-selected-properties.png) | ![Design report panel](docs/pre-defense-1/assets/screenshots/08-design-report.png) |
 
 ## Status
 
@@ -138,6 +150,7 @@ scripts/         Cross-platform helper scripts
 | [docs/database.md](docs/database.md) | PostgreSQL schema, versioning storage |
 | [docs/knowledge.md](docs/knowledge.md) | Architectural knowledge packs, families/types/assemblies (Phase 3.5) |
 | [docs/roadmap.md](docs/roadmap.md) | Phases, verification checklists, decisions log |
+| [docs/pre-defense-1/](docs/pre-defense-1/README.md) | Pre-Defense 1 package (diploma assessment deliverables) |
 
 ## Disclaimer
 

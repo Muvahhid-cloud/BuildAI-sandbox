@@ -94,7 +94,7 @@ class OpenRouterProvider(AIProvider):
         system = request.system
         if mode == PROMPT_SCHEMA:
             # Static per prompt version too, so the cache breakpoint below still applies.
-            system = prompt_schema_system(system, request.output_schema)
+            system = prompt_schema_system(system, request.output_schema, request.output_name)
         payload: dict[str, Any] = {
             "model": self.model,
             "max_tokens": request.max_tokens,

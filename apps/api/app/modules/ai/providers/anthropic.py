@@ -82,7 +82,7 @@ class AnthropicProvider(AIProvider):
                 "schema": structured_output_schema(request.output_schema),
             }
         else:
-            system = prompt_schema_system(system, request.output_schema)
+            system = prompt_schema_system(system, request.output_schema, request.output_name)
         if self._effort:
             output_config["effort"] = self._effort
         params: dict[str, Any] = {

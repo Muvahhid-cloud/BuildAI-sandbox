@@ -623,6 +623,19 @@ generated rectangular, L and T houses is refused or consistent — no new model 
 finding, the facade's storeys on one axis with one thickness, pitched roofs still rectangles,
 canopies valid) and `tests/test_editing_api.py` (save and reload).
 
+### 5.7 Measured differences and AI-assisted modification (Phase 5)
+
+`building/diff.py diff_models(before, after)` lists elements added, removed and changed (by id)
+and readable lines measured on the two models: rooms added/removed/renamed/retyped/resized (area
+and bounding extent), doors and windows added/removed/resized/moved (an opening that only follows
+its wall is not "moved"), walls (aggregated counts) and the gross floor area of the summary. It
+feeds the change summary of an AI modification preview and `GET /projects/{id}/compare?a=&b=`.
+
+AI-assisted modification (docs/ai-pipeline.md §11) produces only the operations of §5.1–§5.6 —
+no new operation types. A version saved from it has `source: ai_modification` and the request as
+its `prompt`; `POST /projects/{id}/versions/{vid}/restore` creates a new version (`source:
+restore`, label "Restored v<n>") with an earlier version's model and specification.
+
 ---
 
 ## 6. Discipline layers & materials

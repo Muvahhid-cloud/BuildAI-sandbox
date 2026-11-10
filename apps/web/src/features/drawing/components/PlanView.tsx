@@ -47,6 +47,7 @@ import type { Opening, Room, Wall } from "@/engine/model/types";
 import { useEditStore } from "@/features/editing/store";
 import type { EditOperation, EditPreview, Version } from "@/lib/api/schemas";
 import { useBuildingStore } from "@/stores/building-store";
+import { useHighlightStore } from "@/stores/highlight-store";
 import { useLayerStore } from "@/stores/layer-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { useViewerStore } from "@/stores/viewer-store";
@@ -205,6 +206,20 @@ function gripResize(opening: Opening, end: "start" | "end", u: number): [number,
 }
 
 /** CSS for the selected element; ids are UUIDs, safe inside an attribute selector. */
+/** Amber marks for elements changed by an AI modification preview or a version comparison. */
+function changedCss(ids: ReadonlySet<string>): string {
+  let css = "";
+  for (const id of ids) {
+    if (!/^[0-9a-f-]+$/i.test(id)) continue;
+    const s = `[data-element-id="${id}"]`;
+    css +=
+      `${s} [data-fill="solid"]{fill:#d97706}` +
+      `${s} [data-fill="hit"]{fill:#f59e0b;fill-opacity:.14}` +
+      `${s} polygon,${s} polyline{stroke:#d97706}`;
+  }
+  return css;
+}
+
 function highlightCss(selectedId: string | null, editable: boolean): string {
   const base =
     "[data-element-id]{cursor:pointer}" +
@@ -244,6 +259,7 @@ export function PlanView({
   const planLevelId = useViewerStore((s) => s.planLevelId);
   const furniture = useLayerStore((s) => s.visible.furniture);
   const selectedId = useSelectionStore((s) => s.selectedId);
+  const changedIds = useHighlightStore((s) => s.ids);
   const select = useSelectionStore((s) => s.select);
   const editable = useEditStore((s) => s.versionId !== null);
   const chosenSide = useEditStore((s) => s.side);
@@ -639,7 +655,7 @@ export function PlanView({
           if ((placing || placingWall) && !pointer.current) setDrag(null);
         }}
       >
-        <style>{highlightCss(selectedId, editable)}</style>
+        <style>{changedCss(changedIds) + highlightCss(selectedId, editable)}</style>
         <g dangerouslySetInnerHTML={{ __html: content }} />
         {ghost && (
           <DragGhost

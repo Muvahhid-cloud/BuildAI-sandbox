@@ -1,15 +1,17 @@
 """MockAIProvider: deterministic offline provider for development, tests, CI and offline work.
 
 It answers every request (generation and repair alike) with the rule-based interpretation of
-the user's original text, serialized exactly as a model's structured output would be, so the
-parse -> validate -> repair -> layout pipeline runs unchanged without an API key or network.
+the user's original text (modification requests: `mock_modification.py`, over the model
+digest), serialized exactly as a model's structured output would be, so the parse -> validate
+-> repair -> layout pipeline runs unchanged without an API key or network.
 """
 
 import json
 
 from app.modules.ai.providers.base import AIProvider
 from app.modules.ai.providers.mock_interpreter import interpret_offline
-from app.modules.ai.structured import StructuredRequest, StructuredResult
+from app.modules.ai.providers.mock_modification import interpret_modification_offline
+from app.modules.ai.structured import AITask, StructuredRequest, StructuredResult
 
 MOCK_MODEL = "mock-interpreter@1"
 
@@ -21,7 +23,10 @@ class MockAIProvider(AIProvider):
         self.model = model
 
     async def complete_structured(self, request: StructuredRequest) -> StructuredResult:
-        data = interpret_offline(request.user_prompt, request.options)
+        if request.task == AITask.PLAN_MODIFICATION:
+            data = interpret_modification_offline(request.user_prompt, request.modification_context)
+        else:
+            data = interpret_offline(request.user_prompt, request.options)
         return StructuredResult(
             data=data,
             raw_output=json.dumps(data, ensure_ascii=False, sort_keys=True),

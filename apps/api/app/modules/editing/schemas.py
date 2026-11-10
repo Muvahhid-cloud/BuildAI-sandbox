@@ -1,6 +1,7 @@
 """Plan-editing DTOs (docs/architecture.md §4: /projects/{id}/versions/{vid}/edits)."""
 
 import uuid
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -20,6 +21,10 @@ class EditRequest(BaseModel):
 
 class EditSaveRequest(EditRequest):
     label: str | None = Field(default=None, max_length=120)
+    # `ai_modification`: the operations came from an AI-assisted modification plan (Phase 5);
+    # `prompt` is then the user's request, stored on the version.
+    origin: Literal["manual", "ai_modification"] = "manual"
+    prompt: str | None = Field(default=None, max_length=2000)
 
 
 class EditRejectionOut(BaseModel):

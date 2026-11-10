@@ -18,7 +18,8 @@ import {
 
 import { MATERIAL_PRESETS, type MaterialPreset, materialPreset } from "./library";
 
-export type MaterialVariant = "default" | "selected" | "ghost";
+/** "changed": highlighted as changed by a modification preview or a version comparison. */
+export type MaterialVariant = "default" | "selected" | "ghost" | "changed";
 export type TextureSlot = "albedo" | "normal" | "roughness";
 
 /**
@@ -31,6 +32,7 @@ export interface TextureSource {
 }
 
 const SELECTION_EMISSIVE = new Color("#2f6fed");
+const CHANGED_EMISSIVE = new Color("#f59e0b");
 const HEX = /^#[0-9a-f]{6}$/;
 const DEFAULT_TINT = "#ffffff";
 /** Anisotropic filtering for grazing views of floors and facades (clamped by the GPU). */
@@ -154,6 +156,9 @@ export class MaterialCache {
     if (variant === "selected") {
       material.emissive = SELECTION_EMISSIVE;
       material.emissiveIntensity = 0.45;
+    } else if (variant === "changed") {
+      material.emissive = CHANGED_EMISSIVE;
+      material.emissiveIntensity = 0.35;
     } else if (variant === "ghost") {
       material.transparent = true;
       material.opacity = Math.min(opacity, 0.12);

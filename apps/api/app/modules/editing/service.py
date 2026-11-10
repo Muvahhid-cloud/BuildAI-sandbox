@@ -35,7 +35,7 @@ class EditRejectedError(AppError):
     code = "EDIT_REJECTED"
 
 
-def _rejection_out(outcome: EditOutcome) -> EditRejectionOut | None:
+def rejection_out(outcome: EditOutcome) -> EditRejectionOut | None:
     r = outcome.rejection
     if r is None:
         return None
@@ -92,7 +92,7 @@ class EditingService:
             summary=summarize(outcome.model) if outcome.model else None,
             warnings=outcome.warnings,
             changed_ids=outcome.changed_ids,
-            rejection=_rejection_out(outcome),
+            rejection=rejection_out(outcome),
         )
 
     async def save(
@@ -102,10 +102,13 @@ class EditingService:
         version_id: uuid.UUID,
         operations: Sequence[Operation],
         label: str | None,
+        *,
+        origin: str = "manual",
+        prompt: str | None = None,
     ) -> VersionOut:
         row = await self._base(user, project_id, version_id)
         outcome = await self._evaluate(row, operations)
-        rejection = _rejection_out(outcome)
+        rejection = rejection_out(outcome)
         if outcome.model is None or rejection is not None:
             message = rejection.message if rejection else "The edits could not be applied"
             details = [rejection.model_dump(mode="json")] if rejection else []
@@ -118,10 +121,15 @@ class EditingService:
             user,
             model=outcome.model,
             spec=BuildingSpecification.model_validate(row.spec) if row.spec else None,
-            source="manual",
-            label=label or f"Plan edits on v{row.number} ({n} change{'s' if n != 1 else ''})",
+            source=origin,
+            label=label
+            or (
+                f"AI changes on v{row.number}"
+                if origin == "ai_modification"
+                else f"Plan edits on v{row.number} ({n} change{'s' if n != 1 else ''})"
+            ),
             rules_profile_ref=row.rules_profile,
-            prompt=row.prompt,
+            prompt=prompt if origin == "ai_modification" and prompt else row.prompt,
             operations=[op.model_dump(mode="json") for op in operations],
             parent_version_id=row.id,
         )

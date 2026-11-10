@@ -185,12 +185,14 @@ All routes under `/api/v1`. OpenAPI generated automatically.
 | GET | `/projects/{id}/versions` | ☑ Versions, newest first (summaries only) |
 | GET | `/projects/{id}/versions/{vid}` | ☑ Full version: spec + model + generation report + rules/model findings evaluated on read |
 | POST | `/projects/{id}/versions/demo` | ☑ Store the hand-authored demo house as a new version |
-| POST | `/projects/{id}/versions/{vid}/modify/plan` | NL → ModificationPlan (preview, no write) |
+| POST | `/projects/{id}/versions/{vid}/modify/plan` | ☑ Phase 5: NL → AI interpretation → typed D2 operations, questions, validated preview + measured diff (no write) |
+| POST | `/projects/{id}/versions/{vid}/modify/resolve` | ☑ Phase 5: the same interpretation resolved again with the user's answers (no AI call) |
+| POST | `/projects/{id}/versions/{vid}/restore` | ☑ Phase 5: an earlier version made current again as a new version |
 | POST | `/projects/{id}/versions/{vid}/edits/preview` | Replay typed ops on the version and validate; returns the model or why not (nothing stored) — Phase 3.6 D2 |
 | POST | `/projects/{id}/versions/{vid}/edits` | Replay + validate typed ops → new version (source `manual`, 422 `EDIT_REJECTED` if invalid) — Phase 3.6 D2 |
 | GET | `/projects/{id}/versions/{vid}/quantities` | Takeoff |
 | GET | `/projects/{id}/versions/{vid}/cost?catalog=` | Estimate |
-| GET | `/projects/{id}/compare?a=&b=` | Element/quantity/cost diff |
+| GET | `/projects/{id}/compare?a=&b=` | ☑ Phase 5: measured element diff (rooms, openings, walls, floor area); quantity/cost deltas dropped with Phase 4 |
 | POST | `/projects/{id}/versions/{vid}/analysis` | AI analysis job |
 | POST | `/projects/{id}/versions/{vid}/reports` | Report generation job |
 | GET | `/cost-catalogs` | Available catalogs (region/currency/date) |

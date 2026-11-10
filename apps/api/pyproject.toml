@@ -140,6 +140,7 @@ source_modules = [
     "app.modules.jobs",
     "app.modules.demo",
     "app.modules.editing",
+    "app.modules.modification",
     "app.modules.health",
 ]
 forbidden_modules = ["app.modules.catalog"]

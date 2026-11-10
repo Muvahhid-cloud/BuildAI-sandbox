@@ -1,5 +1,6 @@
 """Project versions: immutable snapshots of spec + model (docs/database.md §4)."""
 
+import asyncio
 import hashlib
 import uuid
 from collections.abc import Sequence
@@ -10,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.errors import NotFoundError
 from app.modules.auth.models import User
+from app.modules.building.diff import diff_models
 from app.modules.building.migrations import load_model
 from app.modules.building.model import BuildingModel
 from app.modules.building.specification import BuildingSpecification
@@ -21,7 +23,12 @@ from app.modules.projects.service import ProjectService
 from app.modules.rules.model_checks import check_model
 from app.modules.versions.models import ProjectVersion
 from app.modules.versions.repository import VersionRepository
-from app.modules.versions.schemas import GenerationReport, VersionOut, VersionSummaryOut
+from app.modules.versions.schemas import (
+    CompareOut,
+    GenerationReport,
+    VersionOut,
+    VersionSummaryOut,
+)
 from app.shared.data_files import material_ids, rules_profile
 
 
@@ -125,3 +132,40 @@ class VersionService:
             rules_profile_ref=project.rules_profile_id,
         )
         return await self.get(user, project_id, version.id)
+
+    async def restore(self, user: User, project_id: uuid.UUID, version_id: uuid.UUID) -> VersionOut:
+        """A new version with the model and specification of an earlier one (versions are
+        immutable: restoring never rewrites or deletes the versions in between)."""
+        project = await self.projects.get(user, project_id)
+        row = await self.repo.get(project_id, version_id)
+        if row is None:
+            raise NotFoundError("Version not found")
+        version = await self.create(
+            project,
+            user,
+            model=load_model(row.model),
+            spec=BuildingSpecification.model_validate(row.spec) if row.spec else None,
+            source="restore",
+            label=f"Restored v{row.number}",
+            rules_profile_ref=row.rules_profile,
+            prompt=row.prompt,
+            parent_version_id=project.current_version_id,
+        )
+        return await self.get(user, project_id, version.id)
+
+    async def compare(
+        self, user: User, project_id: uuid.UUID, a: uuid.UUID, b: uuid.UUID
+    ) -> CompareOut:
+        """Measured differences from version `a` to version `b` (docs/building-model.md §5.7)."""
+        await self.projects.get(user, project_id)
+        rows = [await self.repo.get(project_id, v) for v in (a, b)]
+        if rows[0] is None or rows[1] is None:
+            raise NotFoundError("Version not found")
+        before, after = load_model(rows[0].model), load_model(rows[1].model)
+        return CompareOut(
+            a=a,
+            b=b,
+            a_number=rows[0].number,
+            b_number=rows[1].number,
+            diff=await asyncio.to_thread(diff_models, before, after),
+        )

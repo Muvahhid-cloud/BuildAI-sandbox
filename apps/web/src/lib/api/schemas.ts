@@ -336,6 +336,74 @@ export const editPreviewSchema = z.object({
 });
 export type EditPreview = z.infer<typeof editPreviewSchema>;
 
+// --- AI-assisted modification & comparison (mirror app/modules/modification, building/diff) ---
+
+export const changeLineSchema = z.object({
+  kind: z.string(),
+  text: z.string(),
+  element_id: z.uuid().nullable().optional(),
+});
+export const modelDiffSchema = z.object({
+  added: z.array(z.uuid()),
+  removed: z.array(z.uuid()),
+  changed: z.array(z.uuid()),
+  lines: z.array(changeLineSchema),
+});
+export type ModelDiff = z.infer<typeof modelDiffSchema>;
+
+export const clarificationQuestionSchema = z.object({
+  id: z.string(),
+  change_index: z.number().int(),
+  field: z.string(),
+  text: z.string(),
+  input: z.enum(["choice", "number", "text"]),
+  options: z.array(z.object({ value: z.string(), label: z.string() })),
+});
+export type ClarificationQuestion = z.infer<typeof clarificationQuestionSchema>;
+
+export const plannedChangeSchema = z.object({
+  index: z.number().int(),
+  quote: z.string(),
+  action: z.string(),
+  status: z.enum(["planned", "needs_clarification", "refused", "unsupported"]),
+  summary: z.string(),
+  // Typed operations, validated by the server; replayed by it on save.
+  operations: z.array(z.record(z.string(), z.unknown())),
+  reason: z.string().nullable(),
+});
+export type PlannedChange = z.infer<typeof plannedChangeSchema>;
+
+export const modifyAnswerSchema = z.object({ question_id: z.string(), value: z.string() });
+export type ModifyAnswer = z.infer<typeof modifyAnswerSchema>;
+
+export const modifyPlanSchema = z.object({
+  status: z.enum(["ready", "partial", "needs_clarification", "nothing_to_apply"]),
+  prompt: z.string(),
+  understanding: z.string(),
+  // The AI's interpretation, sent back unchanged with the answers (re-validated by the server).
+  draft: z.record(z.string(), z.unknown()),
+  answers: z.array(modifyAnswerSchema),
+  changes: z.array(plannedChangeSchema),
+  unsupported: z.array(z.object({ quote: z.string(), reason: z.string() })),
+  questions: z.array(clarificationQuestionSchema),
+  operations: z.array(z.record(z.string(), z.unknown())),
+  preview: editPreviewSchema.nullable(),
+  diff: modelDiffSchema.nullable(),
+  provider: z.string().nullable().optional(),
+  model: z.string().nullable().optional(),
+  prompt_version: z.string().nullable().optional(),
+});
+export type ModifyPlan = z.infer<typeof modifyPlanSchema>;
+
+export const compareSchema = z.object({
+  a: z.uuid(),
+  b: z.uuid(),
+  a_number: z.number().int(),
+  b_number: z.number().int(),
+  diff: modelDiffSchema,
+});
+export type VersionCompare = z.infer<typeof compareSchema>;
+
 export const jobSchema = z.object({
   id: z.uuid(),
   project_id: z.uuid(),

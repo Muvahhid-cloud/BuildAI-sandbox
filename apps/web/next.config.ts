@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   transpilePackages: ["@buildai/schema"],
+  experimental: {
+    // AI-assisted modification (Phase 5) answers synchronously; a real model call can take longer
+    // than the proxy's 30 s default. Above the API's own AI timeout (120 s + one repair call).
+    proxyTimeout: 300_000,
+  },
   async rewrites() {
     return [{ source: "/api/:path*", destination: `${apiProxyUrl}/api/:path*` }];
   },

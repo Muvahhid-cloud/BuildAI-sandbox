@@ -20,7 +20,9 @@ from app.modules.generation.router import router as generation_router
 from app.modules.health.router import router as health_router
 from app.modules.jobs.repository import JobRepository
 from app.modules.jobs.router import router as jobs_router
+from app.modules.modification.router import router as modification_router
 from app.modules.projects.router import router as projects_router
+from app.modules.versions.router import project_router as versions_project_router
 from app.modules.versions.router import router as versions_router
 
 logger = logging.getLogger(__name__)
@@ -67,7 +69,9 @@ def create_app() -> FastAPI:
     v1.include_router(auth_router)
     v1.include_router(projects_router)
     v1.include_router(versions_router)
+    v1.include_router(versions_project_router)
     v1.include_router(editing_router)
+    v1.include_router(modification_router)
     v1.include_router(generation_router)
     v1.include_router(design_router)
     v1.include_router(jobs_router)

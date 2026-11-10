@@ -4,6 +4,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.modules.building.diff import ModelDiff
 from app.modules.building.evaluation import DesignEvaluation
 from app.modules.building.issues import Issue
 from app.modules.building.model import BuildingModel
@@ -100,3 +101,13 @@ class VersionOut(VersionSummaryOut):
     report: GenerationReport | None
     # Evaluated on read against the version's rules profile + model invariants (warnings).
     issues: list[Issue]
+
+
+class CompareOut(BaseModel):
+    """Measured differences between two versions of a project (`a` -> `b`), Phase 5."""
+
+    a: uuid.UUID
+    b: uuid.UUID
+    a_number: int
+    b_number: int
+    diff: ModelDiff

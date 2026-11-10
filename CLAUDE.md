@@ -152,6 +152,13 @@ Local environment notes (dev machine is Windows): `uv` may only be available as 
 
 - Design: `docs/3d-engine.md` §16.17. `window_quick_wins = False` must reproduce layout@1.14.0 (test pins main's geometry fingerprints). Window-moving passes must terminate (each window moves at most once) and never break a stack across storeys to fix a pair. Rooms on whole bays need planner changes (bay-multiple skeletons appended after the existing ones, integer-bay bands); a ranking bonus alone does not get there (recorded finding).
 
+## AI-assisted modification notes (Phase 5)
+
+- Design: `docs/ai-pipeline.md` §11, `docs/building-model.md` §5.7. Phase 4 (quantities & cost) is removed from the active roadmap (roadmap decision 20) — don't build quantities, costs or KZT catalogs unless asked.
+- The AI answers only with a `ModificationDraft` (references `R1`/`O1` from `ai/modification_context.py`, stated numbers, nulls for the unknown). `modules/modification/resolve.py` turns it into existing D2 operations only, asks instead of guessing (exterior facade moves always need an explicit yes), and judges every candidate with `editing.evaluate_edits`. Never add a code path that applies AI output without the resolver and the edit validation.
+- Answers go through `…/modify/resolve` (no AI call); the client sends the draft back and the server re-validates it. Apply = edit save with `origin: ai_modification`; undo = `…/restore` (new version).
+- Changing the modification prompt = bump `MODIFICATION_PROMPT_VERSION`; the mock (`mock_modification.py`) must keep `tests/modification` passing.
+
 ## Knowledge notes (Phase 3.5)
 
 - Design: `docs/knowledge.md`. Steps K1 Foundation → K2 Families/Types/Assemblies → K3 Design Systems → K4 Templates → K5 Knowledge API and Units → K6 Optional Structural Elements; don't rename, merge or start a step before the previous one is reviewed.

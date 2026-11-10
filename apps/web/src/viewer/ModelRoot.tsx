@@ -11,6 +11,7 @@ import { MODEL_ROOT_ROTATION } from "@/engine/math/coords";
 import { elementBounds, type SceneGraph } from "@/engine/scene/build-scene";
 import { visibilityMap } from "@/engine/scene/visibility";
 import { useLayerStore } from "@/stores/layer-store";
+import { useHighlightStore } from "@/stores/highlight-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { useViewerStore } from "@/stores/viewer-store";
 
@@ -26,6 +27,7 @@ const SELECTION_COLOR = new Color("#2f6fed");
  */
 export function ModelRoot({ scene }: { scene: SceneGraph }) {
   const selectedId = useSelectionStore((s) => s.selectedId);
+  const changedIds = useHighlightStore((s) => s.ids);
   const levelFilter = useViewerStore((s) => s.levelFilter);
   const showRoof = useViewerStore((s) => s.showRoof);
   const showExteriorWalls = useViewerStore((s) => s.showExteriorWalls);
@@ -54,9 +56,18 @@ export function ModelRoot({ scene }: { scene: SceneGraph }) {
       {scene.descriptors.map((d) => {
         const mode = modes.get(d.elementId) ?? "visible";
         const selected = d.elementId === selectedId;
+        const changed = changedIds.has(d.elementId);
         const model = d.part === "body" && mode === "visible" ? models.get(d.elementId) : undefined;
         if (!model) {
-          return <ElementMesh key={d.key} descriptor={d} mode={mode} selected={selected} />;
+          return (
+            <ElementMesh
+              key={d.key}
+              descriptor={d}
+              mode={mode}
+              selected={selected}
+              changed={changed}
+            />
+          );
         }
         return (
           <FurnitureModel

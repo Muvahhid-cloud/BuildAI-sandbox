@@ -21,6 +21,8 @@ interface Props {
   descriptor: RenderDescriptor;
   mode: VisibilityMode;
   selected: boolean;
+  /** Highlighted as changed (AI modification preview, version comparison). */
+  changed?: boolean;
   /** The element is drawn by a model (V2): keep this mesh only as the invisible pick proxy. */
   proxy?: boolean;
 }
@@ -33,10 +35,12 @@ export const ElementMesh = memo(function ElementMesh({
   descriptor: d,
   mode,
   selected,
+  changed = false,
   proxy = false,
 }: Props) {
   const select = useSelectionStore((s) => s.select);
-  const variant = mode === "ghost" ? "ghost" : selected ? "selected" : "default";
+  const variant =
+    mode === "ghost" ? "ghost" : selected ? "selected" : changed ? "changed" : "default";
   const material = useMemo(() => {
     if (proxy) return PROXY_MATERIAL;
     const list = d.materials.map((id) => materialCache.get(id, variant));

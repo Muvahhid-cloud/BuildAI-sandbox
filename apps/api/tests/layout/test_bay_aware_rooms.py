@@ -123,9 +123,10 @@ def test_stacking_stays_at_or_above_65_percent() -> None:
 def test_separating_windows_always_terminates() -> None:
     """Regression (V7 step 1): on the benchmark's T-shaped villa, separating windows of two
     rooms looped forever (a moved window formed a new pair and moved back). A window now moves
-    at most once. Guarded by an alarm so a regression fails instead of hanging."""
+    at most once. Guarded by a time limit so a regression fails instead of hanging; the limit
+    runs the case in a worker thread (signal alarms do not exist on Windows)."""
     import json
-    import signal
+    import threading
 
     from evals.design_benchmark import run_case
 
@@ -135,14 +136,11 @@ def test_separating_windows_always_terminates() -> None:
     cases = data["cases"] if isinstance(data, dict) else data
     case = next(c for c in cases if c["id"] == "shape-t-villa")
 
-    def timeout(_signum: int, _frame: object) -> None:
-        raise TimeoutError("window separation did not terminate")
-
-    previous = signal.signal(signal.SIGALRM, timeout)
-    signal.alarm(120)
-    try:
-        result = run_case(case)
-    finally:
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, previous)
-    assert result.status == "model"
+    outcome: list[object] = []
+    worker = threading.Thread(target=lambda: outcome.append(run_case(case)), daemon=True)
+    worker.start()
+    worker.join(timeout=120)
+    assert not worker.is_alive(), "window separation did not terminate"
+    assert outcome, "the benchmark case raised instead of returning a result"
+    result = outcome[0]
+    assert getattr(result, "status", None) == "model"

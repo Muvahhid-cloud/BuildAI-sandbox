@@ -35,9 +35,11 @@ def is_schema_too_complex(text: str) -> bool:
     return any(marker in lowered for marker in SCHEMA_TOO_COMPLEX_MARKERS)
 
 
-def prompt_schema_system(system: str, schema: dict[str, Any]) -> str:
+def prompt_schema_system(
+    system: str, schema: dict[str, Any], output_name: str | None = None
+) -> str:
     """The system prompt for `prompt_schema` mode (static per prompt version: cacheable)."""
-    return f"{system}\n\n{schema_in_prompt_block(schema)}"
+    return f"{system}\n\n{schema_in_prompt_block(schema, output_name)}"
 
 
 # JSON Schema keywords structured outputs reject; they are kept as text for the model.

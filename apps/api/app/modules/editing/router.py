@@ -33,5 +33,11 @@ async def save_edits(
 ) -> VersionOut:
     """Store the edited model as a new version (422 EDIT_REJECTED if the edits are invalid)."""
     return await EditingService(session).save(
-        user, project_id, version_id, body.operations, body.label
+        user,
+        project_id,
+        version_id,
+        body.operations,
+        body.label,
+        origin=body.origin,
+        prompt=body.prompt,
     )

@@ -27,6 +27,7 @@ After only:
 
 | Screen | |
 |---|---|
+| Recent projects (cards, landing scrolled) | ![](after-landing-projects.jpg) |
 | Inspector (room selected) | ![](after-inspector.jpg) |
 | Compare drawer | ![](after-compare-drawer.jpg) |
 | History drawer | ![](after-history-drawer.jpg) |

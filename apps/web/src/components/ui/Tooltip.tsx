@@ -12,10 +12,13 @@ export function Tooltip({
   content,
   children,
   side = "top",
+  align = "start",
 }: {
   content: ReactNode;
   children: ReactNode;
   side?: "top" | "bottom";
+  /** Which edge of the trigger the tooltip lines up with (keeps it inside the viewport). */
+  align?: "start" | "center" | "end";
 }) {
   const [open, setOpen] = useState(false);
   const id = useId();
@@ -34,7 +37,12 @@ export function Tooltip({
           id={id}
           role="tooltip"
           className={cn(
-            "pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 animate-fade-in whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-xs text-white shadow-md dark:bg-neutral-100 dark:text-neutral-900",
+            "pointer-events-none absolute z-50 inline-flex animate-fade-in items-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-surface-raised px-2 py-1 text-xs text-fg shadow-md",
+            align === "start"
+              ? "left-0"
+              : align === "end"
+                ? "right-0"
+                : "left-1/2 -translate-x-1/2",
             side === "top" ? "bottom-full mb-1.5" : "top-full mt-1.5",
           )}
         >

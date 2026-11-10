@@ -176,7 +176,7 @@ function RoomSection({ index }: { index: ModelIndex }) {
                     }
                   >
                     <span className="truncate">{room.name}</span>
-                    <span className="text-xs tabular-nums text-fg-subtle">
+                    <span className="shrink-0 whitespace-nowrap text-xs tabular-nums text-fg-subtle">
                       {Number(room.dimensions.area.toFixed(1))} m²
                     </span>
                   </button>

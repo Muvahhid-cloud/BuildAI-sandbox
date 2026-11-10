@@ -3,7 +3,7 @@
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { useEffect } from "react";
 
-import { IconButton } from "@/components/ui";
+import { IconButton, Kbd, Tooltip } from "@/components/ui";
 import type { SceneGraph } from "@/engine/scene/build-scene";
 import type { DrawingInfo } from "@/features/drawing/components/DrawingDownloads";
 import { PlanView } from "@/features/drawing/components/PlanView";
@@ -73,27 +73,46 @@ export function BuildingEditor({
           <ViewerToolbar scene={scene} drawing={drawing} />
         </div>
         <div className="flex h-8 shrink-0 items-center gap-2 border-t border-line bg-surface px-1.5">
-          <IconButton
-            label={left ? "Hide the left panel" : "Show the left panel"}
-            title={`${left ? "Hide" : "Show"} the left panel ( [ )`}
-            size="sm"
-            pressed={left}
-            onClick={() => toggle("left")}
-            className="hidden lg:inline-flex"
-          >
-            {left ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
-          </IconButton>
+          <span className="hidden lg:inline-flex">
+            <Tooltip
+              content={
+                <>
+                  {left ? "Hide" : "Show"} the left panel <Kbd>[</Kbd>
+                </>
+              }
+            >
+              <IconButton
+                label={left ? "Hide the left panel" : "Show the left panel"}
+                title=""
+                size="sm"
+                pressed={left}
+                onClick={() => toggle("left")}
+              >
+                {left ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
+              </IconButton>
+            </Tooltip>
+          </span>
           <ViewerStatus scene={scene} />
-          <IconButton
-            label={right ? "Hide the properties panel" : "Show the properties panel"}
-            title={`${right ? "Hide" : "Show"} the properties panel ( ] )`}
-            size="sm"
-            pressed={right}
-            onClick={() => toggle("right")}
-            className="hidden lg:inline-flex"
-          >
-            {right ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
-          </IconButton>
+          <span className="hidden lg:inline-flex">
+            <Tooltip
+              align="end"
+              content={
+                <>
+                  {right ? "Hide" : "Show"} the properties panel <Kbd>]</Kbd>
+                </>
+              }
+            >
+              <IconButton
+                label={right ? "Hide the properties panel" : "Show the properties panel"}
+                title=""
+                size="sm"
+                pressed={right}
+                onClick={() => toggle("right")}
+              >
+                {right ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+              </IconButton>
+            </Tooltip>
+          </span>
         </div>
       </div>
       <aside

@@ -1102,3 +1102,71 @@ a misplaced canopy is reported), `building/test_migrations.py` (1.2.0 → 1.3.0)
 - One canopy shape (flat, rectangular); no recessed porch (it would change the room plan).
 - Zoning is per architectural style in `LayoutConfig`; design systems do not define it yet.
 - Gable infill takes one wall's finishes for both gable ends.
+
+## 24. UI design system — web app redesign (2026-11-10)
+
+Scope: `apps/web` presentation only. No backend, schema, engine geometry or layout change; every
+feature and every accessible name used by the tests is kept.
+
+### 24.1 Tokens and themes (`src/app/globals.css`)
+
+- Tailwind v4 `@theme`: one cool neutral scale and one brand accent (indigo). The Tailwind
+  `neutral` and `blue` scales are redefined, so existing utilities follow the system; radii,
+  shadows (`xs`–`lg`, `glow`), a `2xs` text size and motion (`ease-out-quint`, `fade-in`,
+  `rise-in`, `drawer-in`, `toast-in`, `shimmer`).
+- Semantic variables are the only values that differ between themes: `bg`, `bg-subtle`,
+  `surface`, `surface-raised`, `line`, `line-strong`, `fg`, `fg-muted`, `fg-subtle`, `accent`
+  (+ `hover`, `fg`, `soft`, `text`), `glass`, `ring`. Use them (`bg-surface`, `text-fg-muted`,
+  `border-line`…) instead of raw greys. Text colours meet WCAG AA on their surfaces in both
+  themes (`fg-subtle` is the lightest text colour allowed).
+- Theme: `data-theme` on `<html>` (`lib/theme-script.ts` sets it before first paint;
+  `lib/theme.ts` + header `ThemeToggle`). The choice is kept in `localStorage`
+  (`buildai-theme`); without one the OS setting applies. `dark:` utilities follow `data-theme`.
+  A subtree marked `data-theme="light"` stays light inside the dark UI: the floor plan is paper
+  (black on white) in both themes.
+- Utilities: `glass` (floating toolbars, toasts, summary), `hero-backdrop`, `field-sm` (dense
+  editor fields).
+- Font: Inter Variable, self-hosted through `@fontsource-variable/inter` (bundled by Next.js; no
+  runtime CDN), with a system stack as fallback. Icons: `lucide-react` (tree-shaken SVG).
+- Motion is decoration only and is switched off by `prefers-reduced-motion: reduce`.
+
+### 24.2 Component kit (`src/components/ui`)
+
+`Button` (primary / secondary / outline / ghost / danger; xs–lg; `loading`), `IconButton`
+(requires a label), `Input` / `Textarea` / `Select` (`fieldClass`), `SegmentedControl` +
+`Segment` (toggle groups, `aria-pressed`), `Tabs`, `Badge`, `Kbd`, `Tooltip` (text only in the
+DOM while shown), `Card`, `PanelSection`, `Callout`, `Drawer` + `DrawerHeader`, `Toast`
+(`toast.success|error|info`, `Toaster` in the providers), `Skeleton`, `ThemeToggle`. New UI
+uses these; feature code keeps its semantics (roles, labels) and passes them through.
+
+### 24.3 Screens
+
+- **Projects (landing):** hero with the prompt box as the centrepiece (text, counter and the
+  primary action in one surface), example chips, three-step explainer, project cards (decorative
+  art derived from the project id, not from the model), skeletons, empty state.
+- **Generation:** progress card driven only by the backend's `AI_STAGES` — one bar segment and
+  one list row per real stage, no percentages (CLAUDE.md, AI generation notes).
+- **Editor:** breadcrumb + version select + drawer buttons; both side panels collapse (buttons in
+  the status bar, keys `[` and `]`, remembered per browser in `stores/ui-store.ts`); the view
+  tools float over the viewport as glass groups (`ViewerToolbar`, `role="toolbar"`); selection,
+  pointer hints with key caps and model counts sit in the status bar (`ViewerStatus`);
+  skeletons while loading; toasts for saved versions, downloads, project create/delete, errors.
+- **Drawers** (Modify with AI, Compare, History, Report, New design / spec form) and **auth**
+  share `Drawer`, `DrawerHeader`, the kit buttons and fields.
+- The disclaimer stays in the footer of every page, in the generation summary, the report and
+  on every drawing sheet (CLAUDE.md rule 18).
+
+### 24.4 Tests and screenshots
+
+`components/ui/ui.test.tsx` (kit semantics, toasts, theme toggle and pre-paint script),
+`ProjectEditor.test.tsx` ("editor chrome": panel collapse by button and key, floating toolbar
+groups and downloads). No existing test was changed except that file's import line. Screenshots
+before/after: `docs/visual/ui/`.
+
+### 24.5 Limits
+
+- The floating toolbar wraps to several rows when the viewport is narrow (about 500 px at a
+  1024 px window with both panels open); collapsing a panel gives it room.
+- Drawers overlay the right part of the viewport (as before) and cover part of the toolbar.
+- Dense editor forms (plan edit bar, element edit section, spec form) use the tokens and
+  `field-sm` but keep their own layout; they are not rebuilt from kit components one by one.

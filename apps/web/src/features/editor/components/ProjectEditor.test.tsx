@@ -4,7 +4,7 @@
 // WebGL does not run in jsdom: the 3D side is checked on the scene graph the viewer renders
 // (one mesh per descriptor, docs/3d-engine.md).
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Box3, Vector3 } from "three";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -581,5 +581,39 @@ describe("drawingVersionLabel", () => {
     expect(drawingVersionLabel(v)).toBe("v3 · Plan edits on v2");
     expect(drawingVersionLabel(v, 1)).toBe("v3 · Plan edits on v2 + 1 unsaved change");
     expect(drawingVersionLabel(v, 2)).toBe("v3 · Plan edits on v2 + 2 unsaved changes");
+  });
+});
+
+describe("editor chrome", () => {
+  it("collapses and restores the side panels with the buttons and the [ ] keys", async () => {
+    openPage();
+    await screen.findByTestId("3d");
+    const controls = screen.getByRole("complementary", { name: "Model controls" });
+    const inspector = screen.getByRole("complementary", { name: "Inspector" });
+    expect(controls).not.toHaveClass("lg:hidden");
+
+    await userEvent.click(screen.getByRole("button", { name: "Hide the left panel" }));
+    expect(controls).toHaveClass("lg:hidden");
+    await userEvent.keyboard("[["); // "[[" types a literal "["
+    expect(controls).not.toHaveClass("lg:hidden");
+
+    await userEvent.keyboard("]");
+    expect(inspector).toHaveClass("lg:hidden");
+    await userEvent.click(screen.getByRole("button", { name: "Show the properties panel" }));
+    expect(inspector).not.toHaveClass("lg:hidden");
+  });
+
+  it("offers every view tool in the floating toolbar", async () => {
+    openPage();
+    await screen.findByTestId("3d");
+    const tools = within(screen.getByRole("toolbar", { name: "View tools" }));
+    for (const group of ["View mode", "Camera presets", "Projection", "Display"]) {
+      expect(tools.getByRole("group", { name: group })).toBeInTheDocument();
+    }
+    await userEvent.click(tools.getByRole("button", { name: "Floor plan" }));
+    expect(tools.getByRole("group", { name: "Plan level" })).toBeInTheDocument();
+    for (const format of ["PDF", "SVG", "PNG"]) {
+      expect(tools.getByRole("button", { name: format })).toBeInTheDocument();
+    }
   });
 });

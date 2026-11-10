@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, DrawerHeader, Textarea } from "@/components/ui";
+import { Wand2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useEditStore } from "@/features/editing/store";
@@ -25,10 +27,19 @@ const EXAMPLES = [
 ];
 
 const STATUS_STYLE: Record<PlannedChange["status"], { label: string; cls: string }> = {
-  planned: { label: "Planned", cls: "bg-green-50 text-green-800 ring-green-200" },
-  needs_clarification: { label: "Question", cls: "bg-blue-50 text-blue-800 ring-blue-200" },
-  refused: { label: "Not possible", cls: "bg-red-50 text-red-800 ring-red-200" },
-  unsupported: { label: "Not supported", cls: "bg-neutral-100 text-neutral-700 ring-neutral-200" },
+  planned: {
+    label: "Planned",
+    cls: "bg-green-50 dark:bg-green-950/60 text-green-800 dark:text-green-200 ring-green-200 dark:ring-green-900",
+  },
+  needs_clarification: {
+    label: "Question",
+    cls: "bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 ring-blue-200 dark:ring-blue-900",
+  },
+  refused: {
+    label: "Not possible",
+    cls: "bg-red-50 dark:bg-red-950/60 text-red-800 dark:text-red-200 ring-red-200 dark:ring-red-900",
+  },
+  unsupported: { label: "Not supported", cls: "bg-neutral-100 text-fg-muted ring-line" },
 };
 
 function errorText(err: unknown): string {
@@ -207,28 +218,18 @@ export function ModifyPanel({
 
   return (
     <div className="flex h-full flex-col" aria-label="Modify with AI">
-      <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-        <div>
-          <h2 className="font-semibold">Modify with AI</h2>
-          <p className="text-xs text-neutral-500">
-            Describe changes in plain language. Nothing is saved until you apply it.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="rounded px-2 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-        >
-          ×
-        </button>
-      </header>
+      <DrawerHeader
+        icon={<Wand2 size={15} />}
+        title={<>Modify with AI</>}
+        description={<>Describe changes in plain language. Nothing is saved until you apply it.</>}
+        onClose={onClose}
+      />
 
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-3 text-sm">
         {saved ? (
           <div
             role="status"
-            className="rounded-md bg-green-50 p-3 text-green-900 ring-1 ring-green-200"
+            className="rounded-md bg-green-50 dark:bg-green-950/60 p-3 text-green-900 dark:text-green-200 ring-1 ring-green-200 dark:ring-green-900"
           >
             <p className="font-medium">
               Saved as v{saved.version.number} · {saved.version.label}
@@ -257,7 +258,7 @@ export function ModifyPanel({
               <label htmlFor="modify-prompt" className="mb-1 block text-xs font-medium">
                 What should change?
               </label>
-              <textarea
+              <Textarea
                 id="modify-prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -269,7 +270,7 @@ export function ModifyPanel({
                 rows={4}
                 maxLength={2000}
                 placeholder="e.g. Make the kitchen 2 metres wider and add another window to the master bedroom"
-                className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 dark:border-neutral-700 dark:bg-neutral-900"
+                className="resize-y"
               />
               <div className="mt-1 flex flex-wrap gap-1">
                 {EXAMPLES.map((ex) => (
@@ -277,7 +278,7 @@ export function ModifyPanel({
                     key={ex}
                     type="button"
                     onClick={() => setPrompt(ex)}
-                    className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300"
+                    className="rounded-full border border-line bg-surface px-2.5 py-0.5 text-left text-2xs text-fg-muted shadow-xs transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-text"
                   >
                     {ex}
                   </button>
@@ -298,7 +299,7 @@ export function ModifyPanel({
                 )}
               </div>
               {sessionOps.length > 0 && (
-                <p className="mt-1 text-[11px] text-neutral-500">
+                <p className="mt-1 text-2xs text-fg-subtle">
                   Builds on your {sessionOps.length} unsaved plan edit
                   {sessionOps.length > 1 ? "s" : ""}; applying saves them too.
                 </p>
@@ -320,7 +321,7 @@ export function ModifyPanel({
         {error && (
           <p
             role="alert"
-            className="rounded-md bg-red-50 p-2 text-xs text-red-800 ring-1 ring-red-200"
+            className="rounded-md bg-red-50 dark:bg-red-950/60 p-2 text-xs text-red-800 dark:text-red-200 ring-1 ring-red-200 dark:ring-red-900"
           >
             {error}
           </p>
@@ -328,13 +329,13 @@ export function ModifyPanel({
       </div>
 
       {plan && !saved && (
-        <footer className="border-t border-neutral-200 px-4 py-3 dark:border-neutral-800">
+        <footer className="border-t border-line px-4 py-3">
           {questions.length > 0 ? (
-            <p className="text-xs text-neutral-600">Answer the questions above to continue.</p>
+            <p className="text-xs text-fg-muted">Answer the questions above to continue.</p>
           ) : planned === 0 ? (
-            <p className="text-xs text-neutral-600">Nothing in this request can be applied.</p>
+            <p className="text-xs text-fg-muted">Nothing in this request can be applied.</p>
           ) : (
-            <p className="mb-2 text-xs text-neutral-600">
+            <p className="mb-2 text-xs text-fg-muted">
               {planned} change{planned > 1 ? "s" : ""} ready
               {plan.status === "partial" ? " — the rest cannot be applied (see above)" : ""}.
               Applying saves a new version; the current one stays unchanged.
@@ -371,22 +372,19 @@ function PlanView({
   return (
     <div className="space-y-3">
       <section>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-fg-subtle">
           Understood
         </h3>
-        <p className="text-neutral-800 dark:text-neutral-200">{plan.understanding}</p>
+        <p className="text-fg">{plan.understanding}</p>
       </section>
 
       <section aria-label="Requested changes">
-        <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+        <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
           Requested changes
         </h3>
         <ol className="space-y-1.5">
           {plan.changes.map((c) => (
-            <li
-              key={c.index}
-              className="rounded-md border border-neutral-200 p-2 dark:border-neutral-800"
-            >
+            <li key={c.index} className="rounded-md border border-line p-2">
               <div className="flex items-start gap-2">
                 <span
                   className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 ${STATUS_STYLE[c.status].cls}`}
@@ -394,7 +392,7 @@ function PlanView({
                   {STATUS_STYLE[c.status].label}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-xs italic text-neutral-500">“{c.quote}”</p>
+                  <p className="text-xs italic text-fg-subtle">“{c.quote}”</p>
                   <p className="text-xs">
                     {c.status === "refused" ? (c.reason ?? c.summary) : c.summary}
                   </p>
@@ -403,10 +401,7 @@ function PlanView({
             </li>
           ))}
           {plan.unsupported.map((u, k) => (
-            <li
-              key={`u${k}`}
-              className="rounded-md border border-neutral-200 p-2 dark:border-neutral-800"
-            >
+            <li key={`u${k}`} className="rounded-md border border-line p-2">
               <div className="flex items-start gap-2">
                 <span
                   className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 ${STATUS_STYLE.unsupported.cls}`}
@@ -414,7 +409,7 @@ function PlanView({
                   {STATUS_STYLE.unsupported.label}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-xs italic text-neutral-500">“{u.quote}”</p>
+                  <p className="text-xs italic text-fg-subtle">“{u.quote}”</p>
                   <p className="text-xs">{u.reason}</p>
                 </div>
               </div>
@@ -426,7 +421,7 @@ function PlanView({
       {plan.questions.length > 0 && (
         <section
           aria-label="Questions"
-          className="rounded-md bg-blue-50/60 p-2 ring-1 ring-blue-200 dark:bg-blue-950/20"
+          className="rounded-md bg-blue-50/60 p-2 ring-1 ring-blue-200 dark:ring-blue-900 dark:bg-blue-950/20"
         >
           <h3 className="mb-1 text-xs font-semibold text-blue-900 dark:text-blue-300">
             Please clarify
@@ -450,7 +445,7 @@ function PlanView({
 
       {plan.diff && plan.diff.lines.length > 0 && (
         <section aria-label="Measured changes">
-          <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+          <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
             What changes (measured on the model)
           </h3>
           <ul className="list-disc space-y-0.5 pl-4 text-xs">
@@ -458,7 +453,7 @@ function PlanView({
               <li key={k}>{l.text}</li>
             ))}
           </ul>
-          <p className="mt-1 text-[11px] text-neutral-500">
+          <p className="mt-1 text-2xs text-fg-subtle">
             Shown in the plan and in 3D; changed elements are amber.
           </p>
         </section>
@@ -467,13 +462,13 @@ function PlanView({
       {preview && !preview.valid && (
         <p
           role="alert"
-          className="rounded-md bg-red-50 p-2 text-xs text-red-800 ring-1 ring-red-200"
+          className="rounded-md bg-red-50 dark:bg-red-950/60 p-2 text-xs text-red-800 dark:text-red-200 ring-1 ring-red-200 dark:ring-red-900"
         >
           {preview.rejection?.message ?? "The combined changes are not valid."}
         </p>
       )}
       {preview?.valid && preview.warnings.length > 0 && (
-        <ul className="list-disc rounded-md bg-amber-50 p-2 pl-6 text-xs text-amber-900 ring-1 ring-amber-200">
+        <ul className="list-disc rounded-md bg-amber-50 dark:bg-amber-950/60 p-2 pl-6 text-xs text-amber-900 dark:text-amber-200 ring-1 ring-amber-200 dark:ring-amber-900">
           {preview.warnings.slice(0, 5).map((w, k) => (
             <li key={k}>{w.message}</li>
           ))}
@@ -494,7 +489,7 @@ function Question({
 }) {
   return (
     <fieldset>
-      <legend className="mb-1 text-xs text-neutral-800 dark:text-neutral-200">{q.text}</legend>
+      <legend className="mb-1 text-xs text-fg">{q.text}</legend>
       {q.options.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {q.options.map((o) => (
@@ -504,10 +499,10 @@ function Question({
               aria-pressed={value === o.value}
               onClick={() => onChange(q.id, o.value)}
               className={
-                "rounded px-2 py-1 text-xs ring-1 " +
+                "rounded-md px-2 py-1 text-xs ring-1 transition-colors " +
                 (value === o.value
-                  ? "bg-blue-600 text-white ring-blue-600"
-                  : "bg-white text-neutral-800 ring-neutral-300 hover:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-200")
+                  ? "bg-accent text-accent-fg ring-accent"
+                  : "bg-surface text-fg ring-line-strong hover:bg-bg-subtle")
               }
             >
               {o.label}
@@ -523,7 +518,7 @@ function Question({
           step={q.input === "number" ? 0.05 : undefined}
           value={value}
           onChange={(e) => onChange(q.id, e.target.value)}
-          className="mt-1 w-40 rounded border border-neutral-300 px-1.5 py-0.5 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+          className="mt-1 w-40 field-sm text-xs"
           placeholder={q.input === "number" ? "metres" : ""}
         />
       )}
@@ -543,18 +538,13 @@ function PanelButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      size="sm"
+      variant={primary ? "primary" : "secondary"}
       onClick={onClick}
       disabled={disabled}
-      className={
-        "rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-40 " +
-        (primary
-          ? "bg-blue-600 text-white hover:bg-blue-700"
-          : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200")
-      }
     >
       {children}
-    </button>
+    </Button>
   );
 }

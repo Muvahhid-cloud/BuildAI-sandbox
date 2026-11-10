@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useEffect, useState } from "react";
 
 import {
@@ -213,7 +214,7 @@ export function PlanEditBar({
       <div
         role="toolbar"
         aria-label="Plan editing"
-        className="flex flex-wrap items-center gap-1 rounded-md bg-white/95 p-1.5 text-xs shadow ring-1 ring-neutral-200"
+        className="flex flex-wrap items-center gap-1 rounded-md bg-surface/95 p-1.5 text-xs shadow ring-1 ring-line"
       >
         <BarButton
           onClick={() => void store.undo()}
@@ -229,7 +230,7 @@ export function PlanEditBar({
         >
           Redo
         </BarButton>
-        <span className="px-1 tabular-nums text-neutral-600" aria-live="polite">
+        <span className="px-1 tabular-nums text-fg-muted" aria-live="polite">
           {busy
             ? "Checking…"
             : cursor === 0
@@ -260,8 +261,8 @@ export function PlanEditBar({
       ) : placingWall ? (
         <WallPlacingPanel />
       ) : (
-        <div className="flex items-center gap-1 rounded-md bg-white/95 p-1.5 text-xs shadow ring-1 ring-neutral-200">
-          <span className="px-1 text-neutral-600">Add</span>
+        <div className="flex items-center gap-1 rounded-md bg-surface/95 p-1.5 text-xs shadow ring-1 ring-line">
+          <span className="px-1 text-fg-muted">Add</span>
           <BarButton onClick={() => startAdding("door")} disabled={busy} title="Add a door">
             + Door
           </BarButton>
@@ -282,15 +283,15 @@ export function PlanEditBar({
       )}
 
       {placing || placingWall ? null : opening && host ? (
-        <div className="rounded-md bg-white/95 p-2 text-xs shadow ring-1 ring-neutral-200">
-          <p className="mb-1.5 text-neutral-700">
+        <div className="rounded-md bg-surface/95 p-2 text-xs shadow ring-1 ring-line">
+          <p className="mb-1.5 text-fg-muted">
             <span className="font-semibold">{opening.name}</span> ·{" "}
             {opening.dimensions.width.toFixed(2)} × {opening.dimensions.height.toFixed(2)} m in{" "}
             {host.name} · drag it along the wall or onto another one; drag its end grips (or use the
             Properties panel) to resize it; or
           </p>
           <div className="flex flex-wrap items-center gap-1">
-            <label htmlFor="opening-position" className="text-neutral-600">
+            <label htmlFor="opening-position" className="text-fg-muted">
               Position
             </label>
             <input
@@ -305,9 +306,9 @@ export function PlanEditBar({
               onKeyDown={(e) => {
                 if (e.key === "Enter") place(Number(positionValue));
               }}
-              className="w-16 rounded border border-neutral-300 px-1.5 py-0.5 tabular-nums"
+              className="w-16 field-sm tabular-nums"
             />
-            <span id="opening-position-help" className="text-neutral-500">
+            <span id="opening-position-help" className="text-fg-subtle">
               m from the wall start
             </span>
             <BarButton onClick={() => place(Number(positionValue))} disabled={busy}>
@@ -329,8 +330,8 @@ export function PlanEditBar({
           </div>
         </div>
       ) : wall ? (
-        <div className="rounded-md bg-white/95 p-2 text-xs shadow ring-1 ring-neutral-200">
-          <p className="mb-1.5 text-neutral-700">
+        <div className="rounded-md bg-surface/95 p-2 text-xs shadow ring-1 ring-line">
+          <p className="mb-1.5 text-fg-muted">
             <span className="font-semibold">{wall.name}</span> ·{" "}
             {isFacade(wall)
               ? "drag the facade on the plan (it moves on every storey with slabs and roof), or move by"
@@ -348,9 +349,9 @@ export function PlanEditBar({
               step={0.05}
               value={distance}
               onChange={(e) => setDistance(e.target.value)}
-              className="w-16 rounded border border-neutral-300 px-1.5 py-0.5 tabular-nums"
+              className="w-16 field-sm tabular-nums"
             />
-            <span className="text-neutral-500">m</span>
+            <span className="text-fg-subtle">m</span>
             {moveDirections(wall).map((d) => (
               <BarButton key={d} onClick={() => move(d, Number(distance))} disabled={busy}>
                 {ARROW_LABEL[d]}
@@ -359,8 +360,8 @@ export function PlanEditBar({
           </div>
         </div>
       ) : room && side && sideMovable ? (
-        <div className="rounded-md bg-white/95 p-2 text-xs shadow ring-1 ring-neutral-200">
-          <p className="mb-1.5 text-neutral-700">
+        <div className="rounded-md bg-surface/95 p-2 text-xs shadow ring-1 ring-line">
+          <p className="mb-1.5 text-fg-muted">
             <span className="font-semibold">{room.name}</span> · {side.compass} side (
             {side.walls.map((w) => w.name).join(", ")}) · drag its handle, or
           </p>
@@ -376,9 +377,9 @@ export function PlanEditBar({
               step={0.05}
               value={distance}
               onChange={(e) => setDistance(e.target.value)}
-              className="w-16 rounded border border-neutral-300 px-1.5 py-0.5 tabular-nums"
+              className="w-16 field-sm tabular-nums"
             />
-            <span className="text-neutral-500">m</span>
+            <span className="text-fg-subtle">m</span>
             <BarButton
               onClick={() => resize(OPPOSITE[side.compass], Number(distance))}
               disabled={busy}
@@ -391,7 +392,7 @@ export function PlanEditBar({
           </div>
         </div>
       ) : (
-        <p className="rounded-md bg-white/90 px-2 py-1 text-xs text-neutral-600 shadow-sm ring-1 ring-neutral-200">
+        <p className="rounded-md bg-surface/90 px-2 py-1 text-xs text-fg-muted shadow-sm ring-1 ring-line">
           {room && side
             ? sideRefusal(room, side)
             : room
@@ -408,10 +409,10 @@ export function PlanEditBar({
           className={
             "rounded-md p-2 text-xs shadow ring-1 " +
             (message.tone === "error"
-              ? "bg-red-50 text-red-800 ring-red-200"
+              ? "bg-red-50 dark:bg-red-950/60 text-red-800 dark:text-red-200 ring-red-200 dark:ring-red-900"
               : message.tone === "warning"
-                ? "bg-amber-50 text-amber-900 ring-amber-200"
-                : "bg-white text-neutral-700 ring-neutral-200")
+                ? "bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 ring-amber-200 dark:ring-amber-900"
+                : "bg-surface text-fg-muted ring-line")
           }
         >
           <div className="flex items-start gap-2">
@@ -450,7 +451,7 @@ function PlacingPanel({ index }: { index: ModelIndex }) {
   const kinds = placing.kind === "door" ? DOOR_KINDS : WINDOW_KINDS;
   const kindValue = placing.kind === "door" ? placing.doorKind : placing.windowKind;
   const number = (key: "width" | "height" | "sill", label: string) => (
-    <label className="flex items-center gap-1 text-neutral-600">
+    <label className="flex items-center gap-1 text-fg-muted">
       {label}
       <input
         type="number"
@@ -462,7 +463,7 @@ function PlacingPanel({ index }: { index: ModelIndex }) {
           const v = Number(e.target.value);
           if (Number.isFinite(v) && v >= 0) set({ ...placing, [key]: round3(v) });
         }}
-        className="w-14 rounded border border-neutral-300 px-1 py-0.5 tabular-nums"
+        className="w-14 field-sm tabular-nums"
       />
     </label>
   );
@@ -470,7 +471,7 @@ function PlacingPanel({ index }: { index: ModelIndex }) {
     <div
       role="group"
       aria-label={`Add a ${placing.kind}`}
-      className="rounded-md bg-white/95 p-2 text-xs shadow ring-1 ring-blue-300"
+      className="rounded-md bg-surface/95 p-2 text-xs shadow ring-1 ring-blue-300 dark:ring-blue-900"
     >
       <div className="mb-1.5 flex items-center gap-1">
         <label className="sr-only" htmlFor="new-opening-kind">
@@ -486,7 +487,7 @@ function PlacingPanel({ index }: { index: ModelIndex }) {
                 : newOpening(index, "window", "interior", e.target.value as WindowKind);
             set(next);
           }}
-          className="rounded border border-neutral-300 px-1 py-0.5"
+          className="field-sm"
         >
           {kinds.map((k) => (
             <option key={k.value} value={k.value}>
@@ -504,9 +505,9 @@ function PlacingPanel({ index }: { index: ModelIndex }) {
         {number("width", "Width")}
         {number("height", "Height")}
         {placing.kind === "window" && number("sill", "Sill")}
-        <span className="text-neutral-500">m</span>
+        <span className="text-fg-subtle">m</span>
       </div>
-      <p className="mt-1.5 text-neutral-600">
+      <p className="mt-1.5 text-fg-muted">
         Click a wall on the plan to place the {placing.kind}
         {placing.kind === "window" || placing.doorKind !== "interior"
           ? " (exterior walls only)"
@@ -529,10 +530,10 @@ function WallPlacingPanel() {
     <div
       role="group"
       aria-label="Add a wall"
-      className="rounded-md bg-white/95 p-2 text-xs shadow ring-1 ring-blue-300"
+      className="rounded-md bg-surface/95 p-2 text-xs shadow ring-1 ring-blue-300 dark:ring-blue-900"
     >
       <div className="mb-1.5 flex flex-wrap items-center gap-1">
-        <span className="text-neutral-600">Direction</span>
+        <span className="text-fg-muted">Direction</span>
         {(
           [
             ["north_south", "↕ North–south"],
@@ -548,7 +549,7 @@ function WallPlacingPanel() {
               "rounded px-2 py-1 font-medium " +
               (spec.direction === value
                 ? "bg-blue-600 text-white"
-                : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200")
+                : "bg-neutral-100 text-fg hover:bg-neutral-200")
             }
           >
             {label}
@@ -561,7 +562,7 @@ function WallPlacingPanel() {
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <label className="flex items-center gap-1 text-neutral-600">
+        <label className="flex items-center gap-1 text-fg-muted">
           <input
             type="checkbox"
             checked={spec.door}
@@ -570,7 +571,7 @@ function WallPlacingPanel() {
           Door
         </label>
         {spec.door && (
-          <label className="flex items-center gap-1 text-neutral-600">
+          <label className="flex items-center gap-1 text-fg-muted">
             Width
             <input
               type="number"
@@ -583,11 +584,11 @@ function WallPlacingPanel() {
                 const v = Number(e.target.value);
                 if (Number.isFinite(v) && v > 0) set({ ...spec, doorWidth: round3(v) });
               }}
-              className="w-14 rounded border border-neutral-300 px-1 py-0.5 tabular-nums"
+              className="w-14 field-sm tabular-nums"
             />
           </label>
         )}
-        <label className="flex items-center gap-1 text-neutral-600">
+        <label className="flex items-center gap-1 text-fg-muted">
           New room
           <select
             aria-label="New room type"
@@ -598,7 +599,7 @@ function WallPlacingPanel() {
                 newRoomType: (e.target.value || null) as typeof spec.newRoomType,
               })
             }
-            className="rounded border border-neutral-300 px-1 py-0.5"
+            className="field-sm"
           >
             <option value="">Same as the room</option>
             {Object.entries(ROOM_TYPE_LABELS).map(([value, label]) => (
@@ -609,7 +610,7 @@ function WallPlacingPanel() {
           </select>
         </label>
       </div>
-      <p className="mt-1.5 text-neutral-600">
+      <p className="mt-1.5 text-fg-muted">
         Click inside a room to divide it: the wall runs across the room through that point and must
         meet a wall at both ends. The smaller part becomes the new room.
       </p>
@@ -633,21 +634,19 @@ function BarButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      size="xs"
+      variant={primary ? "primary" : "secondary"}
       onClick={onClick}
       disabled={disabled}
       title={title}
       className={
-        "rounded px-2 py-1 font-medium disabled:opacity-40 " +
-        (primary
-          ? "bg-blue-600 text-white hover:bg-blue-700"
-          : danger
-            ? "bg-red-50 text-red-700 hover:bg-red-100"
-            : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200")
+        danger && !primary
+          ? "bg-red-50 text-red-700 ring-1 ring-red-200 hover:bg-red-100 dark:bg-red-950 dark:text-red-300 dark:ring-red-900 dark:hover:bg-red-900"
+          : undefined
       }
     >
       {children}
-    </button>
+    </Button>
   );
 }

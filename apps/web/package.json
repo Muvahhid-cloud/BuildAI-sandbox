@@ -14,11 +14,13 @@
   },
   "dependencies": {
     "@buildai/schema": "workspace:*",
+    "@fontsource-variable/inter": "^5.3.0",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",
     "@react-three/postprocessing": "^3.2.2",
     "@tanstack/react-query": "^5.90.0",
     "jspdf": "^4.2.1",
+    "lucide-react": "^1.71.0",
     "n8ao": "^2.0.1",
     "next": "16.3.6",
     "postprocessing": "^6.39.5",

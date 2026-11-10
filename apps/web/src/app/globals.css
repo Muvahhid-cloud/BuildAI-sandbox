@@ -1,26 +1,264 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Dark styles follow the theme chosen in the header (data-theme on <html>), not only the OS. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *):not(:where([data-theme="light"], [data-theme="light"] *)));
+
+/*
+ * Design tokens (docs/3d-engine.md §24). One neutral scale, one brand accent. The Tailwind
+ * `neutral` and `blue` scales are redefined here, so every existing utility follows the system.
+ */
+@theme {
+  --font-sans:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+
+  /* Neutral: cool grey */
+  --color-neutral-50: #f8f9fb;
+  --color-neutral-100: #f1f2f5;
+  --color-neutral-200: #e3e5ea;
+  --color-neutral-300: #cdd0d8;
+  --color-neutral-400: #9a9fad;
+  --color-neutral-500: #6b7080;
+  --color-neutral-600: #4f5462;
+  --color-neutral-700: #3a3e4a;
+  --color-neutral-800: #24272f;
+  --color-neutral-900: #16181d;
+  --color-neutral-950: #0c0d10;
+
+  /* Brand accent: indigo (the former "blue" utilities map onto it) */
+  --color-blue-50: #eef0ff;
+  --color-blue-100: #e0e3ff;
+  --color-blue-200: #c5caff;
+  --color-blue-300: #a2a8fb;
+  --color-blue-400: #8187f5;
+  --color-blue-500: #6366ee;
+  --color-blue-600: #4f4ee0;
+  --color-blue-700: #4240c2;
+  --color-blue-800: #36359c;
+  --color-blue-900: #2f307b;
+  --color-blue-950: #1c1c48;
+  --color-brand-50: var(--color-blue-50);
+  --color-brand-100: var(--color-blue-100);
+  --color-brand-200: var(--color-blue-200);
+  --color-brand-300: var(--color-blue-300);
+  --color-brand-400: var(--color-blue-400);
+  --color-brand-500: var(--color-blue-500);
+  --color-brand-600: var(--color-blue-600);
+  --color-brand-700: var(--color-blue-700);
+
+  /* Type scale */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+
+  /* Radii */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.25rem;
+
+  /* Elevation */
+  --shadow-xs: 0 1px 2px rgb(16 18 27 / 0.06);
+  --shadow-sm: 0 1px 2px rgb(16 18 27 / 0.06), 0 1px 3px rgb(16 18 27 / 0.08);
+  --shadow-md: 0 2px 4px rgb(16 18 27 / 0.06), 0 6px 16px rgb(16 18 27 / 0.1);
+  --shadow-lg: 0 4px 8px rgb(16 18 27 / 0.06), 0 16px 40px rgb(16 18 27 / 0.16);
+  --shadow-glow: 0 0 0 1px rgb(99 102 238 / 0.25), 0 8px 40px rgb(99 102 238 / 0.18);
+
+  /* Motion */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-fade-in: fade-in 0.18s var(--ease-out-quint) both;
+  --animate-rise-in: rise-in 0.28s var(--ease-out-quint) both;
+  --animate-drawer-in: drawer-in 0.28s var(--ease-out-quint) both;
+  --animate-toast-in: toast-in 0.26s var(--ease-out-quint) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+}
+
+/* Semantic tokens: the only values that differ between the themes. */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-subtle: #f8f9fb;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --line: #e3e5ea;
+  --line-strong: #cdd0d8;
+  --fg: #16181d;
+  --fg-muted: #4f5462;
+  --fg-subtle: #636878;
+  --accent: #4f4ee0;
+  --accent-hover: #4240c2;
+  --accent-fg: #ffffff;
+  --accent-soft: #eef0ff;
+  --accent-text: #4240c2;
+  --glass: rgb(255 255 255 / 0.78);
+  --glass-line: rgb(16 18 27 / 0.1);
+  --ring: rgb(99 102 238 / 0.45);
+  --hero-glow: rgb(99 102 238 / 0.14);
+  --grid-line: rgb(16 18 27 / 0.045);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0c0d10;
+  --bg-subtle: #111317;
+  --surface: #16181d;
+  --surface-raised: #1c1f26;
+  --line: #262a33;
+  --line-strong: #3a3e4a;
+  --fg: #f1f2f5;
+  --fg-muted: #b4b8c4;
+  --fg-subtle: #9297a6;
+  --accent: #5b5ee8;
+  --accent-hover: #5053dc;
+  --accent-fg: #ffffff;
+  --accent-soft: rgb(99 102 238 / 0.16);
+  --accent-text: #a2a8fb;
+  --glass: rgb(22 24 29 / 0.72);
+  --glass-line: rgb(255 255 255 / 0.1);
+  --ring: rgb(129 135 245 / 0.55);
+  --hero-glow: rgb(99 102 238 / 0.22);
+  --grid-line: rgb(255 255 255 / 0.04);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
+  --color-glass: var(--glass);
+  --color-glass-line: var(--glass-line);
+  --color-ring: var(--ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    font-feature-settings: "cv11", "ss01", "calt";
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  /* One focus style everywhere (keyboard only). */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  button,
+  [role="button"],
+  [role="tab"],
+  select,
+  summary {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  /* Thin, quiet scrollbars inside panels. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+/* Compact field for dense editor forms (the kit's Input is the regular size). */
+@utility field-sm {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--fg);
+  padding: 0.125rem 0.375rem;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  &:hover {
+    border-color: var(--color-neutral-400);
+  }
+  &:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 55%, transparent);
+  }
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+@utility glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  backdrop-filter: blur(14px) saturate(1.5);
+}
+
+@utility hero-backdrop {
+  background-image:
+    radial-gradient(60% 55% at 50% 0%, var(--hero-glow), transparent 70%),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    32px 32px,
+    32px 32px;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes drawer-in {
+  from {
+    opacity: 0.6;
+    transform: translateX(24px);
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Motion is decoration only: none of it when the user asks for less. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

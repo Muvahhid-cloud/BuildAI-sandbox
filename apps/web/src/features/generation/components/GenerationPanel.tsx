@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, DrawerHeader } from "@/components/ui";
+import { SlidersHorizontal } from "lucide-react";
 import type { BuildingSpecification } from "@buildai/schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -99,25 +101,17 @@ export function GenerationPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-start justify-between gap-3 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-        <div>
-          <h2 className="font-semibold">Generate a house from a specification</h2>
-          <p className="text-xs text-neutral-500">
+      <DrawerHeader
+        icon={<SlidersHorizontal size={15} />}
+        title={<>Generate a house from a specification</>}
+        description={
+          <>
             Set the program precisely; the deterministic layout engine plans the rooms, walls,
             openings, stairs and roof. Prefer plain language? Use “Describe with AI”.
-          </p>
-        </div>
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="rounded-md px-2 text-lg leading-none text-neutral-400 hover:text-neutral-700"
-          >
-            ×
-          </button>
-        )}
-      </div>
+          </>
+        }
+        onClose={onClose}
+      />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         <SpecForm
@@ -131,13 +125,13 @@ export function GenerationPanel({
         />
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-neutral-200 px-4 py-3 dark:border-neutral-800">
+      <div className="flex flex-col gap-3 border-t border-line px-4 py-3">
         {(errors.length > 0 || warnings.length > 0) && (
           <ul aria-label="Specification issues" className="max-h-32 overflow-y-auto text-xs">
             {errors.map((i) => (
-              <li key={i.code + i.path} className="text-red-600">
+              <li key={i.code + i.path} className="text-red-600 dark:text-red-400">
                 {i.message}
-                {i.suggestion && <span className="text-neutral-500"> — {i.suggestion}</span>}
+                {i.suggestion && <span className="text-fg-subtle"> — {i.suggestion}</span>}
               </li>
             ))}
             {warnings.map((i) => (
@@ -154,22 +148,16 @@ export function GenerationPanel({
         )}
         {jobId !== null && <GenerationProgress job={job.data} />}
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={() => void check()}
             disabled={running || validate.isPending}
-            className="rounded-md px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-100 disabled:opacity-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
           >
             Check specification
-          </button>
-          <button
-            type="button"
-            onClick={() => void generate()}
-            disabled={running}
-            className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-          >
+          </Button>
+          <Button variant="primary" onClick={() => void generate()} disabled={running}>
             {running ? "Generating…" : "Generate house"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -200,7 +188,7 @@ function issuesFromError(err: unknown): Issue[] {
 
 /** Stage list driven by the job's real `stage`; no invented percentages. */
 export function GenerationProgress({ job }: { job: Job | undefined }) {
-  if (!job) return <p className="text-xs text-neutral-500">Starting…</p>;
+  if (!job) return <p className="text-xs text-fg-subtle">Starting…</p>;
   if (job.status === "failed") {
     return (
       <div
@@ -237,7 +225,7 @@ export function GenerationProgress({ job }: { job: Job | undefined }) {
             >
               {state === "done" ? "✓" : ""}
             </span>
-            <span className={state === "pending" ? "text-neutral-400" : ""}>{stage.label}</span>
+            <span className={state === "pending" ? "text-fg-subtle" : ""}>{stage.label}</span>
           </li>
         );
       })}

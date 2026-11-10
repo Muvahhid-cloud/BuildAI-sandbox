@@ -1,6 +1,9 @@
 "use client";
 
+import { Download } from "lucide-react";
 import { useState } from "react";
+
+import { Segment, toast } from "@/components/ui";
 
 import { buildPlanSheet, buildPlanSheets, type SheetInfo } from "@/engine/drawing/sheet";
 import type { ModelIndex } from "@/engine/model/model-index";
@@ -50,6 +53,7 @@ export function DrawingDownloads({ index, info }: { index: ModelIndex; info: Dra
           `${info.projectName} — floor plans`,
           drawingFileName(info.projectName, "floor-plans", "pdf"),
         );
+        toast.success("Floor plans downloaded as PDF");
         return;
       }
       const number = index.levels.indexOf(level) + 1;
@@ -62,35 +66,33 @@ export function DrawingDownloads({ index, info }: { index: ModelIndex; info: Dra
       const name = drawingFileName(info.projectName, `${level.name} plan`, format);
       if (format === "svg") downloadSvg(sheet, name);
       else await downloadPng(sheet, name);
+      toast.success(`${level.name} plan downloaded as ${format.toUpperCase()}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+      toast.error(`Download failed: ${message}`);
     } finally {
       setBusy(null);
     }
   };
 
   const button = (format: Format, label: string, title: string) => (
-    <button
-      type="button"
-      onClick={() => void run(format)}
-      disabled={busy !== null}
-      title={title}
-      className="rounded-md bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-200 disabled:opacity-50 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-    >
+    <Segment onClick={() => void run(format)} disabled={busy !== null} title={title}>
       {busy === format ? "Preparing…" : label}
-    </button>
+    </Segment>
   );
 
   return (
-    <div className="flex items-center gap-1" role="group" aria-label="Download drawing">
-      <span className="mr-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+    <div className="flex items-center gap-0.5" role="group" aria-label="Download drawing">
+      <span className="flex items-center gap-1 px-1.5 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
+        <Download size={12} aria-hidden />
         Download
       </span>
       {button("pdf", "PDF", "A3 sheets, one page per floor (vector)")}
       {button("svg", "SVG", "This floor as an A3 vector sheet")}
       {button("png", "PNG", "This floor as an A3 image (150 dpi)")}
       {error && (
-        <span role="alert" className="ml-1 text-xs text-red-600">
+        <span role="alert" className="ml-1 text-xs text-red-600 dark:text-red-400">
           {error}
         </span>
       )}

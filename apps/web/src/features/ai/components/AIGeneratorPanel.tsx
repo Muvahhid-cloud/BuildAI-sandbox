@@ -1,5 +1,7 @@
 "use client";
 
+import { DrawerHeader } from "@/components/ui";
+import { Sparkles } from "lucide-react";
 import type { AIGenerationOut, GenerationOptions } from "@buildai/schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -60,25 +62,17 @@ export function AIGeneratorPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-start justify-between gap-3 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-        <div>
-          <h2 className="font-semibold">Create your building with AI</h2>
-          <p className="text-xs text-neutral-500">
+      <DrawerHeader
+        icon={<Sparkles size={15} />}
+        title={<>Create your building with AI</>}
+        description={
+          <>
             Describe the house in your own words. The AI writes a building specification, the
             deterministic layout engine plans it, and the 3D editor opens the result.
-          </p>
-        </div>
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="rounded-md px-2 text-lg leading-none text-neutral-400 hover:text-neutral-700"
-          >
-            ×
-          </button>
-        )}
-      </div>
+          </>
+        }
+        onClose={onClose}
+      />
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         {active ? (
           <AIGenerationStatus
@@ -102,7 +96,7 @@ export function AIGeneratorPanel({
           />
         )}
         {generation.isError && (
-          <p role="alert" className="mt-3 text-sm text-red-600">
+          <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">
             Could not read the generation status: {generation.error.message}
           </p>
         )}

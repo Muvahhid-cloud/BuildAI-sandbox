@@ -1,7 +1,11 @@
 "use client";
 
 import type { AIGenerationOut } from "@buildai/schema";
+import { Check, Sparkles } from "lucide-react";
 import { useState } from "react";
+
+import { Button, Callout, Input, Skeleton } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 import { AI_STAGES } from "../api";
 
@@ -21,7 +25,14 @@ export function AIGenerationStatus({
   onRetry: () => void;
 }) {
   if (!generation) {
-    return <p className="text-sm text-neutral-500">Starting the generation…</p>;
+    return (
+      <div role="status" className="flex flex-col gap-3">
+        <span className="text-sm text-fg-subtle">Starting the generation…</span>
+        <Skeleton className="h-1 w-full" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-28 w-full" />
+      </div>
+    );
   }
   if (generation.status === "needs_clarification") {
     return <Clarification generation={generation} onContinue={onClarified} onEdit={onRetry} />;
@@ -38,45 +49,91 @@ export function StageList({ generation }: { generation: AIGenerationOut }) {
   );
   const done = generation.status === "completed";
   const current = stages.findIndex((s) => s.id === generation.stage);
+  // The backend's stages plus the client's own last step (building the scene).
+  const steps: { id: string; label: string; state: StepState }[] = [
+    ...stages.map((stage, i) => ({
+      id: stage.id as string,
+      label: stage.label as string,
+      state: (done || i < current ? "done" : i === current ? "active" : "pending") as StepState,
+    })),
+    {
+      id: "opening",
+      label: "Building the 3D model and opening the project",
+      state: done ? "active" : "pending",
+    },
+  ];
+  const active = steps.find((s) => s.state === "active");
   return (
-    <div className="flex flex-col gap-3">
-      <p className="rounded-md bg-neutral-50 p-3 text-sm italic text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden
+          className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-text"
+        >
+          <Sparkles size={17} />
+          <span className="absolute inset-0 animate-ping rounded-xl bg-accent/20 [animation-duration:2s]" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[15px] font-semibold leading-tight tracking-tight">
+            Designing your building
+          </p>
+          <p className="truncate text-xs text-fg-subtle" aria-live="polite">
+            {active ? `${active.label}…` : "Waiting to start…"}
+          </p>
+        </div>
+      </div>
+      {/* One segment per real stage: filled when the backend reports it done. No percentages. */}
+      <div aria-hidden className="flex gap-1">
+        {steps.map((step) => (
+          <span
+            key={step.id}
+            className={cn(
+              "h-1 flex-1 rounded-full transition-colors duration-500",
+              step.state === "done"
+                ? "bg-accent"
+                : step.state === "active"
+                  ? "animate-pulse bg-accent/60"
+                  : "bg-neutral-200 dark:bg-neutral-800",
+            )}
+          />
+        ))}
+      </div>
+      <p className="rounded-lg border border-line bg-bg-subtle p-3 text-sm italic text-fg-muted">
         “{generation.prompt}”
       </p>
-      <ol aria-label="Generation progress" className="flex flex-col gap-2 text-sm">
-        {stages.map((stage, i) => {
-          const state =
-            done || i < current ? "done" : i === current ? "active" : ("pending" as const);
-          return (
-            <li key={stage.id} className="flex items-center gap-2.5">
-              <StepIcon state={state} />
+      <ol aria-label="Generation progress" className="flex flex-col text-sm">
+        {steps.map((step, i) => (
+          <li key={step.id} className="relative flex items-center gap-3 py-1.5">
+            {i < steps.length - 1 && (
               <span
-                className={
-                  state === "pending"
-                    ? "text-neutral-400"
-                    : state === "active"
-                      ? "font-medium"
-                      : "text-neutral-700 dark:text-neutral-300"
-                }
-              >
-                {stage.label}
-              </span>
-            </li>
-          );
-        })}
-        <li className="flex items-center gap-2.5">
-          <StepIcon state={done ? "active" : "pending"} />
-          <span className={done ? "font-medium" : "text-neutral-400"}>
-            Building the 3D model and opening the project
-          </span>
-        </li>
+                aria-hidden
+                className={cn(
+                  "absolute left-[9px] top-[26px] h-[calc(100%-18px)] w-px",
+                  step.state === "done" ? "bg-accent/50" : "bg-line",
+                )}
+              />
+            )}
+            <StepIcon state={step.state} />
+            <span
+              className={
+                step.state === "pending"
+                  ? "text-fg-subtle"
+                  : step.state === "active"
+                    ? "font-medium text-fg"
+                    : "text-fg-muted"
+              }
+            >
+              {step.label}
+            </span>
+          </li>
+        ))}
       </ol>
       {generation.understanding && (
-        <p className="text-xs text-neutral-500">
-          <span className="font-medium">Understood:</span> {generation.understanding}
+        <p className="text-xs text-fg-subtle">
+          <span className="font-medium text-fg-muted">Understood:</span> {generation.understanding}
         </p>
       )}
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs text-fg-subtle">
         {generation.provider === "mock"
           ? "Offline mock interpreter (development mode)"
           : `AI: ${generation.provider} · ${generation.model}`}
@@ -85,20 +142,28 @@ export function StageList({ generation }: { generation: AIGenerationOut }) {
   );
 }
 
-function StepIcon({ state }: { state: "done" | "active" | "pending" }) {
+type StepState = "done" | "active" | "pending";
+
+function StepIcon({ state }: { state: StepState }) {
   return (
     <span
       aria-hidden
-      className={
-        "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] " +
-        (state === "done"
-          ? "bg-green-600 text-white"
+      className={cn(
+        "relative z-10 inline-flex h-[19px] w-[19px] shrink-0 items-center justify-center rounded-full transition-colors duration-300",
+        state === "done"
+          ? "bg-accent text-accent-fg"
           : state === "active"
-            ? "animate-pulse bg-blue-600 text-white"
-            : "border border-neutral-300 dark:border-neutral-700")
-      }
+            ? "border-2 border-accent bg-surface"
+            : "border border-line-strong bg-surface",
+      )}
     >
-      {state === "done" ? "✓" : ""}
+      {state === "done" && (
+        <>
+          <span className="sr-only">✓</span>
+          <Check size={12} strokeWidth={3} />
+        </>
+      )}
+      {state === "active" && <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />}
     </span>
   );
 }
@@ -122,7 +187,7 @@ function Clarification({
 
   return (
     <div className="flex flex-col gap-3" role="group" aria-label="Clarification needed">
-      <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+      <Callout tone="warning">
         <p className="font-medium">A few details are needed before designing the building.</p>
         {generation.understanding && <p className="mt-1 text-xs">{generation.understanding}</p>}
         {nonBuilding.map((w) => (
@@ -130,29 +195,24 @@ function Clarification({
             {w.message}
           </p>
         ))}
-      </div>
+      </Callout>
       {generation.clarification_questions.map((question, i) => (
         <label key={question} className="flex flex-col gap-1 text-sm">
           <span>{question}</span>
-          <input
+          <Input
             value={answers[i] ?? ""}
             onChange={(e) =>
               setAnswers((prev) => prev.map((a, j) => (j === i ? e.target.value : a)))
             }
-            className="rounded-md border border-neutral-300 bg-white px-2 py-1.5 dark:border-neutral-700 dark:bg-neutral-900"
           />
         </label>
       ))}
       <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onEdit}
-          className="rounded-md px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
-        >
+        <Button variant="ghost" onClick={onEdit}>
           Edit description
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="primary"
           disabled={answered.length === 0}
           onClick={() =>
             onContinue(
@@ -160,10 +220,9 @@ function Clarification({
                 answered.map(([q, a]) => `- ${q} ${a}`).join("\n"),
             )
           }
-          className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
         >
           Continue
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -174,10 +233,7 @@ function Failure({ generation, onRetry }: { generation: AIGenerationOut; onRetry
   const details = error?.details ?? [];
   return (
     <div className="flex flex-col gap-3">
-      <div
-        role="alert"
-        className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200"
-      >
+      <Callout tone="danger" role="alert">
         <p className="font-medium">{error?.message ?? "Generation failed."}</p>
         {details.length > 0 && (
           <ul className="mt-2 list-disc pl-4 text-xs">
@@ -192,24 +248,20 @@ function Failure({ generation, onRetry }: { generation: AIGenerationOut; onRetry
         <p className="mt-2 font-mono text-[10px] opacity-60">
           {error?.code} · stage {generation.stage}
         </p>
-      </div>
+      </Callout>
       {generation.warnings.length > 0 && (
-        <div className="rounded-md bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+        <Callout tone="warning" className="text-xs">
           <p className="font-medium">Also noted while reading your request:</p>
           <ul className="mt-1 list-disc pl-4">
             {generation.warnings.map((w, i) => (
               <li key={`${w.code}-${i}`}>{w.message}</li>
             ))}
           </ul>
-        </div>
+        </Callout>
       )}
-      <button
-        type="button"
-        onClick={onRetry}
-        className="self-end rounded-md bg-blue-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
-      >
+      <Button variant="primary" onClick={onRetry} className="self-end">
         Edit and try again
-      </button>
+      </Button>
     </div>
   );
 }

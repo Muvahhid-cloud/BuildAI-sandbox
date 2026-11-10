@@ -32,7 +32,7 @@ export function GenerationSummary({
       <button
         type="button"
         onClick={() => setCollapsed(false)}
-        className="rounded-full border border-green-200 bg-white/95 px-3 py-1.5 text-xs font-medium text-green-800 shadow-md backdrop-blur hover:bg-white dark:border-green-900 dark:bg-neutral-950/90 dark:text-green-300"
+        className="rounded-full border border-green-200 bg-surface/95 px-3 py-1.5 text-xs font-medium text-green-800 shadow-md backdrop-blur hover:bg-white dark:border-green-900 dark:text-green-300"
       >
         ✓ {spec?.name ?? "Generated building"} · {warnings.length} note
         {warnings.length === 1 ? "" : "s"} · show summary
@@ -43,23 +43,23 @@ export function GenerationSummary({
   return (
     <section
       aria-label="Generation summary"
-      className="flex max-h-[min(70vh,640px)] w-[min(92vw,380px)] flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white/95 text-sm shadow-xl backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95"
+      className="flex max-h-[min(70vh,640px)] w-[min(92vw,380px)] flex-col overflow-hidden rounded-xl border border-line bg-surface/95 text-sm shadow-xl backdrop-blur"
     >
-      <header className="flex items-start gap-2 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
+      <header className="flex items-start gap-2 border-b border-line px-4 py-3">
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-green-700 dark:text-green-400">
             Building generated successfully
           </p>
           <h2 className="truncate text-base font-semibold">{spec?.name ?? "Generated building"}</h2>
           {generation.version_number !== null && (
-            <p className="text-xs text-neutral-500">Saved as version {generation.version_number}</p>
+            <p className="text-xs text-fg-subtle">Saved as version {generation.version_number}</p>
           )}
         </div>
         <button
           type="button"
           onClick={() => setCollapsed(true)}
           aria-label="Collapse summary"
-          className="rounded px-1.5 text-neutral-400 hover:text-neutral-700"
+          className="rounded px-1.5 text-fg-subtle hover:text-fg"
         >
           –
         </button>
@@ -67,7 +67,7 @@ export function GenerationSummary({
           type="button"
           onClick={onDismiss}
           aria-label="Close summary"
-          className="rounded px-1.5 text-lg leading-none text-neutral-400 hover:text-neutral-700"
+          className="rounded px-1.5 text-lg leading-none text-fg-subtle hover:text-fg"
         >
           ×
         </button>
@@ -90,13 +90,10 @@ export function GenerationSummary({
             <table className="w-full text-xs">
               <tbody>
                 {generation.checks.map((c) => (
-                  <tr
-                    key={c.key}
-                    className="border-b border-neutral-100 last:border-0 dark:border-neutral-900"
-                  >
-                    <td className="py-1 text-neutral-500">{c.label}</td>
+                  <tr key={c.key} className="border-b border-line last:border-0">
+                    <td className="py-1 text-fg-subtle">{c.label}</td>
                     <td className="py-1 text-right tabular-nums">{c.requested}</td>
-                    <td className="px-1 py-1 text-neutral-400">→</td>
+                    <td className="px-1 py-1 text-fg-subtle">→</td>
                     <td className="py-1 tabular-nums">{c.delivered}</td>
                     <td className="py-1 text-right">
                       {c.met ? (
@@ -123,7 +120,7 @@ export function GenerationSummary({
 
         <Block title={`Warnings (${warnings.length})`}>
           {warnings.length === 0 ? (
-            <p className="text-xs text-neutral-500">None.</p>
+            <p className="text-xs text-fg-subtle">None.</p>
           ) : (
             <ul className="flex flex-col gap-1 text-xs">
               {warnings.map((w, i) => (
@@ -147,9 +144,9 @@ export function GenerationSummary({
 
         <Block title={`Assumptions (${generation.assumptions.length})`}>
           {generation.assumptions.length === 0 ? (
-            <p className="text-xs text-neutral-500">None — everything came from your request.</p>
+            <p className="text-xs text-fg-subtle">None — everything came from your request.</p>
           ) : (
-            <ul className="flex flex-col gap-1 text-xs text-neutral-700 dark:text-neutral-300">
+            <ul className="flex flex-col gap-1 text-xs text-fg-muted">
               {generation.assumptions.map((a, i) => (
                 <li key={`${a.path}-${i}`}>{a.reason}</li>
               ))}
@@ -168,23 +165,21 @@ export function GenerationSummary({
 
         {generation.understanding && (
           <Block title="What the AI understood">
-            <p className="text-xs text-neutral-600 dark:text-neutral-300">
-              {generation.understanding}
-            </p>
+            <p className="text-xs text-fg-muted">{generation.understanding}</p>
           </Block>
         )}
 
-        <p className="mt-3 text-[11px] text-neutral-400">
+        <p className="mt-3 text-2xs text-fg-subtle">
           {generation.provider === "mock"
             ? "Offline mock interpreter (development)"
             : `${generation.provider} · ${generation.model}`}{" "}
           · {generation.engine_version} · rules {generation.rules_profile} · seed {generation.seed}
         </p>
-        <p className="mt-2 text-[11px] leading-snug text-neutral-500">{DISCLAIMER}</p>
+        <p className="mt-2 text-2xs leading-snug text-fg-subtle">{DISCLAIMER}</p>
       </div>
 
       {onOpenReport && (
-        <footer className="border-t border-neutral-200 px-4 py-2 dark:border-neutral-800">
+        <footer className="border-t border-line px-4 py-2">
           <button type="button" onClick={onOpenReport} className="text-xs text-blue-600 underline">
             Open the full design report
           </button>
@@ -196,9 +191,9 @@ export function GenerationSummary({
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-md bg-neutral-50 px-2 py-1.5 dark:bg-neutral-900">
+    <div className="rounded-md bg-bg-subtle px-2 py-1.5">
       <dd className="text-base font-semibold tabular-nums">{value}</dd>
-      <dt className="text-[11px] text-neutral-500">{label}</dt>
+      <dt className="text-2xs text-fg-subtle">{label}</dt>
     </div>
   );
 }
@@ -206,7 +201,7 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-3">
-      <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+      <h3 className="mb-1 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
         {title}
       </h3>
       {children}

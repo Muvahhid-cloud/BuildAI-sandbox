@@ -92,7 +92,10 @@ function Message({
     <div className="flex flex-1 items-center justify-center p-8">
       <div role={tone === "error" ? "alert" : "status"} className="max-w-xl text-sm">
         <p
-          className={"mb-1 font-medium " + (tone === "error" ? "text-red-600" : "text-neutral-500")}
+          className={
+            "mb-1 font-medium " +
+            (tone === "error" ? "text-red-600 dark:text-red-400" : "text-fg-subtle")
+          }
         >
           {title}
         </p>

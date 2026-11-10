@@ -1,5 +1,9 @@
 "use client";
 
+import { Box, Grid3x3, Map, RotateCcw, Sparkles, Trees } from "lucide-react";
+import type { ReactNode } from "react";
+
+import { Kbd } from "@/components/ui";
 import type { SceneGraph } from "@/engine/scene/build-scene";
 import type { CameraPresetId } from "@/engine/scene/camera-presets";
 import { DrawingDownloads, type DrawingInfo } from "@/features/drawing/components/DrawingDownloads";
@@ -23,9 +27,6 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
   const setShowGrid = useViewerStore((s) => s.setShowGrid);
   const showSite = useViewerStore((s) => s.showSite);
   const setShowSite = useViewerStore((s) => s.setShowSite);
-  const selectedId = useSelectionStore((s) => s.selectedId);
-  const buildMs = useBuildingStore((s) => s.buildMs);
-  const selected = selectedId ? scene.index.elementsById.get(selectedId) : undefined;
   const levels = scene.index.levels;
   const planLevel = levels.find((l) => l.id === planLevelId) ?? levels[0];
 
@@ -39,21 +40,24 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-neutral-200 bg-white px-3 py-2 dark:border-neutral-800 dark:bg-neutral-950">
-      <div className="flex items-center gap-1" role="group" aria-label="View mode">
+    <div
+      role="toolbar"
+      aria-label="View tools"
+      className="pointer-events-none absolute inset-x-3 bottom-3 z-10 flex flex-wrap items-end justify-center gap-2"
+    >
+      <Group label="View mode">
         <SegmentButton active={viewMode === "3d"} onClick={() => setViewMode("3d")}>
+          <Box size={13} aria-hidden />
           3D model
         </SegmentButton>
         <SegmentButton active={viewMode === "plan"} onClick={() => setViewMode("plan")}>
+          <Map size={13} aria-hidden />
           Floor plan
         </SegmentButton>
-      </div>
+      </Group>
       {viewMode === "plan" ? (
         <>
-          <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Plan level">
-            <span className="mr-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
-              Floor
-            </span>
+          <Group label="Plan level" caption="Floor">
             {levels.map((l) => (
               <SegmentButton
                 key={l.id}
@@ -63,19 +67,14 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
                 {l.name}
               </SegmentButton>
             ))}
+          </Group>
+          <div className="glass pointer-events-auto rounded-xl p-1 shadow-md">
+            <DrawingDownloads index={scene.index} info={drawing} />
           </div>
-          <DrawingDownloads index={scene.index} info={drawing} />
         </>
       ) : (
         <>
-          <div
-            className="flex flex-wrap items-center gap-1"
-            role="group"
-            aria-label="Camera presets"
-          >
-            <span className="mr-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
-              View
-            </span>
+          <Group label="Camera presets" caption="View">
             {presets.map(([id, label]) => (
               <SegmentButton key={id} onClick={() => requestCamera(id)}>
                 {label}
@@ -85,10 +84,11 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
               onClick={() => requestCamera("exterior")}
               title="Reset camera to the default exterior view"
             >
+              <RotateCcw size={12} aria-hidden />
               Reset view
             </SegmentButton>
-          </div>
-          <div className="flex items-center gap-1" role="group" aria-label="Projection">
+          </Group>
+          <Group label="Projection">
             <SegmentButton
               active={projection === "perspective"}
               onClick={() => setProjection("perspective")}
@@ -101,13 +101,14 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
             >
               Orthographic
             </SegmentButton>
-          </div>
-          <div className="flex items-center gap-1" role="group" aria-label="Display">
+          </Group>
+          <Group label="Display">
             <SegmentButton
               active={effects}
               onClick={() => setEffects(!effects)}
               title="Ambient occlusion and anti-aliasing (turn off on slow devices)"
             >
+              <Sparkles size={12} aria-hidden />
               Effects
             </SegmentButton>
             <SegmentButton
@@ -115,6 +116,7 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
               onClick={() => setShowGrid(!showGrid)}
               title="Reference grid (1 m cells, 5 m sections)"
             >
+              <Grid3x3 size={12} aria-hidden />
               Grid
             </SegmentButton>
             <SegmentButton
@@ -122,19 +124,58 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
               onClick={() => setShowSite(!showSite)}
               title="Site context: path, driveway, fence, trees and shrubs (not part of the model)"
             >
+              <Trees size={12} aria-hidden />
               Site
             </SegmentButton>
-          </div>
+          </Group>
         </>
       )}
-      <p className="ml-auto text-xs tabular-nums text-neutral-500" aria-live="polite">
+    </div>
+  );
+}
+
+/** One floating glass group of the view toolbar. */
+function Group({
+  label,
+  caption,
+  children,
+}: {
+  label: string;
+  caption?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label={label}
+      className="glass pointer-events-auto flex flex-wrap items-center gap-0.5 rounded-xl p-1 shadow-md"
+    >
+      {caption && (
+        <span className="px-1.5 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
+          {caption}
+        </span>
+      )}
+      {children}
+    </div>
+  );
+}
+
+/** Status bar text under the viewport: selection, pointer hints with keys, model counts. */
+export function ViewerStatus({ scene }: { scene: SceneGraph }) {
+  const viewMode = useViewerStore((s) => s.viewMode);
+  const selectedId = useSelectionStore((s) => s.selectedId);
+  const buildMs = useBuildingStore((s) => s.buildMs);
+  const selected = selectedId ? scene.index.elementsById.get(selectedId) : undefined;
+  return (
+    <p
+      className="flex min-w-0 flex-1 items-center gap-x-1.5 overflow-hidden whitespace-nowrap text-xs tabular-nums text-fg-subtle"
+      aria-live="polite"
+    >
+      <span className="min-w-0 truncate">
         {selected ? (
           <>
-            Selected{" "}
-            <span className="font-medium text-neutral-800 dark:text-neutral-100">
-              {selected.name}
-            </span>{" "}
-            · Esc to clear ·{" "}
+            Selected <span className="font-medium text-fg">{selected.name}</span> · <Kbd>Esc</Kbd>{" "}
+            to clear ·{" "}
           </>
         ) : viewMode === "plan" ? (
           "Click to select · drag to pan · scroll to zoom · "
@@ -149,7 +190,11 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
             {buildMs !== null && ` · built in ${Math.round(buildMs)} ms`}
           </>
         )}
-      </p>
-    </div>
+      </span>
+      <span className="ml-auto hidden shrink-0 items-center gap-1 xl:inline-flex">
+        <Kbd>[</Kbd>
+        <Kbd>]</Kbd> panels
+      </span>
+    </p>
   );
 }

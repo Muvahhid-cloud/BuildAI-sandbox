@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 
+import { PageLoading } from "@/components/PageLoading";
 import { useAuthStore } from "@/stores/auth-store";
 
 /** Client-side guard. The API enforces auth; this only drives navigation. */
@@ -16,7 +17,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   }, [status, router, pathname]);
 
   if (status !== "authenticated") {
-    return <p className="p-8 text-sm text-neutral-500">Loading…</p>;
+    return <PageLoading />;
   }
   return <>{children}</>;
 }

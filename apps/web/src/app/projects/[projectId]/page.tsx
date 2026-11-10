@@ -3,6 +3,7 @@
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback } from "react";
 
+import { PageLoading } from "@/components/PageLoading";
 import { RequireAuth } from "@/features/auth/components/RequireAuth";
 import { ProjectEditor } from "@/features/editor/components/ProjectEditor";
 
@@ -30,7 +31,7 @@ function Editor() {
 export default function ProjectEditorPage() {
   return (
     <RequireAuth>
-      <Suspense fallback={<p className="p-8 text-sm text-neutral-500">Loading…</p>}>
+      <Suspense fallback={<PageLoading />}>
         <Editor />
       </Suspense>
     </RequireAuth>

@@ -618,7 +618,7 @@ export function PlanView({
 
   if (!drawing || !view) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-neutral-500">
+      <div className="flex h-full items-center justify-center text-sm text-fg-subtle">
         This model has no levels to draw.
       </div>
     );
@@ -641,7 +641,7 @@ export function PlanView({
         aria-label={`${drawing.levelName} floor plan`}
         viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
         className={
-          "h-full w-full touch-none select-none bg-white" +
+          "h-full w-full touch-none select-none bg-surface" +
           (placing || placingWall ? " cursor-crosshair" : "")
         }
         onPointerDown={onPointerDown}
@@ -680,13 +680,13 @@ export function PlanView({
           />
         )}
       </svg>
-      <div className="pointer-events-none absolute left-3 top-3 rounded-md bg-white/90 px-2 py-1 text-xs text-neutral-700 shadow-sm ring-1 ring-neutral-200">
+      <div className="pointer-events-none absolute left-3 top-3 rounded-md bg-surface/90 px-2 py-1 text-xs text-fg-muted shadow-sm ring-1 ring-line">
         <span className="font-semibold">{drawing.levelName} plan</span> · drawn at 1:
         {drawing.scale} · dimensions in mm
       </div>
       {ghost && <DragStatus drag={ghost} valid={ghostValid} />}
       {editable && <PlanEditBar index={index} onSaved={onEditsSaved} />}
-      <div className="absolute bottom-3 right-3 flex flex-col overflow-hidden rounded-md bg-white shadow ring-1 ring-neutral-200">
+      <div className="absolute bottom-3 right-3 flex flex-col overflow-hidden rounded-md bg-surface shadow ring-1 ring-line">
         <ZoomButton label="Zoom in" onClick={() => zoomAt(ZOOM_STEP)}>
           +
         </ZoomButton>
@@ -933,7 +933,7 @@ function DragStatus({ drag, valid }: { drag: Drag; valid: boolean | undefined })
             ? "bg-red-50 text-red-800 ring-red-200"
             : valid
               ? "bg-green-50 text-green-800 ring-green-200"
-              : "bg-white text-neutral-700 ring-neutral-200")
+              : "bg-surface text-fg-muted ring-line")
         }
       >
         <span className="font-semibold">New wall</span>
@@ -975,7 +975,7 @@ function DragStatus({ drag, valid }: { drag: Drag; valid: boolean | undefined })
           ? "bg-red-50 text-red-800 ring-red-200"
           : valid
             ? "bg-green-50 text-green-800 ring-green-200"
-            : "bg-white text-neutral-700 ring-neutral-200")
+            : "bg-surface text-fg-muted ring-line")
       }
     >
       <span className="font-semibold">
@@ -1024,7 +1024,7 @@ function OpeningStatus({
           ? "bg-red-50 text-red-800 ring-red-200"
           : valid
             ? "bg-green-50 text-green-800 ring-green-200"
-            : "bg-white text-neutral-700 ring-neutral-200")
+            : "bg-surface text-fg-muted ring-line")
       }
     >
       <span className="font-semibold">{name}</span> · {where}
@@ -1050,7 +1050,7 @@ function ZoomButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="h-8 w-8 border-b border-neutral-200 text-base text-neutral-700 last:border-b-0 hover:bg-neutral-100"
+      className="h-8 w-8 border-b border-line text-base text-fg-muted last:border-b-0 hover:bg-neutral-100"
     >
       {children}
     </button>

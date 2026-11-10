@@ -30,9 +30,8 @@ const WINDOWS = ["standard", "large", "panoramic"];
 const FACADES = ["render", "brick", "concrete", "timber"];
 const FINISHES = ["economy", "standard", "premium"];
 
-const input =
-  "w-full rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm dark:border-neutral-700 dark:bg-neutral-900";
-const label = "text-[11px] font-medium uppercase tracking-wide text-neutral-500";
+const input = "w-full rounded-md border border-line-strong bg-surface px-2 py-1 text-sm";
+const label = "text-2xs font-medium uppercase tracking-wide text-fg-subtle";
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, " ");
 
@@ -120,7 +119,7 @@ export function SpecForm({
       <section className="flex flex-col gap-3" aria-labelledby="spec-basics">
         <h3
           id="spec-basics"
-          className="text-xs font-semibold uppercase tracking-wider text-neutral-500"
+          className="text-xs font-semibold uppercase tracking-wider text-fg-subtle"
         >
           Building
         </h3>
@@ -159,7 +158,7 @@ export function SpecForm({
                     "flex-1 rounded-md py-1 text-sm font-medium " +
                     (targets.storeys === n
                       ? "bg-blue-600 text-white"
-                      : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200")
+                      : "bg-neutral-100 text-fg-muted hover:bg-neutral-200 dark:bg-neutral-800")
                   }
                 >
                   {n}
@@ -208,7 +207,7 @@ export function SpecForm({
       <section className="flex flex-col gap-2" aria-labelledby="spec-style">
         <h3
           id="spec-style"
-          className="text-xs font-semibold uppercase tracking-wider text-neutral-500"
+          className="text-xs font-semibold uppercase tracking-wider text-fg-subtle"
         >
           Style
         </h3>
@@ -276,18 +275,15 @@ export function SpecForm({
         <div className="flex items-center justify-between">
           <h3
             id="spec-rooms"
-            className="text-xs font-semibold uppercase tracking-wider text-neutral-500"
+            className="text-xs font-semibold uppercase tracking-wider text-fg-subtle"
           >
             Rooms
           </h3>
-          <span className="text-[11px] text-neutral-400">area per room · blank = automatic</span>
+          <span className="text-2xs text-fg-subtle">area per room · blank = automatic</span>
         </div>
         <ul className="flex flex-col gap-1.5">
           {spec.rooms.map((room, i) => (
-            <li
-              key={room.key}
-              className="rounded-md border border-neutral-200 p-2 dark:border-neutral-800"
-            >
+            <li key={room.key} className="rounded-md border border-line p-2">
               <div className="grid grid-cols-[1fr_3.5rem_4.5rem_4.5rem_1.5rem] items-center gap-1.5">
                 <select
                   aria-label={`Room ${i + 1} type`}
@@ -345,23 +341,19 @@ export function SpecForm({
                   aria-label={`Remove room ${i + 1}`}
                   onClick={() => removeRoom(i)}
                   disabled={spec.rooms.length <= 1}
-                  className="text-neutral-400 hover:text-red-600 disabled:opacity-30"
+                  className="text-fg-subtle hover:text-red-600 dark:text-red-400 disabled:opacity-30"
                 >
                   ×
                 </button>
               </div>
               {
-                <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-neutral-500">
-                  {room.name && (
-                    <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                      {room.name}
-                    </span>
-                  )}
+                <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-fg-subtle">
+                  {room.name && <span className="font-medium text-fg-muted">{room.name}</span>}
                   <label className="flex items-center gap-1">
                     Faces
                     <select
                       aria-label={`Room ${i + 1} faces`}
-                      className="rounded border border-neutral-300 bg-white px-1 py-0 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+                      className="rounded border border-line-strong bg-surface px-1 py-0 text-xs"
                       value={room.faces ?? ""}
                       onChange={(e) =>
                         setRoom(i, {
@@ -379,7 +371,7 @@ export function SpecForm({
                       <label key={f} className="flex items-center gap-1">
                         <input
                           type="checkbox"
-                          className="h-3 w-3 accent-blue-600"
+                          className="h-3 w-3 accent-[var(--accent)]"
                           checked={room.features?.includes(f) ?? false}
                           onChange={(e) =>
                             setRoom(i, {
@@ -398,7 +390,7 @@ export function SpecForm({
                 </div>
               }
               {issueAt(`/rooms/${i}`).map((x) => (
-                <p key={x.code + x.path} className="mt-1 text-xs text-red-600">
+                <p key={x.code + x.path} className="mt-1 text-xs text-red-600 dark:text-red-400">
                   {x.message}
                 </p>
               ))}
@@ -425,7 +417,7 @@ export function SpecForm({
       <section className="flex flex-col gap-2" aria-labelledby="spec-features">
         <h3
           id="spec-features"
-          className="text-xs font-semibold uppercase tracking-wider text-neutral-500"
+          className="text-xs font-semibold uppercase tracking-wider text-fg-subtle"
         >
           Garage & outdoor
         </h3>
@@ -444,7 +436,7 @@ export function SpecForm({
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                className="h-3.5 w-3.5 accent-blue-600"
+                className="h-3.5 w-3.5 accent-[var(--accent)]"
                 checked={features.terrace != null}
                 onChange={(e) =>
                   set({
@@ -457,7 +449,7 @@ export function SpecForm({
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                className="h-3.5 w-3.5 accent-blue-600"
+                className="h-3.5 w-3.5 accent-[var(--accent)]"
                 disabled={targets.storeys < 2}
                 checked={balcony != null}
                 onChange={(e) =>
@@ -475,8 +467,8 @@ export function SpecForm({
         </div>
       </section>
 
-      <details className="rounded-md border border-neutral-200 p-2 dark:border-neutral-800">
-        <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-neutral-500">
+      <details className="rounded-md border border-line p-2">
+        <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-fg-subtle">
           Advanced
         </summary>
         <div className="mt-2 grid grid-cols-3 gap-2">
@@ -527,7 +519,7 @@ export function SpecForm({
             />
           </div>
         </div>
-        <p className="mt-2 text-[11px] text-neutral-400">
+        <p className="mt-2 text-2xs text-fg-subtle">
           The same specification and seed always produce the same house; change the seed to explore
           alternatives.
         </p>

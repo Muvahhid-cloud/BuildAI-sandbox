@@ -6,9 +6,32 @@ import {
   buildingSpecificationSchema,
 } from "@buildai/schema";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  Box,
+  ChevronRight,
+  CircleCheck,
+  ClipboardList,
+  GitBranch,
+  GitCompareArrows,
+  History,
+  Plus,
+  Wand2,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import {
+  Badge,
+  Button,
+  Drawer,
+  IconButton,
+  Select,
+  Skeleton,
+  Spinner,
+  Tabs,
+  toast,
+} from "@/components/ui";
 import { materialCache } from "@/engine/materials/material-cache";
 import { isTerminal, useAIGeneration } from "@/features/ai/api";
 import { AIGeneratorPanel } from "@/features/ai/components/AIGeneratorPanel";
@@ -135,6 +158,7 @@ export function ProjectEditor({
       setChosen(saved.id);
       setJustGenerated(saved.id);
       setSummaryId(null);
+      toast.success(`Version v${saved.number} is now open`);
       await Promise.all([
         qc.invalidateQueries({ queryKey: versionKeys.list(projectId) }),
         qc.invalidateQueries({ queryKey: projectKeys.detail(projectId) }),
@@ -157,13 +181,13 @@ export function ProjectEditor({
     setDrawer("none");
   }, []);
 
-  if (project.isPending) return <Centered>Loading project…</Centered>;
+  if (project.isPending) return <EditorSkeleton label="Loading project…" />;
   if (project.isError) {
     const notFound = project.error instanceof ApiError && project.error.status === 404;
     return (
       <Centered tone="error">
         {notFound ? "Project not found." : "Could not load the project."}{" "}
-        <Link href="/projects" className="underline">
+        <Link href="/projects" className="underline underline-offset-2">
           Back to projects
         </Link>
       </Centered>
@@ -179,67 +203,101 @@ export function ProjectEditor({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-neutral-200 px-4 py-2 dark:border-neutral-800">
-        <Link href="/projects" className="text-sm text-neutral-500 hover:underline">
-          Projects
-        </Link>
-        <span className="text-neutral-400">/</span>
-        <h1 className="font-medium">{p.name}</h1>
-        {hasVersions && (
-          <select
-            aria-label="Version"
-            className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm dark:border-neutral-700 dark:bg-neutral-900"
-            value={versionId ?? ""}
-            onChange={(e) => {
-              if (!confirmLeavingEdits()) return;
-              setChosen(e.target.value);
-              setJustGenerated(null);
-            }}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-line bg-surface px-3 py-1.5">
+        <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
+          <Link
+            href="/projects"
+            className="rounded-md px-1.5 py-1 text-fg-subtle transition-colors hover:bg-neutral-100 hover:text-fg dark:hover:bg-neutral-800"
           >
-            {versions.data?.map((v) => (
-              <option key={v.id} value={v.id}>
-                v{v.number} · {v.label}
-                {v.id === p.current_version_id ? " (latest)" : ""}
-              </option>
-            ))}
-          </select>
+            Projects
+          </Link>
+          <ChevronRight size={14} aria-hidden className="shrink-0 text-fg-subtle" />
+          <h1 className="truncate px-1 font-semibold tracking-tight">{p.name}</h1>
+        </nav>
+        {hasVersions && (
+          <span className="relative inline-flex items-center">
+            <GitBranch
+              size={13}
+              aria-hidden
+              className="pointer-events-none absolute left-2 text-fg-subtle"
+            />
+            <Select
+              aria-label="Version"
+              className="h-7 max-w-[16rem] truncate pl-7 text-xs font-medium"
+              value={versionId ?? ""}
+              onChange={(e) => {
+                if (!confirmLeavingEdits()) return;
+                setChosen(e.target.value);
+                setJustGenerated(null);
+              }}
+            >
+              {versions.data?.map((v) => (
+                <option key={v.id} value={v.id}>
+                  v{v.number} · {v.label}
+                  {v.id === p.current_version_id ? " (latest)" : ""}
+                </option>
+              ))}
+            </Select>
+          </span>
         )}
-        <span className="text-xs text-neutral-500">
+        <span className="hidden text-xs text-fg-subtle md:inline">
           {p.region_code} · {p.currency} · rules {p.rules_profile_id}
         </span>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex flex-wrap items-center gap-1">
           {version.data && (
-            <DrawerButton drawer={drawer} value="modify" onToggle={setDrawer}>
+            <DrawerButton
+              drawer={drawer}
+              value="modify"
+              onToggle={setDrawer}
+              icon={<Wand2 size={14} />}
+            >
               Modify with AI
             </DrawerButton>
           )}
           {(versions.data?.length ?? 0) > 1 && (
-            <DrawerButton drawer={drawer} value="compare" onToggle={setDrawer}>
+            <DrawerButton
+              drawer={drawer}
+              value="compare"
+              onToggle={setDrawer}
+              icon={<GitCompareArrows size={14} />}
+            >
               Compare
             </DrawerButton>
           )}
-          <DrawerButton drawer={drawer} value="history" onToggle={setDrawer}>
+          <DrawerButton
+            drawer={drawer}
+            value="history"
+            onToggle={setDrawer}
+            icon={<History size={14} />}
+          >
             History
           </DrawerButton>
           {version.data && (
-            <DrawerButton drawer={drawer} value="report" onToggle={setDrawer}>
+            <DrawerButton
+              drawer={drawer}
+              value="report"
+              onToggle={setDrawer}
+              icon={<ClipboardList size={14} />}
+            >
               Report
               {reportCount(version.data) > 0 && (
-                <span className="ml-1 rounded-full bg-amber-100 px-1.5 text-xs text-amber-800">
+                <Badge tone="warning" className="ml-0.5 px-1.5 py-0">
                   {reportCount(version.data)}
-                </span>
+                </Badge>
               )}
             </DrawerButton>
           )}
           {hasVersions && (
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => setDrawer(drawer === "generate" ? "none" : "generate")}
               aria-pressed={drawer === "generate"}
-              className="rounded-md bg-blue-600 px-3 py-1 text-sm font-semibold text-white hover:bg-blue-700"
+              icon={<Plus size={14} />}
+              className="ml-1"
             >
               New design
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -254,7 +312,7 @@ export function ProjectEditor({
 
       <div className="relative flex min-h-0 flex-1 flex-col">
         {versions.isPending ? (
-          <Centered>Loading versions…</Centered>
+          <EditorSkeleton label="Loading versions…" />
         ) : !hasVersions ? (
           <StartView
             projectId={projectId}
@@ -275,7 +333,7 @@ export function ProjectEditor({
             </pre>
           </Centered>
         ) : !scene || !version.data ? (
-          <Centered>Building the 3D model…</Centered>
+          <EditorSkeleton label="Building the 3D model…" />
         ) : (
           <BuildingEditor
             scene={scene}
@@ -297,7 +355,7 @@ export function ProjectEditor({
                   onOpenReport={() => setDrawer("report")}
                 />
               ) : (
-                <div className="w-[min(92vw,360px)] rounded-xl border border-neutral-200 bg-white/95 p-4 shadow-xl dark:border-neutral-800 dark:bg-neutral-950/95">
+                <div className="glass w-[min(92vw,360px)] animate-rise-in rounded-2xl p-4 shadow-lg">
                   <StageList generation={summary.data} />
                 </div>
               )}
@@ -306,20 +364,7 @@ export function ProjectEditor({
         )}
 
         {drawer !== "none" && (
-          <aside
-            aria-label={
-              drawer === "generate"
-                ? "Generate a new design"
-                : drawer === "history"
-                  ? "Generation history"
-                  : drawer === "modify"
-                    ? "Modify with AI"
-                    : drawer === "compare"
-                      ? "Compare versions"
-                      : "Design report"
-            }
-            className="absolute inset-y-0 right-0 z-20 flex w-full max-w-[520px] flex-col border-l border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-950"
-          >
+          <Drawer key={drawer} label={DRAWER_LABEL[drawer]}>
             {drawer === "generate" ? (
               <>
                 <ModeTabs mode={mode} onMode={setMode} />
@@ -369,62 +414,57 @@ export function ProjectEditor({
             ) : version.data ? (
               <ReportPanel version={version.data} onClose={() => setDrawer("none")} />
             ) : null}
-          </aside>
+          </Drawer>
         )}
       </div>
     </div>
   );
 }
 
+const DRAWER_LABEL: Record<Exclude<Drawer, "none">, string> = {
+  generate: "Generate a new design",
+  history: "Generation history",
+  modify: "Modify with AI",
+  compare: "Compare versions",
+  report: "Design report",
+};
+
 function DrawerButton({
   drawer,
   value,
   onToggle,
+  icon,
   children,
 }: {
   drawer: Drawer;
   value: Drawer;
   onToggle: (drawer: Drawer) => void;
+  icon?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const open = drawer === value;
   return (
-    <button
-      type="button"
-      onClick={() => onToggle(drawer === value ? "none" : value)}
-      aria-pressed={drawer === value}
-      className="rounded-md px-3 py-1 text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+    <Button
+      variant="ghost"
+      size="sm"
+      icon={icon}
+      onClick={() => onToggle(open ? "none" : value)}
+      aria-pressed={open}
+      className={open ? "bg-accent-soft text-accent-text hover:bg-accent-soft" : undefined}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
+const DESIGN_MODES = [
+  { value: "ai", label: "Describe with AI" },
+  { value: "form", label: "Specification form" },
+] as const;
+
 function ModeTabs({ mode, onMode }: { mode: DesignMode; onMode: (mode: DesignMode) => void }) {
-  const tab = (value: DesignMode, label: string) => (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={mode === value}
-      onClick={() => onMode(value)}
-      className={
-        "border-b-2 px-3 py-2 text-sm " +
-        (mode === value
-          ? "border-blue-600 font-medium text-blue-700 dark:text-blue-400"
-          : "border-transparent text-neutral-500 hover:text-neutral-800")
-      }
-    >
-      {label}
-    </button>
-  );
   return (
-    <div
-      role="tablist"
-      aria-label="How to create the design"
-      className="flex gap-1 border-b border-neutral-200 px-3 dark:border-neutral-800"
-    >
-      {tab("ai", "Describe with AI")}
-      {tab("form", "Specification form")}
-    </div>
+    <Tabs label="How to create the design" items={DESIGN_MODES} value={mode} onChange={onMode} />
   );
 }
 
@@ -468,7 +508,7 @@ function StartView({
   const importDemo = useImportDemo(projectId);
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-      <div className="flex min-h-0 flex-1 flex-col border-neutral-200 lg:max-w-[560px] lg:border-r dark:border-neutral-800">
+      <div className="flex min-h-0 flex-1 flex-col border-line lg:max-w-[560px] lg:border-r">
         <ModeTabs mode={mode} onMode={onMode} />
         <div className="min-h-0 flex-1">
           {mode === "ai" ? (
@@ -483,22 +523,34 @@ function StartView({
           )}
         </div>
       </div>
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-gradient-to-br from-neutral-50 to-blue-50 p-8 text-center dark:from-neutral-900 dark:to-neutral-950">
-        <p className="max-w-md text-sm text-neutral-600 dark:text-neutral-300">
+      <div className="hero-backdrop flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+        <span
+          aria-hidden
+          className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-accent-text"
+        >
+          <Box size={22} />
+        </span>
+        <p className="max-w-md text-sm text-fg-muted">
           This project has no design yet. Describe the house you want and the building appears here
           as an interactive 3D model — every wall, room, door and window is a real, selectable
           object. Each generation is saved as a new version.
         </p>
-        <button
-          type="button"
-          onClick={() => importDemo.mutate(undefined, { onSuccess: (v) => onGenerated(v.id) })}
+        <Button
+          variant="outline"
+          onClick={() =>
+            importDemo.mutate(undefined, {
+              onSuccess: (v) => {
+                toast.success("Demo house imported");
+                onGenerated(v.id);
+              },
+            })
+          }
           disabled={importDemo.isPending}
-          className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-white disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
         >
           {importDemo.isPending ? "Importing…" : "Or import the hand-authored demo house"}
-        </button>
+        </Button>
         {importDemo.isError && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
             {importDemo.error.message}
           </p>
         )}
@@ -521,8 +573,9 @@ function GeneratedBanner({
   return (
     <div
       role="status"
-      className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-green-200 bg-green-50 px-4 py-2 text-sm text-green-900 dark:border-green-900 dark:bg-green-950 dark:text-green-200"
+      className="flex animate-fade-in flex-wrap items-center gap-x-3 gap-y-1 border-b border-green-200 bg-green-50 px-4 py-1.5 text-sm text-green-900 dark:border-green-900 dark:bg-green-950/60 dark:text-green-200"
     >
+      <CircleCheck size={15} aria-hidden className="text-green-600 dark:text-green-400" />
       <span className="font-semibold">
         {version.source === "manual" ? "Saved" : "Generated"} v{version.number}
       </span>
@@ -531,18 +584,18 @@ function GeneratedBanner({
         {s.bedrooms} bedrooms · {s.bathrooms} bathrooms
       </span>
       {count > 0 && (
-        <button type="button" onClick={onReport} className="underline">
+        <button type="button" onClick={onReport} className="underline underline-offset-2">
           {count} note{count > 1 ? "s" : ""} to review
         </button>
       )}
-      <button
-        type="button"
+      <IconButton
+        label="Dismiss"
         onClick={onDismiss}
-        aria-label="Dismiss"
-        className="ml-auto text-green-700 hover:text-green-900"
+        size="sm"
+        className="ml-auto text-green-800 hover:bg-green-100 hover:text-green-900 dark:text-green-300 dark:hover:bg-green-900"
       >
-        ×
-      </button>
+        <X size={14} />
+      </IconButton>
     </div>
   );
 }
@@ -552,9 +605,35 @@ function Centered({ children, tone }: { children: React.ReactNode; tone?: "error
     <div className="flex flex-1 items-center justify-center p-8">
       <div
         role={tone === "error" ? "alert" : "status"}
-        className={"max-w-xl text-sm " + (tone === "error" ? "text-red-600" : "text-neutral-500")}
+        className={
+          "max-w-xl text-sm " +
+          (tone === "error" ? "text-red-600 dark:text-red-400" : "text-fg-subtle")
+        }
       >
         {children}
+      </div>
+    </div>
+  );
+}
+
+/** The editor's shape while data loads: panels and viewport as skeletons, with a status text. */
+function EditorSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" className="flex min-h-0 flex-1">
+      <div className="hidden w-56 shrink-0 flex-col gap-3 border-r border-line p-3 lg:flex">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 bg-bg-subtle p-8">
+        <Spinner className="h-5 w-5 text-accent-text" />
+        <p className="text-sm text-fg-subtle">{label}</p>
+      </div>
+      <div className="hidden w-72 shrink-0 flex-col gap-3 border-l border-line p-3 lg:flex">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-20 w-full" />
       </div>
     </div>
   );

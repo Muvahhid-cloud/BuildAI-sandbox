@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { Logo } from "@/components/Logo";
+import { Button, Callout, Card, Input } from "@/components/ui";
 import { ApiError } from "@/lib/api/errors";
 
 import { login, register } from "../api";
@@ -13,16 +15,18 @@ type Mode = "login" | "register";
 
 const COPY: Record<
   Mode,
-  { title: string; submit: string; switchText: string; switchHref: string }
+  { title: string; tagline: string; submit: string; switchText: string; switchHref: string }
 > = {
   login: {
     title: "Sign in",
+    tagline: "Welcome back. Your projects are waiting.",
     submit: "Sign in",
     switchText: "No account? Create one",
     switchHref: "/register",
   },
   register: {
     title: "Create account",
+    tagline: "Describe a house, get a 3D model you can explore.",
     submit: "Create account",
     switchText: "Already registered? Sign in",
     switchHref: "/login",
@@ -59,56 +63,66 @@ export function AuthForm({ mode }: { mode: Mode }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex w-full max-w-sm flex-col gap-4" noValidate>
-      <h1 className="text-2xl font-semibold">{copy.title}</h1>
+    <div className="w-full max-w-sm animate-rise-in">
+      <div className="mb-6 flex flex-col items-center gap-3 text-center">
+        <Logo size={36} />
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{copy.title}</h1>
+          <p className="mt-1 text-sm text-fg-subtle">{copy.tagline}</p>
+        </div>
+      </div>
+      <Card className="p-5 shadow-md sm:p-6">
+        <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+          {mode === "register" && (
+            <Field
+              label="Name"
+              name="display_name"
+              value={displayName}
+              onChange={setDisplayName}
+              error={fieldErrors.display_name}
+              autoComplete="name"
+            />
+          )}
+          <Field
+            label="Email"
+            name="email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            error={fieldErrors.email}
+            autoComplete="email"
+          />
+          <Field
+            label="Password"
+            name="password"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            error={fieldErrors.password}
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
+            hint={mode === "register" ? "At least 10 characters" : undefined}
+          />
 
-      {mode === "register" && (
-        <Field
-          label="Name"
-          name="display_name"
-          value={displayName}
-          onChange={setDisplayName}
-          error={fieldErrors.display_name}
-          autoComplete="name"
-        />
-      )}
-      <Field
-        label="Email"
-        name="email"
-        type="email"
-        value={email}
-        onChange={setEmail}
-        error={fieldErrors.email}
-        autoComplete="email"
-      />
-      <Field
-        label="Password"
-        name="password"
-        type="password"
-        value={password}
-        onChange={setPassword}
-        error={fieldErrors.password}
-        autoComplete={mode === "login" ? "current-password" : "new-password"}
-        hint={mode === "register" ? "At least 10 characters" : undefined}
-      />
+          {error && Object.keys(fieldErrors).length === 0 && (
+            <Callout tone="danger" role="alert" className="py-2">
+              {error.message}
+            </Callout>
+          )}
 
-      {error && Object.keys(fieldErrors).length === 0 && (
-        <p role="alert" className="text-sm text-red-600">
-          {error.message}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={mutation.isPending}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
-      >
-        {mutation.isPending ? "Please wait…" : copy.submit}
-      </button>
-      <Link href={copy.switchHref} className="text-sm text-neutral-600 underline">
-        {copy.switchText}
-      </Link>
-    </form>
+          <Button type="submit" variant="primary" size="lg" disabled={mutation.isPending}>
+            {mutation.isPending ? "Please wait…" : copy.submit}
+          </Button>
+        </form>
+      </Card>
+      <p className="mt-4 text-center text-sm">
+        <Link
+          href={copy.switchHref}
+          className="text-fg-muted underline decoration-line-strong underline-offset-4 transition-colors hover:text-fg"
+        >
+          {copy.switchText}
+        </Link>
+      </p>
+    </div>
   );
 }
 
@@ -124,11 +138,11 @@ function Field(props: {
 }) {
   const id = `field-${props.name}`;
   return (
-    <div className="flex flex-col gap-1 text-sm">
+    <div className="flex flex-col gap-1.5 text-sm">
       <label htmlFor={id} className="font-medium">
         {props.label}
       </label>
-      <input
+      <Input
         id={id}
         name={props.name}
         type={props.type ?? "text"}
@@ -137,11 +151,11 @@ function Field(props: {
         autoComplete={props.autoComplete}
         aria-invalid={props.error ? true : undefined}
         aria-describedby={props.error ? `${id}-error` : undefined}
-        className="rounded-md border border-neutral-300 bg-transparent px-3 py-2 dark:border-neutral-700"
+        className="h-10 px-3"
       />
-      {props.hint && !props.error && <span className="text-neutral-500">{props.hint}</span>}
+      {props.hint && !props.error && <span className="text-xs text-fg-subtle">{props.hint}</span>}
       {props.error && (
-        <span id={`${id}-error`} className="text-red-600">
+        <span id={`${id}-error`} className="text-xs text-red-600 dark:text-red-400">
           {props.error}
         </span>
       )}

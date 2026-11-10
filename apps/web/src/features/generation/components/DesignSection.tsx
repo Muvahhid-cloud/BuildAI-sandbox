@@ -18,9 +18,8 @@ const FACADES: { id: Facade; text: string }[] = [
 ];
 const HEX = /^#[0-9a-f]{6}$/;
 
-const input =
-  "w-full rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm dark:border-neutral-700 dark:bg-neutral-900";
-const label = "text-[11px] font-medium uppercase tracking-wide text-neutral-500";
+const input = "w-full rounded-md border border-line-strong bg-surface px-2 py-1 text-sm";
+const label = "text-2xs font-medium uppercase tracking-wide text-fg-subtle";
 
 /** Where a design choice comes from — shown next to every value (K3 precedence). */
 export type ChoiceSource = "explicit" | "design_system" | "inherited";
@@ -36,7 +35,7 @@ export function SourceBadge({ source }: { source: ChoiceSource }) {
       ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
       : source === "design_system"
         ? "bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-300"
-        : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300";
+        : "bg-neutral-100 text-fg-muted dark:bg-neutral-800";
   return (
     <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${tone}`}>
       {SOURCE_TEXT[source]}
@@ -114,7 +113,7 @@ export function DesignSection({ spec, onChange, options, issues }: DesignSection
     <section className="flex flex-col gap-2" aria-labelledby="spec-design">
       <h3
         id="spec-design"
-        className="text-xs font-semibold uppercase tracking-wider text-neutral-500"
+        className="text-xs font-semibold uppercase tracking-wider text-fg-subtle"
       >
         Design
       </h3>
@@ -161,7 +160,7 @@ export function DesignSection({ spec, onChange, options, issues }: DesignSection
           </button>
         )}
         {options && options.available.length === 0 && (
-          <p className="text-[11px] text-neutral-400">
+          <p className="text-2xs text-fg-subtle">
             Design systems are awaiting review; until one is approved the generic components are
             used. Colors and window placement below work without a design system.
           </p>
@@ -185,7 +184,7 @@ export function DesignSection({ spec, onChange, options, issues }: DesignSection
             role="radio"
             aria-checked={!design.facade_color}
             onClick={() => setDesign({ facade_color: null })}
-            className="rounded border border-neutral-300 px-1.5 text-[11px] dark:border-neutral-700"
+            className="rounded border border-line-strong px-1.5 text-2xs"
           >
             {system?.facade.default_color ? `System (${system.facade.default_color})` : "Material"}
           </button>
@@ -202,13 +201,13 @@ export function DesignSection({ spec, onChange, options, issues }: DesignSection
                 "h-6 w-6 rounded border " +
                 (design.facade_color === c.name
                   ? "border-blue-600 ring-2 ring-blue-600"
-                  : "border-neutral-300 dark:border-neutral-600")
+                  : "border-line-strong dark:border-neutral-600")
               }
               style={{ backgroundColor: c.hex }}
             />
           ))}
         </div>
-        <p className="text-[11px] text-neutral-500">
+        <p className="text-2xs text-fg-subtle">
           {color.hex ? (
             <>
               Exterior walls drawn in{" "}
@@ -259,7 +258,7 @@ export function DesignSection({ spec, onChange, options, issues }: DesignSection
                 <label key={f.id} className="flex items-center gap-1">
                   <input
                     type="checkbox"
-                    className="h-3 w-3 accent-blue-600"
+                    className="h-3 w-3 accent-[var(--accent)]"
                     aria-label={`Prefer ${f.text}`}
                     checked={windows.preferred_facades.includes(f.id)}
                     onChange={(e) =>
@@ -285,7 +284,7 @@ export function DesignSection({ spec, onChange, options, issues }: DesignSection
                 <label key={f.id} className="flex items-center gap-1">
                   <input
                     type="checkbox"
-                    className="h-3 w-3 accent-blue-600"
+                    className="h-3 w-3 accent-[var(--accent)]"
                     aria-label={`Exclude ${f.text}`}
                     checked={(windows.excluded_facades ?? []).includes(f.id)}
                     onChange={(e) =>

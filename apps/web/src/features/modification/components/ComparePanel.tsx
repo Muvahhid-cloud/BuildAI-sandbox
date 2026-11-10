@@ -1,5 +1,7 @@
 "use client";
 
+import { DrawerHeader } from "@/components/ui";
+import { GitCompareArrows } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { ApiError } from "@/lib/api/errors";
@@ -63,22 +65,12 @@ export function ComparePanel({
 
   return (
     <div className="flex h-full flex-col" aria-label="Compare versions">
-      <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-        <div>
-          <h2 className="font-semibold">Compare versions</h2>
-          <p className="text-xs text-neutral-500">
-            Every difference is measured on the two models.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="rounded px-2 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-        >
-          ×
-        </button>
-      </header>
+      <DrawerHeader
+        icon={<GitCompareArrows size={15} />}
+        title={<>Compare versions</>}
+        description={<>Every difference is measured on the two models.</>}
+        onClose={onClose}
+      />
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm">
         <div className="grid grid-cols-2 gap-2">
           <label className="flex flex-col gap-1 text-xs">
@@ -87,7 +79,7 @@ export function ComparePanel({
               aria-label="From version"
               value={a}
               onChange={(e) => setA(e.target.value)}
-              className="rounded border border-neutral-300 px-1 py-1 dark:border-neutral-700 dark:bg-neutral-900"
+              className="rounded border border-line-strong px-1 py-1"
             >
               {versions.map(option)}
             </select>
@@ -98,7 +90,7 @@ export function ComparePanel({
               aria-label="To version"
               value={b}
               onChange={(e) => setB(e.target.value)}
-              className="rounded border border-neutral-300 px-1 py-1 dark:border-neutral-700 dark:bg-neutral-900"
+              className="rounded border border-line-strong px-1 py-1"
             >
               {versions.map(option)}
             </select>
@@ -122,11 +114,11 @@ export function ComparePanel({
         )}
         {result && (
           <section aria-label="Differences">
-            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
               v{result.a_number} → v{result.b_number}
             </h3>
             {result.diff.lines.length === 0 ? (
-              <p className="text-xs text-neutral-600">The two versions have the same design.</p>
+              <p className="text-xs text-fg-muted">The two versions have the same design.</p>
             ) : (
               <ul className="list-disc space-y-0.5 pl-4 text-xs">
                 {result.diff.lines.map((l, k) => (
@@ -134,7 +126,7 @@ export function ComparePanel({
                 ))}
               </ul>
             )}
-            <p className="mt-2 text-[11px] text-neutral-500">
+            <p className="mt-2 text-2xs text-fg-subtle">
               {result.b === shownVersionId
                 ? `${result.diff.added.length + result.diff.changed.length} added or changed elements are amber in the plan and in 3D.`
                 : `Open v${result.b_number} to see its changes highlighted.`}

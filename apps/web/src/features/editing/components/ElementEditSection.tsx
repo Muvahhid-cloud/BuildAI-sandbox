@@ -76,13 +76,13 @@ export function ElementEditSection({
   return (
     <section
       aria-label="Edit"
-      className="border-b border-neutral-100 bg-blue-50/40 px-4 py-2.5 dark:border-neutral-800 dark:bg-blue-950/20"
+      className="border-b border-line bg-blue-50/40 px-4 py-2.5 dark:bg-blue-950/20"
     >
-      <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-400">
+      <h3 className="mb-1.5 text-2xs font-semibold uppercase tracking-wider text-accent-text">
         Edit
       </h3>
       {body}
-      <p className="mt-1.5 text-[11px] text-neutral-500">
+      <p className="mt-1.5 text-2xs text-fg-subtle">
         Changes join the plan&apos;s editing session: undo, discard or save them as a new version in
         the 2D plan.
       </p>
@@ -140,7 +140,7 @@ function OpeningSizeForm({ opening, host }: { opening: Opening; host: Wall }) {
   };
 
   const field = (name: keyof typeof current, label: string, hint?: string) => (
-    <label className="flex flex-col gap-0.5 text-[11px] text-neutral-600 dark:text-neutral-400">
+    <label className="flex flex-col gap-0.5 text-2xs text-fg-muted">
       {label}
       <input
         type="number"
@@ -153,15 +153,15 @@ function OpeningSizeForm({ opening, host }: { opening: Opening; host: Wall }) {
         onKeyDown={(e) => {
           if (e.key === "Enter") apply();
         }}
-        className="w-full rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-xs tabular-nums dark:border-neutral-700 dark:bg-neutral-900"
+        className="w-full rounded border border-line-strong bg-surface px-1.5 py-0.5 text-xs tabular-nums"
       />
-      {hint && <span className="text-[10px] text-neutral-400">{hint}</span>}
+      {hint && <span className="text-[10px] text-fg-subtle">{hint}</span>}
     </label>
   );
 
   return (
     <div>
-      <p className="mb-1 text-xs text-neutral-700 dark:text-neutral-300">
+      <p className="mb-1 text-xs text-fg-muted">
         Size in {host.name} ({host.dimensions.length.toFixed(2)} m long,{" "}
         {host.dimensions.height.toFixed(2)} m high)
       </p>
@@ -214,7 +214,7 @@ function WallProperties({ wall, index }: { wall: Wall; index: ModelIndex }) {
   return (
     <div className="flex flex-col gap-2">
       {exterior && (
-        <p className="text-[11px] text-neutral-500">
+        <p className="text-2xs text-fg-subtle">
           Exterior wall: moving it (drag on the plan) or changing its thickness changes the whole
           facade on every storey; the slabs and the roof follow.
         </p>
@@ -240,7 +240,7 @@ function NumberField({
   step: number;
 }) {
   return (
-    <label className="flex flex-col gap-0.5 text-[11px] text-neutral-600 dark:text-neutral-400">
+    <label className="flex flex-col gap-0.5 text-2xs text-fg-muted">
       {label}
       <input
         type="number"
@@ -253,7 +253,7 @@ function NumberField({
         onKeyDown={(e) => {
           if (e.key === "Enter") onEnter();
         }}
-        className="w-full rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-xs tabular-nums dark:border-neutral-700 dark:bg-neutral-900"
+        className="w-full rounded border border-line-strong bg-surface px-1.5 py-0.5 text-xs tabular-nums"
       />
     </label>
   );
@@ -344,13 +344,13 @@ function WallFinishForm({ wall, exterior }: { wall: Wall; exterior: boolean }) {
   return (
     <div>
       <div className="flex flex-wrap items-end gap-1.5">
-        <label className="flex flex-col gap-0.5 text-[11px] text-neutral-600 dark:text-neutral-400">
+        <label className="flex flex-col gap-0.5 text-2xs text-fg-muted">
           Finish of
           <select
             aria-label="Wall face"
             value={face}
             onChange={(e) => setFace(e.target.value as Face)}
-            className="rounded border border-neutral-300 bg-white px-1 py-0.5 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+            className="rounded border border-line-strong bg-surface px-1 py-0.5 text-xs"
           >
             {faces.map(([f, label]) => (
               <option key={f} value={f}>
@@ -359,13 +359,13 @@ function WallFinishForm({ wall, exterior }: { wall: Wall; exterior: boolean }) {
             ))}
           </select>
         </label>
-        <label className="flex min-w-0 flex-1 flex-col gap-0.5 text-[11px] text-neutral-600 dark:text-neutral-400">
+        <label className="flex min-w-0 flex-1 flex-col gap-0.5 text-2xs text-fg-muted">
           Material
           <select
             aria-label="Finish material"
             value={chosen}
             onChange={(e) => setMaterial({ key, id: e.target.value })}
-            className="rounded border border-neutral-300 bg-white px-1 py-0.5 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+            className="rounded border border-line-strong bg-surface px-1 py-0.5 text-xs"
           >
             {!WALL_FINISHES.some((m) => m.id === chosen) && (
               <option value={chosen}>{materialName(chosen || null)}</option>
@@ -464,7 +464,7 @@ function WallRemoval({ wall, index }: { wall: Wall; index: ModelIndex }) {
   if (merge === null) {
     return (
       <div>
-        <p className="mb-1.5 text-xs text-neutral-700 dark:text-neutral-300">
+        <p className="mb-1.5 text-xs text-fg-muted">
           Remove {wall.name}
           {rooms.length > 0 && <> between {rooms.map((r) => r.name).join(" and ")}</>}:
         </p>
@@ -499,11 +499,11 @@ function WallRemoval({ wall, index }: { wall: Wall; index: ModelIndex }) {
     : `${rooms.map((r) => r.name).join(" and ")} open into each other.`;
   return (
     <div role="group" aria-label={`Remove ${wall.name}`}>
-      <p className="mb-1 text-xs font-medium text-neutral-800 dark:text-neutral-200">
+      <p className="mb-1 text-xs font-medium text-fg">
         {merge ? `Remove ${wall.name} and merge the rooms?` : `Remove ${wall.name}?`}
       </p>
       {check.preview?.valid && (
-        <p className="mb-1 text-xs text-neutral-700 dark:text-neutral-300">
+        <p className="mb-1 text-xs text-fg-muted">
           {what}
           {doors.length > 0 && (
             <> {doors.map((d) => d.name).join(", ")} in the wall will be removed with it.</>
@@ -580,7 +580,7 @@ function RoomEdit({ room }: { room: Room }) {
 
   return (
     <div className="space-y-2">
-      <label className="flex flex-col gap-0.5 text-[11px] text-neutral-600 dark:text-neutral-400">
+      <label className="flex flex-col gap-0.5 text-2xs text-fg-muted">
         Name
         <input
           type="text"
@@ -593,10 +593,10 @@ function RoomEdit({ room }: { room: Room }) {
             if (e.key === "Enter") apply();
             if (e.key === "Escape") setName(null);
           }}
-          className="rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+          className="rounded border border-line-strong bg-surface px-1.5 py-0.5 text-xs"
         />
       </label>
-      <label className="flex flex-col gap-0.5 text-[11px] text-neutral-600 dark:text-neutral-400">
+      <label className="flex flex-col gap-0.5 text-2xs text-fg-muted">
         Room type
         {editableType ? (
           <select
@@ -604,7 +604,7 @@ function RoomEdit({ room }: { room: Room }) {
             value={typeValue}
             disabled={renameOp !== null}
             onChange={(e) => setType({ base: current, value: e.target.value as RoomType })}
-            className="rounded border border-neutral-300 bg-white px-1 py-0.5 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+            className="rounded border border-line-strong bg-surface px-1 py-0.5 text-xs"
           >
             {Object.entries(ROOM_TYPE_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
@@ -613,7 +613,7 @@ function RoomEdit({ room }: { room: Room }) {
             ))}
           </select>
         ) : (
-          <span className="text-xs text-neutral-500">
+          <span className="text-xs text-fg-subtle">
             {current.replace(/_/g, " ")} — this type is tied to the building (stair, garage door or
             outdoors) and cannot be changed.
           </span>
@@ -668,19 +668,19 @@ function Verdict({
   valid: string | null;
 }) {
   const { preview, checking, error } = check;
-  if (error) return <p className="mt-1 text-[11px] text-red-700">{error}</p>;
+  if (error) return <p className="mt-1 text-2xs text-red-700">{error}</p>;
   if (checking) {
     return (
-      <p className="mt-1 text-[11px] text-neutral-500" aria-live="polite">
+      <p className="mt-1 text-2xs text-fg-subtle" aria-live="polite">
         Checking…
       </p>
     );
   }
-  if (!preview) return idle ? <p className="mt-1 text-[11px] text-neutral-500">{idle}</p> : null;
+  if (!preview) return idle ? <p className="mt-1 text-2xs text-fg-subtle">{idle}</p> : null;
   if (!preview.valid) {
     const rest: Issue[] = preview.rejection?.issues.slice(1) ?? [];
     return (
-      <div role="alert" className="mt-1 rounded bg-red-50 p-1.5 text-[11px] text-red-800">
+      <div role="alert" className="mt-1 rounded bg-red-50 p-1.5 text-2xs text-red-800">
         <p className="font-medium">{preview.rejection?.message ?? "Not possible."}</p>
         {rest.length > 0 && (
           <ul className="mt-0.5 list-disc pl-4">
@@ -693,7 +693,7 @@ function Verdict({
     );
   }
   return (
-    <div role="status" className="mt-1 rounded bg-green-50 p-1.5 text-[11px] text-green-800">
+    <div role="status" className="mt-1 rounded bg-green-50 p-1.5 text-2xs text-green-800">
       <p>{valid ? `${valid} — valid.` : "Valid."}</p>
       {preview.warnings.length > 0 && (
         <ul className="mt-0.5 list-disc pl-4 text-amber-800">
@@ -733,7 +733,7 @@ function EditButton({
           ? "bg-blue-600 text-white hover:bg-blue-700"
           : danger
             ? "bg-red-50 text-red-700 ring-1 ring-red-200 hover:bg-red-100"
-            : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200")
+            : "bg-neutral-100 text-fg hover:bg-neutral-200")
       }
     >
       {children}

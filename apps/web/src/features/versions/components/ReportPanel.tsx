@@ -1,5 +1,7 @@
 "use client";
 
+import { DrawerHeader } from "@/components/ui";
+import { ClipboardList } from "lucide-react";
 import { buildingSpecificationSchema } from "@buildai/schema";
 
 import { DISCLAIMER } from "@/lib/disclaimer";
@@ -24,44 +26,39 @@ export function ReportPanel({ version, onClose }: { version: Version; onClose: (
 
   return (
     <div className="flex h-full min-h-0 flex-col text-sm">
-      <div className="flex items-start justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-        <div>
-          <h2 className="font-semibold">Design report · v{version.number}</h2>
-          <p className="text-xs text-neutral-500">
+      <DrawerHeader
+        icon={<ClipboardList size={15} />}
+        title={<>Design report · v{version.number}</>}
+        description={
+          <>
             {version.engine_version} · rules {version.rules_profile}
             {version.seed !== null && ` · seed ${version.seed}`}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close report"
-          className="rounded-md px-2 text-lg leading-none text-neutral-400 hover:text-neutral-700"
-        >
-          ×
-        </button>
-      </div>
+          </>
+        }
+        onClose={onClose}
+        closeLabel="Close report"
+      />
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
         <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-          <dt className="text-neutral-500">Gross floor area</dt>
+          <dt className="text-fg-subtle">Gross floor area</dt>
           <dd className="text-right tabular-nums">
             {version.summary.gross_floor_area_m2} m²
             {typeof metrics.target_gross_floor_area_m2 === "number" &&
               ` (asked ${metrics.target_gross_floor_area_m2} m²)`}
           </dd>
-          <dt className="text-neutral-500">Net room area</dt>
+          <dt className="text-fg-subtle">Net room area</dt>
           <dd className="text-right tabular-nums">{version.summary.net_floor_area_m2} m²</dd>
-          <dt className="text-neutral-500">Floors · rooms</dt>
+          <dt className="text-fg-subtle">Floors · rooms</dt>
           <dd className="text-right tabular-nums">
             {version.summary.storeys} · {version.summary.rooms}
           </dd>
-          <dt className="text-neutral-500">Bedrooms · bathrooms · WCs</dt>
+          <dt className="text-fg-subtle">Bedrooms · bathrooms · WCs</dt>
           <dd className="text-right tabular-nums">
             {version.summary.bedrooms} · {version.summary.bathrooms} · {version.summary.wcs}
           </dd>
           {typeof metrics.candidates_evaluated === "number" && (
             <>
-              <dt className="text-neutral-500">Layout candidates</dt>
+              <dt className="text-fg-subtle">Layout candidates</dt>
               <dd className="text-right tabular-nums">{metrics.candidates_evaluated}</dd>
             </>
           )}
@@ -69,14 +66,14 @@ export function ReportPanel({ version, onClose }: { version: Version; onClose: (
 
         {version.prompt && (
           <section className="mt-4">
-            <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+            <h3 className="mb-1 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
               Request
             </h3>
-            <p className="rounded-md bg-neutral-50 p-2 text-xs italic text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
+            <p className="rounded-md bg-bg-subtle p-2 text-xs italic text-fg-muted">
               “{version.prompt}”
             </p>
             {report?.generation && (
-              <p className="mt-1 text-[11px] text-neutral-400">
+              <p className="mt-1 text-2xs text-fg-subtle">
                 Interpreted by{" "}
                 {report.generation.provider === "mock"
                   ? "the offline mock interpreter (development)"
@@ -97,10 +94,10 @@ export function ReportPanel({ version, onClose }: { version: Version; onClose: (
         {report?.patterns && report.patterns.length > 0 && <Patterns patterns={report.patterns} />}
         {assumptions.length > 0 && (
           <section className="mt-4">
-            <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+            <h3 className="mb-1 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
               Assumptions <span className="tabular-nums">({assumptions.length})</span>
             </h3>
-            <ul className="list-disc pl-4 text-xs text-neutral-600 dark:text-neutral-300">
+            <ul className="list-disc pl-4 text-xs text-fg-muted">
               {assumptions.map((a, i) => (
                 <li key={`${a.path}-${i}`}>{a.reason}</li>
               ))}
@@ -109,10 +106,10 @@ export function ReportPanel({ version, onClose }: { version: Version; onClose: (
         )}
         {report && report.notes.length > 0 && (
           <section className="mt-4">
-            <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+            <h3 className="mb-1 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
               Engine notes
             </h3>
-            <ul className="list-disc pl-4 text-xs text-neutral-600 dark:text-neutral-300">
+            <ul className="list-disc pl-4 text-xs text-fg-muted">
               {report.notes.map((n) => (
                 <li key={n}>{n}</li>
               ))}
@@ -134,7 +131,7 @@ export function ReportPanel({ version, onClose }: { version: Version; onClose: (
         {model.length > 0 && (
           <Group title="Model checks" issues={model} onSelect={select} empty="" />
         )}
-        <p className="mt-4 rounded-md bg-amber-50 p-2 text-[11px] leading-snug text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+        <p className="mt-4 rounded-md bg-amber-50 p-2 text-2xs leading-snug text-amber-900 dark:bg-amber-950 dark:text-amber-200">
           Rules profiles perform conceptual checks only; they are not a building-code compliance
           check. {DISCLAIMER}
         </p>
@@ -148,7 +145,7 @@ export function ReportPanel({ version, onClose }: { version: Version; onClose: (
 function Evaluation({ evaluation }: { evaluation: DesignEvaluation }) {
   return (
     <section className="mt-4" aria-label="Design evaluation">
-      <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+      <h3 className="mb-1 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
         Design evaluation{" "}
         <span className="tabular-nums">· score {Math.round(evaluation.score * 100)}/100</span>
       </h3>
@@ -165,10 +162,10 @@ function Evaluation({ evaluation }: { evaluation: DesignEvaluation }) {
               >
                 {r.met ? "✓" : "✗"} {r.label}
               </span>{" "}
-              <span className="rounded bg-neutral-100 px-1 text-[10px] uppercase text-neutral-500 dark:bg-neutral-800">
+              <span className="rounded bg-neutral-100 px-1 text-[10px] uppercase text-fg-subtle dark:bg-neutral-800">
                 {r.priority === "must" ? "required" : "preference"}
               </span>
-              <span className="block pl-3 text-[11px] text-neutral-500">
+              <span className="block pl-3 text-2xs text-fg-subtle">
                 asked {r.expected} · got {r.delivered}
                 {r.quote && <span className="italic"> · “{r.quote}”</span>}
               </span>
@@ -178,11 +175,11 @@ function Evaluation({ evaluation }: { evaluation: DesignEvaluation }) {
       )}
       <ul className="flex flex-col gap-0.5">
         {evaluation.criteria.map((c) => (
-          <li key={c.key} className="text-xs text-neutral-600 dark:text-neutral-300">
+          <li key={c.key} className="text-xs text-fg-muted">
             <span className="inline-block w-9 tabular-nums">{Math.round(c.score * 100)}%</span>
             {c.label}
             {c.weight > 2 && <span className="text-[10px] text-violet-600"> · priority</span>}
-            <span className="block pl-9 text-[11px] text-neutral-500">{c.explanation}</span>
+            <span className="block pl-9 text-2xs text-fg-subtle">{c.explanation}</span>
           </li>
         ))}
       </ul>
@@ -205,13 +202,13 @@ function Footprint({ topology }: { topology: Topology }) {
   const missed = topology.requested !== null && topology.requested !== topology.generated;
   return (
     <section className="mt-4" aria-label="Footprint">
-      <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+      <h3 className="mb-1 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
         Footprint
       </h3>
-      <p className="text-xs text-neutral-700 dark:text-neutral-200">
+      <p className="text-xs text-fg-muted">
         {SHAPES[topology.generated] ?? topology.generated}
         {topology.requested && (
-          <span className={missed ? "text-amber-800 dark:text-amber-300" : "text-neutral-500"}>
+          <span className={missed ? "text-amber-800 dark:text-amber-300" : "text-fg-subtle"}>
             {" "}
             · {SHAPES[topology.requested] ?? topology.requested} requested
             {topology.mandatory ? " (required)" : " (preference)"}
@@ -220,11 +217,11 @@ function Footprint({ topology }: { topology: Topology }) {
         )}
       </p>
       {topology.limitation && (
-        <p className="text-[11px] text-amber-800 dark:text-amber-300">
+        <p className="text-2xs text-amber-800 dark:text-amber-300">
           Not generated yet: {topology.limitation}
         </p>
       )}
-      <p className="text-[11px] text-neutral-500">{topology.explanation}</p>
+      <p className="text-2xs text-fg-subtle">{topology.explanation}</p>
     </section>
   );
 }
@@ -233,23 +230,21 @@ function Footprint({ topology }: { topology: Topology }) {
 function Patterns({ patterns }: { patterns: PatternUse[] }) {
   return (
     <section className="mt-4" aria-label="Layout patterns">
-      <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+      <h3 className="mb-1 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
         Layout patterns <span className="tabular-nums">({patterns.length})</span>
       </h3>
       <ul className="flex flex-col gap-1">
         {patterns.map((p) => (
-          <li key={p.id} className="text-xs text-neutral-600 dark:text-neutral-300">
+          <li key={p.id} className="text-xs text-fg-muted">
             {p.name}{" "}
             <span className="rounded bg-amber-100 px-1 text-[10px] uppercase text-amber-900 dark:bg-amber-900 dark:text-amber-100">
               {p.status === "approved" ? "approved" : `${p.status} · experimental`}
             </span>
-            <span className="block text-[11px] text-neutral-500">
-              because {p.reasons.join("; ")}
-            </span>
+            <span className="block text-2xs text-fg-subtle">because {p.reasons.join("; ")}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-1 text-[11px] text-neutral-400">
+      <p className="mt-1 text-2xs text-fg-subtle">
         Patterns are soft design heuristics, not verified architectural standards; they never
         override a requirement.
       </p>
@@ -270,11 +265,11 @@ function Group({
 }) {
   return (
     <section className="mt-4">
-      <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+      <h3 className="mb-1 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
         {title} {issues.length > 0 && <span className="tabular-nums">({issues.length})</span>}
       </h3>
       {issues.length === 0 ? (
-        <p className="text-xs text-neutral-500">{empty}</p>
+        <p className="text-xs text-fg-subtle">{empty}</p>
       ) : (
         <ul className="flex flex-col gap-1">
           {issues.map((issue, i) => (
@@ -291,7 +286,7 @@ function Group({
                 <span className="text-amber-800 dark:text-amber-300">{issue.message}</span>
               )}
               {(issue.rule_ref ?? issue.constraint) && (
-                <span className="ml-1 font-mono text-[10px] text-neutral-400">
+                <span className="ml-1 font-mono text-[10px] text-fg-subtle">
                   {issue.rule_ref ?? issue.constraint}
                 </span>
               )}

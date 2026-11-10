@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 
+import { Toaster } from "@/components/ui";
 import { ApiError } from "@/lib/api/errors";
 import { refreshSession } from "@/lib/api/client";
 import { useAuthStore } from "@/stores/auth-store";
@@ -33,6 +34,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthBootstrap />
       {children}
+      <Toaster />
     </QueryClientProvider>
   );
 }

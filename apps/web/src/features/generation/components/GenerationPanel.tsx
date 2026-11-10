@@ -1,6 +1,6 @@
 "use client";
 
-import { DrawerHeader } from "@/components/ui";
+import { Button, DrawerHeader } from "@/components/ui";
 import { SlidersHorizontal } from "lucide-react";
 import type { BuildingSpecification } from "@buildai/schema";
 import { useQueryClient } from "@tanstack/react-query";
@@ -148,22 +148,16 @@ export function GenerationPanel({
         )}
         {jobId !== null && <GenerationProgress job={job.data} />}
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={() => void check()}
             disabled={running || validate.isPending}
-            className="rounded-md px-3 py-1.5 text-sm text-fg-muted hover:bg-neutral-100 disabled:opacity-50 dark:hover:bg-neutral-800"
           >
             Check specification
-          </button>
-          <button
-            type="button"
-            onClick={() => void generate()}
-            disabled={running}
-            className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-          >
+          </Button>
+          <Button variant="primary" onClick={() => void generate()} disabled={running}>
             {running ? "Generating…" : "Generate house"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { z } from "zod";
 
+import { Button, Spinner } from "@/components/ui";
 import { materialCache } from "@/engine/materials/material-cache";
 import { apiRequest } from "@/lib/api/client";
 import { useBuildingStore } from "@/stores/building-store";
@@ -55,13 +56,9 @@ export function DemoEditor() {
     return (
       <Message title="Could not load the demo building model" tone="error">
         <p>{query.error.message}</p>
-        <button
-          type="button"
-          onClick={() => query.refetch()}
-          className="mt-3 rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white"
-        >
+        <Button variant="primary" onClick={() => query.refetch()} className="mt-3">
           Retry
-        </button>
+        </Button>
       </Message>
     );
   }
@@ -72,7 +69,14 @@ export function DemoEditor() {
       </Message>
     );
   }
-  if (!scene) return <Message title="Loading the demo house…" />;
+  if (!scene) {
+    return (
+      <div role="status" className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
+        <Spinner className="h-5 w-5 text-accent-text" />
+        <p className="text-sm font-medium text-fg-subtle">Loading the demo house…</p>
+      </div>
+    );
+  }
   const name = useBuildingStore.getState().index?.model.building.name ?? "Demo house";
   return (
     <BuildingEditor scene={scene} drawing={{ projectName: name, versionLabel: "Demo model" }} />

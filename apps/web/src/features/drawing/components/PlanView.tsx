@@ -634,7 +634,7 @@ export function PlanView({
       : undefined;
 
   return (
-    <div className="relative h-full w-full bg-neutral-200 dark:bg-neutral-800">
+    <div data-theme="light" className="relative h-full w-full bg-neutral-200 text-fg">
       <svg
         ref={svgRef}
         role="img"
@@ -686,7 +686,7 @@ export function PlanView({
       </div>
       {ghost && <DragStatus drag={ghost} valid={ghostValid} />}
       {editable && <PlanEditBar index={index} onSaved={onEditsSaved} />}
-      <div className="absolute bottom-3 right-3 flex flex-col overflow-hidden rounded-md bg-surface shadow ring-1 ring-line">
+      <div className="absolute right-3 top-1/2 flex -translate-y-1/2 flex-col overflow-hidden rounded-lg bg-surface shadow-md ring-1 ring-line">
         <ZoomButton label="Zoom in" onClick={() => zoomAt(ZOOM_STEP)}>
           +
         </ZoomButton>
@@ -928,11 +928,11 @@ function DragStatus({ drag, valid }: { drag: Drag; valid: boolean | undefined })
         role="status"
         aria-live="polite"
         className={
-          "pointer-events-none absolute bottom-3 left-1/2 max-w-[min(80%,560px)] -translate-x-1/2 rounded-md px-3 py-1.5 text-xs shadow ring-1 " +
+          "pointer-events-none absolute bottom-16 left-1/2 max-w-[min(80%,560px)] -translate-x-1/2 rounded-md px-3 py-1.5 text-xs shadow ring-1 " +
           (valid === false
-            ? "bg-red-50 text-red-800 ring-red-200"
+            ? "bg-red-50 dark:bg-red-950/60 text-red-800 dark:text-red-200 ring-red-200 dark:ring-red-900"
             : valid
-              ? "bg-green-50 text-green-800 ring-green-200"
+              ? "bg-green-50 dark:bg-green-950/60 text-green-800 dark:text-green-200 ring-green-200 dark:ring-green-900"
               : "bg-surface text-fg-muted ring-line")
         }
       >
@@ -970,11 +970,11 @@ function DragStatus({ drag, valid }: { drag: Drag; valid: boolean | undefined })
       role="status"
       aria-live="polite"
       className={
-        "pointer-events-none absolute bottom-3 left-1/2 max-w-[min(80%,560px)] -translate-x-1/2 rounded-md px-3 py-1.5 text-xs shadow ring-1 " +
+        "pointer-events-none absolute bottom-16 left-1/2 max-w-[min(80%,560px)] -translate-x-1/2 rounded-md px-3 py-1.5 text-xs shadow ring-1 " +
         (valid === false
-          ? "bg-red-50 text-red-800 ring-red-200"
+          ? "bg-red-50 dark:bg-red-950/60 text-red-800 dark:text-red-200 ring-red-200 dark:ring-red-900"
           : valid
-            ? "bg-green-50 text-green-800 ring-green-200"
+            ? "bg-green-50 dark:bg-green-950/60 text-green-800 dark:text-green-200 ring-green-200 dark:ring-green-900"
             : "bg-surface text-fg-muted ring-line")
       }
     >
@@ -1019,11 +1019,11 @@ function OpeningStatus({
       role="status"
       aria-live="polite"
       className={
-        "pointer-events-none absolute bottom-3 left-1/2 max-w-[min(80%,560px)] -translate-x-1/2 rounded-md px-3 py-1.5 text-xs shadow ring-1 " +
+        "pointer-events-none absolute bottom-16 left-1/2 max-w-[min(80%,560px)] -translate-x-1/2 rounded-md px-3 py-1.5 text-xs shadow ring-1 " +
         (valid === false
-          ? "bg-red-50 text-red-800 ring-red-200"
+          ? "bg-red-50 dark:bg-red-950/60 text-red-800 dark:text-red-200 ring-red-200 dark:ring-red-900"
           : valid
-            ? "bg-green-50 text-green-800 ring-green-200"
+            ? "bg-green-50 dark:bg-green-950/60 text-green-800 dark:text-green-200 ring-green-200 dark:ring-green-900"
             : "bg-surface text-fg-muted ring-line")
       }
     >

@@ -14,7 +14,7 @@ import { PanelSection, SegmentButton, Toggle } from "./panel-ui";
 
 export function LeftPanel({ index, sectionMax }: { index: ModelIndex; sectionMax: number }) {
   return (
-    <div className="flex flex-col text-fg">
+    <div className="flex flex-col text-[13px] text-fg">
       <ProjectSection index={index} />
       <FloorSection index={index} />
       <LayerSection index={index} />
@@ -33,9 +33,11 @@ function ProjectSection({ index }: { index: ModelIndex }) {
   }, [index]);
   return (
     <PanelSection title="Project">
-      <p className="font-medium leading-tight">{project?.name ?? index.model.building.name}</p>
+      <p className="text-sm font-semibold leading-tight tracking-tight">
+        {project?.name ?? index.model.building.name}
+      </p>
       {project?.source === "demo" && (
-        <span className="mt-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+        <span className="mt-1 inline-block rounded bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:text-amber-200">
           Demo · hand-authored model
         </span>
       )}
@@ -60,7 +62,11 @@ function FloorSection({ index }: { index: ModelIndex }) {
   const selectFloor = useViewerStore((s) => s.selectFloor);
   return (
     <PanelSection title="Floors">
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Floor isolation">
+      <div
+        className="inline-flex flex-wrap gap-0.5 rounded-lg bg-neutral-100 p-0.5 dark:bg-neutral-800/80"
+        role="group"
+        aria-label="Floor isolation"
+      >
         <SegmentButton active={levelFilter === "all"} onClick={() => selectFloor("all")}>
           All
         </SegmentButton>
@@ -163,13 +169,13 @@ function RoomSection({ index }: { index: ModelIndex }) {
                     type="button"
                     onClick={() => select(room.id)}
                     className={
-                      "flex w-full justify-between rounded px-1.5 py-0.5 text-left text-sm " +
+                      "flex w-full items-baseline justify-between gap-2 rounded-md px-1.5 py-1 text-left text-[13px] transition-colors " +
                       (selectedId === room.id
-                        ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                        ? "bg-accent-soft font-medium text-accent-text"
                         : "hover:bg-neutral-100 dark:hover:bg-neutral-800")
                     }
                   >
-                    <span>{room.name}</span>
+                    <span className="truncate">{room.name}</span>
                     <span className="text-xs tabular-nums text-fg-subtle">
                       {Number(room.dimensions.area.toFixed(1))} m²
                     </span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useState } from "react";
 
 import type { ModelIndex } from "@/engine/model/model-index";
@@ -153,7 +154,7 @@ function OpeningSizeForm({ opening, host }: { opening: Opening; host: Wall }) {
         onKeyDown={(e) => {
           if (e.key === "Enter") apply();
         }}
-        className="w-full rounded border border-line-strong bg-surface px-1.5 py-0.5 text-xs tabular-nums"
+        className="w-full field-sm text-xs tabular-nums"
       />
       {hint && <span className="text-[10px] text-fg-subtle">{hint}</span>}
     </label>
@@ -253,7 +254,7 @@ function NumberField({
         onKeyDown={(e) => {
           if (e.key === "Enter") onEnter();
         }}
-        className="w-full rounded border border-line-strong bg-surface px-1.5 py-0.5 text-xs tabular-nums"
+        className="w-full field-sm text-xs tabular-nums"
       />
     </label>
   );
@@ -350,7 +351,7 @@ function WallFinishForm({ wall, exterior }: { wall: Wall; exterior: boolean }) {
             aria-label="Wall face"
             value={face}
             onChange={(e) => setFace(e.target.value as Face)}
-            className="rounded border border-line-strong bg-surface px-1 py-0.5 text-xs"
+            className="field-sm text-xs"
           >
             {faces.map(([f, label]) => (
               <option key={f} value={f}>
@@ -365,7 +366,7 @@ function WallFinishForm({ wall, exterior }: { wall: Wall; exterior: boolean }) {
             aria-label="Finish material"
             value={chosen}
             onChange={(e) => setMaterial({ key, id: e.target.value })}
-            className="rounded border border-line-strong bg-surface px-1 py-0.5 text-xs"
+            className="field-sm text-xs"
           >
             {!WALL_FINISHES.some((m) => m.id === chosen) && (
               <option value={chosen}>{materialName(chosen || null)}</option>
@@ -593,7 +594,7 @@ function RoomEdit({ room }: { room: Room }) {
             if (e.key === "Enter") apply();
             if (e.key === "Escape") setName(null);
           }}
-          className="rounded border border-line-strong bg-surface px-1.5 py-0.5 text-xs"
+          className="field-sm text-xs"
         />
       </label>
       <label className="flex flex-col gap-0.5 text-2xs text-fg-muted">
@@ -604,7 +605,7 @@ function RoomEdit({ room }: { room: Room }) {
             value={typeValue}
             disabled={renameOp !== null}
             onChange={(e) => setType({ base: current, value: e.target.value as RoomType })}
-            className="rounded border border-line-strong bg-surface px-1 py-0.5 text-xs"
+            className="field-sm text-xs"
           >
             {Object.entries(ROOM_TYPE_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
@@ -668,7 +669,7 @@ function Verdict({
   valid: string | null;
 }) {
   const { preview, checking, error } = check;
-  if (error) return <p className="mt-1 text-2xs text-red-700">{error}</p>;
+  if (error) return <p className="mt-1 text-2xs text-red-700 dark:text-red-200">{error}</p>;
   if (checking) {
     return (
       <p className="mt-1 text-2xs text-fg-subtle" aria-live="polite">
@@ -680,7 +681,10 @@ function Verdict({
   if (!preview.valid) {
     const rest: Issue[] = preview.rejection?.issues.slice(1) ?? [];
     return (
-      <div role="alert" className="mt-1 rounded bg-red-50 p-1.5 text-2xs text-red-800">
+      <div
+        role="alert"
+        className="mt-1 rounded bg-red-50 dark:bg-red-950/60 p-1.5 text-2xs text-red-800 dark:text-red-200"
+      >
         <p className="font-medium">{preview.rejection?.message ?? "Not possible."}</p>
         {rest.length > 0 && (
           <ul className="mt-0.5 list-disc pl-4">
@@ -693,10 +697,13 @@ function Verdict({
     );
   }
   return (
-    <div role="status" className="mt-1 rounded bg-green-50 p-1.5 text-2xs text-green-800">
+    <div
+      role="status"
+      className="mt-1 rounded bg-green-50 dark:bg-green-950/60 p-1.5 text-2xs text-green-800 dark:text-green-200"
+    >
       <p>{valid ? `${valid} — valid.` : "Valid."}</p>
       {preview.warnings.length > 0 && (
-        <ul className="mt-0.5 list-disc pl-4 text-amber-800">
+        <ul className="mt-0.5 list-disc pl-4 text-amber-800 dark:text-amber-200">
           {preview.warnings.slice(0, 3).map((i, k) => (
             <li key={k}>{i.message}</li>
           ))}
@@ -722,21 +729,19 @@ function EditButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      size="xs"
+      variant={primary ? "primary" : "secondary"}
       onClick={onClick}
       disabled={disabled}
       title={title}
       className={
-        "rounded px-2 py-1 text-xs font-medium disabled:opacity-40 " +
-        (primary
-          ? "bg-blue-600 text-white hover:bg-blue-700"
-          : danger
-            ? "bg-red-50 text-red-700 ring-1 ring-red-200 hover:bg-red-100"
-            : "bg-neutral-100 text-fg hover:bg-neutral-200")
+        danger && !primary
+          ? "bg-red-50 text-red-700 ring-1 ring-red-200 hover:bg-red-100 dark:bg-red-950 dark:text-red-300 dark:ring-red-900 dark:hover:bg-red-900"
+          : undefined
       }
     >
       {children}
-    </button>
+    </Button>
   );
 }

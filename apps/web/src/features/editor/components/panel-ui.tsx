@@ -17,7 +17,7 @@ export function Toggle({
   hint?: string;
 }) {
   return (
-    <label className="group flex cursor-pointer items-center gap-2 rounded-md px-1 py-1 text-sm transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
+    <label className="group flex cursor-pointer items-center gap-2 rounded-md px-1 py-1 text-[13px] transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
       <input
         type="checkbox"
         checked={checked}

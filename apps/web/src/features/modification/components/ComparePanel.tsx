@@ -1,6 +1,6 @@
 "use client";
 
-import { DrawerHeader } from "@/components/ui";
+import { Button, DrawerHeader } from "@/components/ui";
 import { GitCompareArrows } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -79,7 +79,7 @@ export function ComparePanel({
               aria-label="From version"
               value={a}
               onChange={(e) => setA(e.target.value)}
-              className="rounded border border-line-strong px-1 py-1"
+              className="field-sm"
             >
               {versions.map(option)}
             </select>
@@ -90,24 +90,24 @@ export function ComparePanel({
               aria-label="To version"
               value={b}
               onChange={(e) => setB(e.target.value)}
-              className="rounded border border-line-strong px-1 py-1"
+              className="field-sm"
             >
               {versions.map(option)}
             </select>
           </label>
         </div>
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="sm"
           onClick={() => void compare()}
           disabled={busy || !a || !b || a === b}
-          className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-40"
         >
           {busy ? "Comparing…" : "Compare"}
-        </button>
+        </Button>
         {error && (
           <p
             role="alert"
-            className="rounded-md bg-red-50 p-2 text-xs text-red-800 ring-1 ring-red-200"
+            className="rounded-md bg-red-50 dark:bg-red-950/60 p-2 text-xs text-red-800 dark:text-red-200 ring-1 ring-red-200 dark:ring-red-900"
           >
             {error}
           </p>

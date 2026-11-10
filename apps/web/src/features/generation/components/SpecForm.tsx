@@ -1,5 +1,6 @@
 "use client";
 
+import { fieldClass } from "@/components/ui";
 import {
   type BuildingSpecification,
   buildingSpecificationSchema,
@@ -30,7 +31,7 @@ const WINDOWS = ["standard", "large", "panoramic"];
 const FACADES = ["render", "brick", "concrete", "timber"];
 const FINISHES = ["economy", "standard", "premium"];
 
-const input = "w-full rounded-md border border-line-strong bg-surface px-2 py-1 text-sm";
+const input = fieldClass + " h-8";
 const label = "text-2xs font-medium uppercase tracking-wide text-fg-subtle";
 
 const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, " ");
@@ -341,7 +342,7 @@ export function SpecForm({
                   aria-label={`Remove room ${i + 1}`}
                   onClick={() => removeRoom(i)}
                   disabled={spec.rooms.length <= 1}
-                  className="text-fg-subtle hover:text-red-600 dark:text-red-400 disabled:opacity-30"
+                  className="text-fg-subtle hover:text-red-600 dark:hover:text-red-400 disabled:opacity-30"
                 >
                   ×
                 </button>
@@ -353,7 +354,7 @@ export function SpecForm({
                     Faces
                     <select
                       aria-label={`Room ${i + 1} faces`}
-                      className="rounded border border-line-strong bg-surface px-1 py-0 text-xs"
+                      className="field-sm text-xs"
                       value={room.faces ?? ""}
                       onChange={(e) =>
                         setRoom(i, {

@@ -1,8 +1,10 @@
 "use client";
 
+import { Minus, X } from "lucide-react";
 import type { AIGenerationOut } from "@buildai/schema";
 import { useState } from "react";
 
+import { IconButton } from "@/components/ui";
 import { DISCLAIMER } from "@/lib/disclaimer";
 import { formatMoney } from "@/lib/format";
 import { useSelectionStore } from "@/stores/selection-store";
@@ -43,7 +45,7 @@ export function GenerationSummary({
   return (
     <section
       aria-label="Generation summary"
-      className="flex max-h-[min(70vh,640px)] w-[min(92vw,380px)] flex-col overflow-hidden rounded-xl border border-line bg-surface/95 text-sm shadow-xl backdrop-blur"
+      className="glass flex max-h-[min(70vh,640px)] w-[min(92vw,380px)] animate-rise-in flex-col overflow-hidden rounded-2xl text-sm shadow-lg"
     >
       <header className="flex items-start gap-2 border-b border-line px-4 py-3">
         <div className="min-w-0 flex-1">
@@ -55,22 +57,12 @@ export function GenerationSummary({
             <p className="text-xs text-fg-subtle">Saved as version {generation.version_number}</p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={() => setCollapsed(true)}
-          aria-label="Collapse summary"
-          className="rounded px-1.5 text-fg-subtle hover:text-fg"
-        >
-          –
-        </button>
-        <button
-          type="button"
-          onClick={onDismiss}
-          aria-label="Close summary"
-          className="rounded px-1.5 text-lg leading-none text-fg-subtle hover:text-fg"
-        >
-          ×
-        </button>
+        <IconButton label="Collapse summary" size="sm" onClick={() => setCollapsed(true)}>
+          <Minus size={14} />
+        </IconButton>
+        <IconButton label="Close summary" size="sm" onClick={onDismiss}>
+          <X size={14} />
+        </IconButton>
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
@@ -180,7 +172,11 @@ export function GenerationSummary({
 
       {onOpenReport && (
         <footer className="border-t border-line px-4 py-2">
-          <button type="button" onClick={onOpenReport} className="text-xs text-blue-600 underline">
+          <button
+            type="button"
+            onClick={onOpenReport}
+            className="text-xs font-medium text-accent-text underline underline-offset-2"
+          >
             Open the full design report
           </button>
         </footer>
@@ -191,7 +187,7 @@ export function GenerationSummary({
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-md bg-bg-subtle px-2 py-1.5">
+    <div className="rounded-lg border border-line bg-surface/60 px-2 py-1.5">
       <dd className="text-base font-semibold tabular-nums">{value}</dd>
       <dt className="text-2xs text-fg-subtle">{label}</dt>
     </div>

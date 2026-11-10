@@ -8,10 +8,19 @@ import { useProjectGenerations } from "../api";
 
 const STATUS: Record<AIGenerationSummaryOut["status"], { label: string; tone: string }> = {
   queued: { label: "Queued", tone: "bg-neutral-100 text-fg-muted" },
-  running: { label: "Running", tone: "bg-blue-100 text-blue-800" },
-  completed: { label: "Completed", tone: "bg-green-100 text-green-800" },
-  needs_clarification: { label: "Needs details", tone: "bg-amber-100 text-amber-800" },
-  failed: { label: "Failed", tone: "bg-red-100 text-red-800" },
+  running: {
+    label: "Running",
+    tone: "bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200",
+  },
+  completed: {
+    label: "Completed",
+    tone: "bg-green-100 dark:bg-green-950/60 text-green-800 dark:text-green-200",
+  },
+  needs_clarification: {
+    label: "Needs details",
+    tone: "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200",
+  },
+  failed: { label: "Failed", tone: "bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-200" },
 };
 
 /** The project's natural-language generations, newest first. */

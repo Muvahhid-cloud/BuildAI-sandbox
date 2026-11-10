@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui";
 import { useEffect, useState } from "react";
 
 import {
@@ -305,7 +306,7 @@ export function PlanEditBar({
               onKeyDown={(e) => {
                 if (e.key === "Enter") place(Number(positionValue));
               }}
-              className="w-16 rounded border border-line-strong px-1.5 py-0.5 tabular-nums"
+              className="w-16 field-sm tabular-nums"
             />
             <span id="opening-position-help" className="text-fg-subtle">
               m from the wall start
@@ -348,7 +349,7 @@ export function PlanEditBar({
               step={0.05}
               value={distance}
               onChange={(e) => setDistance(e.target.value)}
-              className="w-16 rounded border border-line-strong px-1.5 py-0.5 tabular-nums"
+              className="w-16 field-sm tabular-nums"
             />
             <span className="text-fg-subtle">m</span>
             {moveDirections(wall).map((d) => (
@@ -376,7 +377,7 @@ export function PlanEditBar({
               step={0.05}
               value={distance}
               onChange={(e) => setDistance(e.target.value)}
-              className="w-16 rounded border border-line-strong px-1.5 py-0.5 tabular-nums"
+              className="w-16 field-sm tabular-nums"
             />
             <span className="text-fg-subtle">m</span>
             <BarButton
@@ -408,9 +409,9 @@ export function PlanEditBar({
           className={
             "rounded-md p-2 text-xs shadow ring-1 " +
             (message.tone === "error"
-              ? "bg-red-50 text-red-800 ring-red-200"
+              ? "bg-red-50 dark:bg-red-950/60 text-red-800 dark:text-red-200 ring-red-200 dark:ring-red-900"
               : message.tone === "warning"
-                ? "bg-amber-50 text-amber-900 ring-amber-200"
+                ? "bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 ring-amber-200 dark:ring-amber-900"
                 : "bg-surface text-fg-muted ring-line")
           }
         >
@@ -462,7 +463,7 @@ function PlacingPanel({ index }: { index: ModelIndex }) {
           const v = Number(e.target.value);
           if (Number.isFinite(v) && v >= 0) set({ ...placing, [key]: round3(v) });
         }}
-        className="w-14 rounded border border-line-strong px-1 py-0.5 tabular-nums"
+        className="w-14 field-sm tabular-nums"
       />
     </label>
   );
@@ -470,7 +471,7 @@ function PlacingPanel({ index }: { index: ModelIndex }) {
     <div
       role="group"
       aria-label={`Add a ${placing.kind}`}
-      className="rounded-md bg-surface/95 p-2 text-xs shadow ring-1 ring-blue-300"
+      className="rounded-md bg-surface/95 p-2 text-xs shadow ring-1 ring-blue-300 dark:ring-blue-900"
     >
       <div className="mb-1.5 flex items-center gap-1">
         <label className="sr-only" htmlFor="new-opening-kind">
@@ -486,7 +487,7 @@ function PlacingPanel({ index }: { index: ModelIndex }) {
                 : newOpening(index, "window", "interior", e.target.value as WindowKind);
             set(next);
           }}
-          className="rounded border border-line-strong px-1 py-0.5"
+          className="field-sm"
         >
           {kinds.map((k) => (
             <option key={k.value} value={k.value}>
@@ -529,7 +530,7 @@ function WallPlacingPanel() {
     <div
       role="group"
       aria-label="Add a wall"
-      className="rounded-md bg-surface/95 p-2 text-xs shadow ring-1 ring-blue-300"
+      className="rounded-md bg-surface/95 p-2 text-xs shadow ring-1 ring-blue-300 dark:ring-blue-900"
     >
       <div className="mb-1.5 flex flex-wrap items-center gap-1">
         <span className="text-fg-muted">Direction</span>
@@ -583,7 +584,7 @@ function WallPlacingPanel() {
                 const v = Number(e.target.value);
                 if (Number.isFinite(v) && v > 0) set({ ...spec, doorWidth: round3(v) });
               }}
-              className="w-14 rounded border border-line-strong px-1 py-0.5 tabular-nums"
+              className="w-14 field-sm tabular-nums"
             />
           </label>
         )}
@@ -598,7 +599,7 @@ function WallPlacingPanel() {
                 newRoomType: (e.target.value || null) as typeof spec.newRoomType,
               })
             }
-            className="rounded border border-line-strong px-1 py-0.5"
+            className="field-sm"
           >
             <option value="">Same as the room</option>
             {Object.entries(ROOM_TYPE_LABELS).map(([value, label]) => (
@@ -633,21 +634,19 @@ function BarButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      size="xs"
+      variant={primary ? "primary" : "secondary"}
       onClick={onClick}
       disabled={disabled}
       title={title}
       className={
-        "rounded px-2 py-1 font-medium disabled:opacity-40 " +
-        (primary
-          ? "bg-blue-600 text-white hover:bg-blue-700"
-          : danger
-            ? "bg-red-50 text-red-700 hover:bg-red-100"
-            : "bg-neutral-100 text-fg hover:bg-neutral-200")
+        danger && !primary
+          ? "bg-red-50 text-red-700 ring-1 ring-red-200 hover:bg-red-100 dark:bg-red-950 dark:text-red-300 dark:ring-red-900 dark:hover:bg-red-900"
+          : undefined
       }
     >
       {children}
-    </button>
+    </Button>
   );
 }

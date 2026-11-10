@@ -215,7 +215,7 @@ export function ProjectsDashboard() {
                   label={`Delete project ${p.name}`}
                   onClick={() => onDelete(p)}
                   size="sm"
-                  className="absolute bottom-2.5 right-2.5 opacity-60 hover:bg-red-50 hover:text-red-600 dark:text-red-400 hover:opacity-100 focus-visible:opacity-100 dark:hover:bg-red-950"
+                  className="absolute bottom-2.5 right-2.5 opacity-60 hover:bg-red-50 hover:text-red-600 dark:hover:text-red-400 hover:opacity-100 focus-visible:opacity-100 dark:hover:bg-red-950"
                 >
                   <Trash2 size={14} />
                 </IconButton>

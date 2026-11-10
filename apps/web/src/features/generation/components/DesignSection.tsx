@@ -1,5 +1,6 @@
 "use client";
 
+import { fieldClass } from "@/components/ui";
 import type { BuildingSpecification } from "@buildai/schema";
 
 import type { Issue } from "@/lib/api/schemas";
@@ -18,7 +19,7 @@ const FACADES: { id: Facade; text: string }[] = [
 ];
 const HEX = /^#[0-9a-f]{6}$/;
 
-const input = "w-full rounded-md border border-line-strong bg-surface px-2 py-1 text-sm";
+const input = fieldClass + " h-8";
 const label = "text-2xs font-medium uppercase tracking-wide text-fg-subtle";
 
 /** Where a design choice comes from — shown next to every value (K3 precedence). */
@@ -184,7 +185,7 @@ export function DesignSection({ spec, onChange, options, issues }: DesignSection
             role="radio"
             aria-checked={!design.facade_color}
             onClick={() => setDesign({ facade_color: null })}
-            className="rounded border border-line-strong px-1.5 text-2xs"
+            className="field-sm text-2xs"
           >
             {system?.facade.default_color ? `System (${system.facade.default_color})` : "Material"}
           </button>

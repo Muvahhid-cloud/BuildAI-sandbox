@@ -1170,3 +1170,82 @@ before/after: `docs/visual/ui/`.
 - Drawers overlay the right part of the viewport (as before) and cover part of the toolbar.
 - Dense editor forms (plan edit bar, element edit section, spec form) use the tokens and
   `field-sm` but keep their own layout; they are not rebuilt from kit components one by one.
+
+## 25. Build reveal — particle cloud and assembly (2026-11-11)
+
+Scope: a viewer effect only (`apps/web/src/viewer/reveal`, `stores/reveal-store.ts`). The
+BuildingModel, `engine/` (still pure and deterministic), geometry, materials and picking are
+unchanged: particles are never pickable and carry no `elementId`; meshes keep `{ elementId, part }`.
+All constants are in `viewer/render-settings.ts` (`REVEAL`).
+
+### 25.1 Phases (`reveal/machine.ts`, pure)
+
+```
+idle --wait(stage)--> gathering --model--> assembling --tick / skip--> done
+```
+
+- **gathering** — while the backend works. `WaitingCloud` fills the canvas area with a swirling
+  particle cloud and shows the backend's real stage label (`AI_STAGES`; never a percentage). A
+  real stage change is one burst and a denser cloud; nothing else drives it. For a spec-form
+  generation (a job without stages) the label is the layout stage's.
+- **assembling** — when the version is open: `RevealLayer` inside the viewer's canvas.
+  `revealFrame(elapsed)` gives the sweep height, veil opacity and particle fade.
+- **done** — the effect is unmounted and its GPU resources disposed.
+- `skip` ends a running assembly at once (a click on the viewport or Esc); waiting for the
+  backend cannot be skipped. With `prefers-reduced-motion` the machine never shows the cloud
+  and goes straight to done; the "Replay build animation" toolbar button is disabled.
+
+### 25.2 Assembly (about 3.6 s)
+
+| Time (s) | What happens |
+|---|---|
+| 0 – ~2.3 | particles fly from the cloud to their surface points, bottom first (delay = height × `stagger` + jitter, flight `fly`), over a dark veil |
+| `sweepStart` 1.45 – `sweepEnd` 3.2 | the real meshes are revealed bottom-up: a world-space clipping plane (the section-cut mechanism, combined with an active section cut) rises from just above the ground to above the roof; a glowing grid sheet rides on it and landed particles near it brighten, below it they fade |
+| second half of the sweep | the veil lifts |
+| 3.2 – 3.6 | remaining particles fade; clipping is restored to the section cut alone |
+
+- **Targets** (`reveal/sampling.ts`, pure): `sampleSurfaces(scene.descriptors, count, seed)`
+  takes the triangles of the same geometry the viewer draws (descriptor geometry × matrix),
+  chooses triangles by area and points uniformly inside them, with a seeded PRNG
+  (`reveal/prng.ts`: FNV-1a + mulberry32). The seed is the version's `model_hash` (the demo:
+  the model id): the same model always gives the same particles.
+- **Particles** (`reveal/particles.ts`): one `Points` object = one draw call, a custom shader
+  (soft additive glow, a few larger twinkling sparkles), `REVEAL.particleCount` = 40 000
+  (ceiling 50 000). The cloud position is computed in the vertex shader from per-particle seeds,
+  so the waiting cloud and the start of the assembly are the same shape. Two more small draws
+  only during the assembly: the veil (one screen triangle) and the sweep sheet (one quad).
+- The viewer renders on demand; the effect invalidates each frame only while it runs.
+
+### 25.3 When it plays
+
+- After an AI generation and after a spec-form generation (the version that generation
+  produced, once; the 3D view is selected). The generation summary card appears after it.
+- "Replay build animation" in the view toolbar (Display group) replays it for the shown model.
+- After "Apply" in Modify with AI: mode `sparkle` — only the elements the preview marked as
+  changed twinkle in place for `REVEAL.sparkle.duration` (no veil, no sweep).
+- Not on opening an existing project, switching versions, saving plan edits or importing the demo.
+
+### 25.4 Toolbar and drawers
+
+The floating view toolbar keeps to the part of the viewport that an open drawer does not cover
+(`BuildingEditor useDrawerOverlap`: measured from the drawer's layout width, so the slide-in
+animation does not matter): it re-centres there and wraps.
+
+### 25.5 Tests and screenshots
+
+`reveal/sampling.test.ts` (deterministic, exact count, every point on a source triangle,
+area weighting, matrices and indexed geometry, the real demo scene within its bounds),
+`reveal/machine.test.ts` (idle → gathering → assembling → done, bursts per stage change, skip,
+reduced motion, sparkle, replay, seek; timeline monotonic and within 3–4 s),
+`reveal/reveal-ui.test.tsx` (the waiting text without WebGL, the store),
+`ProjectEditor.test.tsx` ("build animation controls": replay, Esc and click skip, seed).
+Screenshots at fixed times (dev-only `window.__buildaiReveal.freeze(t)`): `docs/visual/reveal/`.
+
+### 25.6 Limits
+
+- Furniture drawn by glTF models and the site (trees, fence, paving) are revealed by the same
+  clipping sweep but get no particles of their own (targets come from the model's descriptors).
+- The dark veil covers the whole viewport during the first part of the assembly, including the
+  ground and site.
+- No frame-rate measurement on real integrated GPUs was possible here (headless software
+  rendering only); the budget is one 40k-point draw call with a short vertex shader.

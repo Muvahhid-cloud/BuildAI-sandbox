@@ -26,6 +26,8 @@ export interface GenerationPanelProps {
   /** Pre-fill (e.g. the spec of the version on screen). */
   initialSpec?: BuildingSpecification | null;
   onGenerated: (versionId: string) => void;
+  /** The layout job is running (the canvas area shows the waiting cloud). */
+  onRunningChange?: (running: boolean) => void;
   onClose?: () => void;
 }
 
@@ -33,6 +35,7 @@ export function GenerationPanel({
   projectId,
   initialSpec,
   onGenerated,
+  onRunningChange,
   onClose,
 }: GenerationPanelProps) {
   const qc = useQueryClient();
@@ -50,6 +53,10 @@ export function GenerationPanel({
   const handled = useRef<string | null>(null);
 
   const running = start.isPending || (jobId !== null && !isFinished(job.data));
+  useEffect(() => {
+    onRunningChange?.(running);
+  }, [running, onRunningChange]);
+  useEffect(() => () => onRunningChange?.(false), [onRunningChange]);
 
   useEffect(() => {
     const data = job.data;

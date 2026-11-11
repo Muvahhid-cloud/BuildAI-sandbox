@@ -8,6 +8,7 @@ import { type Camera, OrthographicCamera as ThreeOrthographicCamera, Vector3 } f
 import { modelToWorld, type XYZ } from "@/engine/math/coords";
 import type { SceneGraph } from "@/engine/scene/build-scene";
 import { cameraPose } from "@/engine/scene/camera-presets";
+import { useRevealStore } from "@/stores/reveal-store";
 import { useViewerStore } from "@/stores/viewer-store";
 
 const ANIMATION_MS = 700;
@@ -112,8 +113,18 @@ export function CameraRig({ scene }: { scene: SceneGraph }) {
         invalidate();
       },
     };
+    // Build reveal at a fixed time (screenshots in docs/visual/reveal).
+    const reveal = w as unknown as { __buildaiReveal?: unknown };
+    reveal.__buildaiReveal = {
+      freeze: (elapsed: number) => {
+        const store = useRevealStore.getState();
+        if (store.phase !== "assembling") store.play("build");
+        useRevealStore.getState().freeze(elapsed);
+      },
+    };
     return () => {
       delete w.__buildaiViewer;
+      delete reveal.__buildaiReveal;
     };
   }, [controls, invalidate, setLevelFilter]);
 

@@ -9,6 +9,7 @@ import { materialCache } from "@/engine/materials/material-cache";
 import { apiRequest } from "@/lib/api/client";
 import { useBuildingStore } from "@/stores/building-store";
 import { useProjectStore } from "@/stores/project-store";
+import { useRevealStore } from "@/stores/reveal-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { useViewerStore } from "@/stores/viewer-store";
 
@@ -39,6 +40,7 @@ export function DemoEditor() {
       source: "demo",
       description: building?.description ?? "",
     });
+    useRevealStore.getState().setSeed(useBuildingStore.getState().index?.model.id ?? "demo");
     useSelectionStore.getState().select(null);
     useViewerStore.getState().reset(); // default visibility + exterior camera
   }, [query.data]);

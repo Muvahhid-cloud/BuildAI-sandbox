@@ -74,8 +74,8 @@ const VERTEX = /* glsl */ `
       float t = clamp(uAssemble / uSparkleLen, 0.0, 1.0);
       float life = clamp((t - aSeed.x * 0.45) / 0.55, 0.0, 1.0);
       pos = position + vec3(aSeed.x - 0.5, aSeed.y - 0.5, 0.4 + aSeed.z) * 0.22 * life;
-      alpha = sin(3.1415927 * life) * (0.5 + 0.5 * twinkle);
-      size = uSize * (0.8 + 1.4 * aSeed.w) * (1.0 + 1.2 * star);
+      alpha = sin(3.1415927 * life) * (0.7 + 0.6 * twinkle) * 1.6;
+      size = uSize * (1.6 + 2.2 * aSeed.w) * (1.0 + 1.2 * star);
       vCore = 1.0;
     } else {
       // Waiting: stages add density. Assembly: every particle takes part.

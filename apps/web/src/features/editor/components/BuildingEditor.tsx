@@ -176,7 +176,10 @@ function useDrawerOverlap(target: RefObject<HTMLElement | null>): number {
     const measure = () => {
       const drawer = document.querySelector<HTMLElement>("[data-drawer]");
       const area = el.getBoundingClientRect();
-      const covered = drawer ? area.right - drawer.getBoundingClientRect().left : 0;
+      // The drawer is anchored to the right edge of its host and slides in with a transform:
+      // use its layout width, not its animated position.
+      const host = drawer?.offsetParent?.getBoundingClientRect();
+      const covered = drawer && host ? area.right - (host.right - drawer.offsetWidth) : 0;
       setOverlap(Math.round(Math.min(Math.max(covered, 0), Math.max(area.width - 160, 0))));
     };
     const resize = new ResizeObserver(measure);

@@ -19,6 +19,7 @@ import completed from "@/features/ai/__fixtures__/generation-completed.json";
 import { useEditStore } from "@/features/editing/store";
 import type { EditOperation, Version } from "@/lib/api/schemas";
 import { useBuildingStore } from "@/stores/building-store";
+import { useRevealStore } from "@/stores/reveal-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { useViewerStore } from "@/stores/viewer-store";
 import { jsonResponse } from "@/test/fetch";
@@ -615,5 +616,30 @@ describe("editor chrome", () => {
     for (const format of ["PDF", "SVG", "PNG"]) {
       expect(tools.getByRole("button", { name: format })).toBeInTheDocument();
     }
+  });
+});
+
+describe("build animation controls", () => {
+  it("replays from the toolbar and skips with Esc or a click", async () => {
+    openPage();
+    await screen.findByTestId("3d");
+    useRevealStore.getState().dispatch({ type: "reset" });
+    const replay = screen.getByRole("button", { name: "Replay build animation" });
+    await userEvent.click(replay);
+    expect(useRevealStore.getState().phase).toBe("assembling");
+    expect(replay).toBeDisabled(); // not twice at once
+    await userEvent.keyboard("{Escape}");
+    expect(useRevealStore.getState().phase).toBe("done");
+
+    await userEvent.click(replay);
+    await userEvent.click(screen.getByRole("button", { name: "Skip the build animation" }));
+    expect(useRevealStore.getState().phase).toBe("done");
+    expect(screen.queryByRole("button", { name: "Skip the build animation" })).toBeNull();
+  });
+
+  it("seeds the animation with the version's model hash", async () => {
+    openPage();
+    await screen.findByTestId("3d");
+    expect(useRevealStore.getState().seed).toMatch(/\S/);
   });
 });

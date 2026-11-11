@@ -9,6 +9,8 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { MATERIAL_ASSET_BASE } from "@/engine/materials/library";
 import type { ModelEntry } from "@/engine/materials/models";
 
+import { revealTag } from "./reveal/gate";
+
 const NO_RAYCAST = () => undefined;
 const prepared = new WeakSet<GLTF>();
 
@@ -36,14 +38,24 @@ function prepare(gltf: GLTF): GLTF {
   return gltf;
 }
 
-function LoadedModel({ model, matrix }: { model: ModelEntry; matrix: Matrix4 }) {
+function LoadedModel({
+  model,
+  matrix,
+  revealKey,
+}: {
+  model: ModelEntry;
+  matrix: Matrix4;
+  revealKey?: string;
+}) {
   const gltf = useLoader(GLTFLoader, `${MATERIAL_ASSET_BASE}${model.file}`, (loader) => {
     loader.setMeshoptDecoder(MeshoptDecoder);
   });
   // Clones share geometry and materials with the cached file (cheap per instance).
   const object = useMemo(() => prepare(gltf).scene.clone(true), [gltf]);
+  // The build reveal shows the model when the pieces of `revealKey` have landed (§25).
+  const userData = useMemo(() => (revealKey ? revealTag(revealKey) : {}), [revealKey]);
   return (
-    <group matrix={matrix} matrixAutoUpdate={false}>
+    <group matrix={matrix} matrixAutoUpdate={false} userData={userData}>
       <primitive object={object} />
     </group>
   );
@@ -70,15 +82,18 @@ export function ModelInstance({
   model,
   matrix,
   fallback = null,
+  revealKey,
 }: {
   model: ModelEntry;
   matrix: Matrix4;
   fallback?: ReactNode;
+  /** Element id (or site key) the build reveal assembles this model for. */
+  revealKey?: string;
 }) {
   return (
     <ModelBoundary fallback={fallback}>
       <Suspense fallback={fallback}>
-        <LoadedModel model={model} matrix={matrix} />
+        <LoadedModel model={model} matrix={matrix} revealKey={revealKey} />
       </Suspense>
     </ModelBoundary>
   );

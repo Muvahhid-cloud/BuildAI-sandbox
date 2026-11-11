@@ -54,7 +54,7 @@ import { useProjectStore } from "@/stores/project-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { useViewerStore } from "@/stores/viewer-store";
 
-import { WaitingCloud } from "@/viewer/reveal/WaitingCloud";
+import { WaitingBlueprint } from "@/viewer/reveal/WaitingBlueprint";
 
 import { BuildingEditor } from "./BuildingEditor";
 
@@ -110,7 +110,7 @@ export function ProjectEditor({
     }
   }, [linkedVersion, openId, onGenerationReleased]);
   // Build reveal (docs/3d-engine.md §25): what the canvas area shows while a design is made,
-  // and which version plays the assembly (or the sparkle of changed elements) once it is open.
+  // and which version plays the assembly (or the re-assembly of changed elements) once it is open.
   const [liveGeneration, setLiveGeneration] = useState<AIGenerationOut | null>(null);
   const [formRunning, setFormRunning] = useState(false);
   const [pendingReveal, setPendingReveal] = useState<PendingReveal | null>(null);
@@ -142,7 +142,7 @@ export function ProjectEditor({
     useViewerStore.getState().reset(); // frames the whole building (exterior camera)
     // Plan edits are made on this version (docs/3d-engine.md §20).
     useEditStore.getState().begin(projectId, data);
-    // The reveal's particles are seeded by the model hash: the same model, the same animation.
+    // The reveal's pieces are seeded by the model hash: the same model, the same animation.
     const reveal = useRevealStore.getState();
     reveal.setSeed(data.model_hash);
     const pending = pendingRef.current;
@@ -239,7 +239,7 @@ export function ProjectEditor({
     }
   }
 
-  // The waiting cloud follows the backend's real stage (never a made-up percentage).
+  // The waiting blueprint follows the backend's real stage (never a made-up percentage).
   const followed =
     liveGeneration ?? (summary.data && !isTerminal(summary.data) ? summary.data : null);
   const waiting: Waiting | null = followed
@@ -426,7 +426,7 @@ export function ProjectEditor({
 
         {hasVersions && waiting && (
           <div className="absolute inset-0 z-[15] animate-fade-in">
-            <WaitingCloud {...waiting} stageCount={AI_STAGES.length + 1} />
+            <WaitingBlueprint {...waiting} />
           </div>
         )}
 
@@ -478,9 +478,9 @@ export function ProjectEditor({
                 projectId={projectId}
                 versionNumber={version.data?.number ?? null}
                 onSaved={(v) => {
-                  // Applied: the elements the preview marked as changed sparkle once.
+                  // Applied: the elements the preview marked as changed re-assemble once.
                   const ids = [...useHighlightStore.getState().ids];
-                  if (ids.length > 0) queueReveal({ versionId: v.id, mode: "sparkle", ids });
+                  if (ids.length > 0) queueReveal({ versionId: v.id, mode: "changes", ids });
                   void onEditsSaved(v);
                 }}
                 onClose={() => setDrawer("none")}
@@ -515,7 +515,7 @@ export function ProjectEditor({
 
 interface PendingReveal {
   versionId: string;
-  mode: "build" | "sparkle";
+  mode: "build" | "changes";
   ids?: string[];
 }
 
@@ -653,7 +653,7 @@ function StartView({
       </div>
       {waiting ? (
         <div className="min-h-[320px] flex-1 animate-fade-in">
-          <WaitingCloud {...waiting} stageCount={AI_STAGES.length + 1} />
+          <WaitingBlueprint {...waiting} />
         </div>
       ) : (
         <StartIntro importDemo={importDemo} onGenerated={onGenerated} />

@@ -1,23 +1,22 @@
 # Build reveal — screenshots
 
-Headless Chromium (SwiftShader software WebGL), 1440×900, `generation-reveal`. A real AI
-generation started from the prompt box (offline mock interpreter). The round "N" badge is the
-Next.js dev-server indicator.
+Headless Chromium (SwiftShader software WebGL), 1440×900 at 2×, branch `construction-reveal`,
+the generated two-storey reference house (`data/fixtures/generated-house.model.json`) in the
+demo editor. The round "N" badge is the Next.js dev-server indicator.
 
-The waiting frames hold the generation's status response at a real backend stage (request
-interception in the screenshot script only: the mock finishes too fast to capture). The assembly
-frames are the real effect paused at a fixed time with the dev-only
-`window.__buildaiReveal.freeze(t)`.
+The assembly frames are the real effect paused at a fixed time with the dev-only
+`window.__buildaiReveal.freeze(t)` (the whole build of this house takes 9 s); `changes` is
+`freeze(1, ids)`. The waiting frame is `WaitingBlueprint` rendered on its own with a real stage
+label (no backend in this environment).
 
 | Phase | |
 |---|---|
-| Waiting — stage "Understanding your requirements" | ![](waiting-1-interpreting.jpg) |
-| Waiting — the stage just changed to "Generating the layout" (burst, denser) | ![](waiting-2-layout-burst.jpg) |
-| Waiting — "Generating the layout", settled | ![](waiting-3-layout.jpg) |
-| Assembly at 0.5 s — the cloud over the dark veil, first particles leaving | ![](assembly-0.5s.jpg) |
-| Assembly at 1.5 s — the lower storey has landed, the sweep starts | ![](assembly-1.5s.jpg) |
-| Assembly at 2.4 s — meshes revealed up to the sweep sheet, upper particles above it | ![](assembly-2.4s.jpg) |
-| Assembly at 3.0 s — veil lifted, the last particles fade on the roof | ![](assembly-3.0s.jpg) |
-| Finished (after skip / end) with the generation summary | ![](finished.jpg) |
-| After "Apply" in Modify with AI — changed elements sparkle | ![](sparkle.jpg) |
-| Toolbar with a drawer open — re-centred in the visible canvas, wrapped | ![](toolbar-with-drawer.jpg) |
+| Waiting — ground grid, scanning line, the real stage label | ![](waiting-blueprint.jpg) |
+| 0.7 s — the ground-floor plan draws itself | ![](assembly-1-blueprint.jpg) |
+| 2.6 s — ground storey: slab and floors done, walls rising course by course | ![](assembly-2-ground-floor.jpg) |
+| 4.9 s — ground storey finished, the upper storey assembles | ![](assembly-3-upper-storey.jpg) |
+| 6.5 s — roof and canopy | ![](assembly-4-roof.jpg) |
+| 7.9 s — furniture done, the site | ![](assembly-5-site.jpg) |
+| After "Apply" in Modify with AI — only the changed elements re-assemble | ![](changes.jpg) |
+| Finished with the generation summary (from the first version, unchanged) | ![](finished.jpg) |
+| Toolbar with a drawer open (from the first version, unchanged) | ![](toolbar-with-drawer.jpg) |

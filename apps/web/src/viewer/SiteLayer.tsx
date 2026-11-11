@@ -11,9 +11,12 @@ import { buildSiteMesh, planSite, type SitePlant } from "@/engine/scene/site";
 import { useViewerStore } from "@/stores/viewer-store";
 
 import { ModelInstance } from "./ModelInstance";
+import { plantKey, revealTag, SITE_KEY } from "./reveal/gate";
 import { useServedAssets } from "./served-assets";
 
 const NO_RAYCAST = () => undefined;
+/** The build reveal shows paving and fence when their pieces have landed (§25). */
+const SITE_TAG = revealTag(SITE_KEY);
 
 /**
  * The site around the building (V2, "Site" toggle): paving to the entrance and the garage, a low
@@ -35,7 +38,7 @@ export function SiteLayer({ scene }: { scene: SceneGraph }) {
     const pick = (kind: SitePlant["kind"]) => modelsFor(kind).filter((m) => served.has(m.file));
     const trees = pick("tree");
     const bushes = pick("bush");
-    const out: { key: string; model: ModelEntry; matrix: Matrix4 }[] = [];
+    const out: { key: string; model: ModelEntry; matrix: Matrix4; revealKey: string }[] = [];
     for (const p of plan.plants) {
       const options = p.kind === "tree" ? trees : bushes;
       if (!options.length) continue;
@@ -43,7 +46,7 @@ export function SiteLayer({ scene }: { scene: SceneGraph }) {
       const matrix = new Matrix4()
         .makeTranslation(p.x, p.y, -0.05)
         .multiply(fitToHeight(model, p.height, p.rotation));
-      out.push({ key: `${p.kind}:${p.slot}`, model, matrix });
+      out.push({ key: `${p.kind}:${p.slot}`, model, matrix, revealKey: plantKey(p.kind, p.slot) });
     }
     return out;
   }, [plan, served]);
@@ -57,10 +60,11 @@ export function SiteLayer({ scene }: { scene: SceneGraph }) {
         receiveShadow
         castShadow={!sectioned}
         raycast={NO_RAYCAST}
+        userData={SITE_TAG}
         dispose={null}
       />
       {plants.map((p) => (
-        <ModelInstance key={p.key} model={p.model} matrix={p.matrix} />
+        <ModelInstance key={p.key} model={p.model} matrix={p.matrix} revealKey={p.revealKey} />
       ))}
     </group>
   );

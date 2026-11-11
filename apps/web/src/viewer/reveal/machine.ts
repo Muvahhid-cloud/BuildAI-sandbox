@@ -2,20 +2,21 @@
 //
 //   idle --wait--> gathering --model--> assembling --tick... / skip--> done
 //
-// "gathering" is the particle cloud while the backend works (each real stage change counts as a
-// burst), "assembling" the flight to the model and its bottom-up reveal. With reduced motion the
-// machine never leaves idle for the cloud and goes straight to done when the model arrives.
+// "gathering" is the calm blueprint state while the backend works (each real stage change counts
+// as one pulse), "assembling" the construction of the model from pieces. With reduced motion the
+// machine never leaves idle for the waiting state and goes straight to done when the model
+// arrives. How long an assembly takes depends on the model: the viewer reports it (options).
 
 export type RevealPhase = "idle" | "gathering" | "assembling" | "done";
-/** "build": the whole model assembles. "sparkle": changed elements twinkle in place. */
-export type RevealMode = "build" | "sparkle";
+/** "build": the whole model assembles. "changes": only the changed elements re-assemble. */
+export type RevealMode = "build" | "changes";
 
 export interface RevealState {
   phase: RevealPhase;
   mode: RevealMode;
   /** Index of the backend's current stage while gathering (-1: none reported yet). */
   stageIndex: number;
-  /** Number of real stage changes seen (the particles pulse once per change). */
+  /** Number of real stage changes seen (the grid pulses once per change). */
   bursts: number;
   /** Seconds since the assembly started. */
   elapsed: number;
@@ -91,50 +92,4 @@ export function reduceReveal(
     case "reset":
       return INITIAL_REVEAL;
   }
-}
-
-export interface RevealTimeline {
-  duration: number;
-  sweepStart: number;
-  sweepEnd: number;
-  veilOpacity: number;
-}
-
-export interface RevealFrame {
-  /** Model-space height below which the real meshes are shown. */
-  sweepZ: number;
-  /** 0 before the sweep starts, 1 when it has passed the top. */
-  sweep: number;
-  /** Opacity of the dark veil over the scene. */
-  veil: number;
-  /** Global particle opacity (fades out at the very end). */
-  particles: number;
-}
-
-const smooth = (x: number) => {
-  const t = Math.min(Math.max(x, 0), 1);
-  return t * t * (3 - 2 * t);
-};
-
-/**
- * What the "build" assembly shows at `elapsed` seconds: the sweep height rises from the bottom
- * to just above the top between sweepStart and sweepEnd, the veil lifts over its second half,
- * the particles fade after it. Monotonic in `elapsed`; at `duration` everything is revealed and nothing glows.
- */
-export function revealFrame(
-  elapsed: number,
-  t: RevealTimeline,
-  minZ: number,
-  maxZ: number,
-): RevealFrame {
-  const sweep = smooth((elapsed - t.sweepStart) / (t.sweepEnd - t.sweepStart));
-  const top = maxZ + 0.25;
-  const tail = smooth((elapsed - t.sweepEnd) / Math.max(t.duration - t.sweepEnd, 1e-6));
-  return {
-    sweepZ: minZ + (top - minZ) * sweep,
-    sweep,
-    // Dark until the sweep is past halfway (the glow reads against it), then it lifts.
-    veil: t.veilOpacity * (1 - smooth((sweep - 0.5) / 0.5)),
-    particles: 1 - tail,
-  };
 }

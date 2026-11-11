@@ -4,9 +4,8 @@ import { describe, expect, it } from "vitest";
 import { buildScene } from "@/engine/scene/build-scene";
 import { demoIndex } from "@/engine/test-fixtures";
 
-import { REVEAL } from "../render-settings";
 import { hashString, mulberry32, seededRandom } from "./prng";
-import { cloudSeeds, collectTriangles, sampleSurfaces, type SurfaceSource } from "./sampling";
+import { collectTriangles, sampleSurfaces, type SurfaceSource } from "./sampling";
 
 /** A triangle in the plane z = `z` with the given corners (x, y). */
 function triangle(corners: [number, number][], z = 0): SurfaceSource {
@@ -142,14 +141,12 @@ describe("surface sampling", () => {
     expect(sampleSurfaces([line], 100, "x").positions).toHaveLength(0);
   });
 
-  it("samples the real scene: the configured count, inside the building's bounds", () => {
+  it("samples the real scene deterministically, inside the building's bounds", () => {
     const scene = buildScene(demoIndex());
-    const a = sampleSurfaces(scene.descriptors, REVEAL.particleCount, "demo-model-hash");
-    const b = sampleSurfaces(scene.descriptors, REVEAL.particleCount, "demo-model-hash");
-    expect(a.positions).toHaveLength(REVEAL.particleCount * 3);
+    const a = sampleSurfaces(scene.descriptors, 20_000, "demo-model-hash");
+    const b = sampleSurfaces(scene.descriptors, 20_000, "demo-model-hash");
+    expect(a.positions).toHaveLength(20_000 * 3);
     expect(b.positions).toEqual(a.positions);
-    expect(REVEAL.particleCount).toBeLessThanOrEqual(REVEAL.maxParticles);
-    expect(REVEAL.maxParticles).toBeLessThanOrEqual(50_000);
     const { min, max } = scene.bounds;
     for (let i = 0; i < a.positions.length; i += 3) {
       expect(a.positions[i]!).toBeGreaterThanOrEqual(min.x - 1e-3);
@@ -160,8 +157,24 @@ describe("surface sampling", () => {
     expect(a.maxZ - a.minZ).toBeGreaterThan(5); // two storeys and a roof
   });
 
-  it("makes cloud seeds deterministically", () => {
-    expect(cloudSeeds(100, "waiting")).toEqual(cloudSeeds(100, "waiting"));
-    expect(cloudSeeds(100, "waiting")).toHaveLength(400);
+  it("reports the triangle, source and material group of every point", () => {
+    const box = new BoxGeometry(2, 2, 2); // six groups, material index 0..5
+    const flat = triangle([
+      [0, 0],
+      [1, 0],
+      [0, 1],
+    ]);
+    const s = sampleSurfaces([flat, { geometry: box, matrix: new Matrix4() }], 500, "groups");
+    const { source, material } = s.triangles;
+    const seen = new Set<number>();
+    for (let i = 0; i < 500; i++) {
+      const t = s.triangle[i]!;
+      expect(
+        distanceToTriangle([...s.positions.subarray(i * 3, i * 3 + 3)], s.triangles.corners, t * 9),
+      ).toBeLessThan(1e-4);
+      if (source[t] === 0) expect(material[t]).toBe(0);
+      else seen.add(material[t]!);
+    }
+    expect([...seen].sort()).toEqual([0, 1, 2, 3, 4, 5]);
   });
 });

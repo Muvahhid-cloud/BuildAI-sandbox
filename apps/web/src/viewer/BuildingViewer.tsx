@@ -12,6 +12,7 @@ import { ModelRoot } from "./ModelRoot";
 import { PostEffects } from "./PostEffects";
 import { RENDER } from "./render-settings";
 import { RenderOnResize } from "./RenderOnResize";
+import { RevealLayer } from "./reveal/RevealLayer";
 import { SceneEnvironment } from "./SceneEnvironment";
 import { SectionPlane } from "./SectionPlane";
 import { SiteLayer } from "./SiteLayer";
@@ -45,6 +46,7 @@ export function BuildingViewer({ scene }: { scene: SceneGraph }) {
       <SiteLayer scene={scene} />
       <CameraRig scene={scene} />
       <SectionPlane />
+      <RevealLayer scene={scene} />
       <PostEffects />
       <RenderOnResize />
     </Canvas>

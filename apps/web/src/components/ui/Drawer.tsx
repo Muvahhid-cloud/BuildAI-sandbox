@@ -18,6 +18,7 @@ export function Drawer({
 }) {
   return (
     <aside
+      data-drawer
       aria-label={label}
       className={cn(
         "absolute inset-y-0 right-0 z-20 flex w-full max-w-[520px] animate-drawer-in flex-col border-l border-line bg-surface shadow-lg",

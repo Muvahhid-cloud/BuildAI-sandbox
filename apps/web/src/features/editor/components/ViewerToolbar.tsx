@@ -1,13 +1,14 @@
 "use client";
 
-import { Box, Grid3x3, Map, RotateCcw, Sparkles, Trees } from "lucide-react";
-import type { ReactNode } from "react";
+import { Box, Grid3x3, Map, RotateCcw, Sparkles, Trees, Wand2 } from "lucide-react";
+import { type ReactNode, useState } from "react";
 
 import { Kbd } from "@/components/ui";
 import type { SceneGraph } from "@/engine/scene/build-scene";
 import type { CameraPresetId } from "@/engine/scene/camera-presets";
 import { DrawingDownloads, type DrawingInfo } from "@/features/drawing/components/DrawingDownloads";
 import { useBuildingStore } from "@/stores/building-store";
+import { prefersReducedMotion, useRevealStore } from "@/stores/reveal-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { useViewerStore } from "@/stores/viewer-store";
 
@@ -127,10 +128,34 @@ export function ViewerToolbar({ scene, drawing }: { scene: SceneGraph; drawing: 
               <Trees size={12} aria-hidden />
               Site
             </SegmentButton>
+            <ReplayButton />
           </Group>
         </>
       )}
     </div>
+  );
+}
+
+/** Plays the build reveal of the shown model again (off with reduced motion). */
+function ReplayButton() {
+  const playing = useRevealStore((s) => s.phase === "assembling");
+  const [reduced] = useState(prefersReducedMotion);
+  return (
+    <button
+      type="button"
+      aria-label="Replay build animation"
+      title={
+        reduced
+          ? "Replay build animation (off: your system asks for reduced motion)"
+          : "Replay build animation"
+      }
+      disabled={reduced || playing}
+      onClick={() => useRevealStore.getState().play("build")}
+      className="inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium text-fg-muted transition-colors duration-150 hover:bg-black/5 hover:text-fg disabled:opacity-50 dark:hover:bg-white/10"
+    >
+      <Wand2 size={12} aria-hidden />
+      Replay
+    </button>
   );
 }
 

@@ -19,6 +19,8 @@ export interface AIGeneratorPanelProps {
   /** Resume a generation started elsewhere (e.g. from the projects dashboard). */
   initialGenerationId?: string | null;
   onCompleted: (generation: AIGenerationOut) => void;
+  /** The generation being followed while it is still running (null once it ends or is left). */
+  onProgress?: (generation: AIGenerationOut | null) => void;
   onClose?: () => void;
 }
 
@@ -28,6 +30,7 @@ export function AIGeneratorPanel({
   currency,
   initialGenerationId = null,
   onCompleted,
+  onProgress,
   onClose,
 }: AIGeneratorPanelProps) {
   const qc = useQueryClient();
@@ -49,6 +52,14 @@ export function AIGeneratorPanel({
       qc.invalidateQueries({ queryKey: projectKeys.all }),
     ]).then(() => onCompleted(data));
   }, [generation.data, projectId, qc, onCompleted]);
+
+  // Report the real backend stage upwards (the waiting cloud in the canvas area follows it).
+  const live = generationId !== null && generation.data && !isTerminal(generation.data);
+  const liveGeneration = live ? generation.data : null;
+  useEffect(() => {
+    onProgress?.(liveGeneration ?? null);
+  }, [liveGeneration, onProgress]);
+  useEffect(() => () => onProgress?.(null), [onProgress]);
 
   function run(text: string, options: Partial<GenerationOptions>) {
     setPrompt(text);

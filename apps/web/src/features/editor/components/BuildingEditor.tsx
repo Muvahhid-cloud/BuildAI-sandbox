@@ -27,6 +27,9 @@ function isTyping(target: EventTarget | null): boolean {
   return !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
 }
 
+/** Any interaction with the viewport ends a running build animation (drag, click, wheel). */
+const skipReveal = () => useRevealStore.getState().dispatch({ type: "skip" });
+
 /**
  * Editor layout. Large screens: controls (left) · 3D viewport or floor plan (center) ·
  * properties (right); both side panels collapse ([ and ]). The view tools float over the
@@ -85,7 +88,9 @@ export function BuildingEditor({
             <button
               type="button"
               aria-label="Skip the build animation"
-              onClick={() => useRevealStore.getState().dispatch({ type: "skip" })}
+              onClick={skipReveal}
+              onPointerDown={skipReveal}
+              onWheel={skipReveal}
               className="absolute inset-0 z-[5] flex cursor-pointer items-start justify-center bg-transparent pt-4"
             >
               <span className="glass flex animate-fade-in items-center gap-1.5 rounded-full px-3 py-1 text-xs text-fg-muted shadow-md">

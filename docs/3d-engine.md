@@ -1171,12 +1171,13 @@ before/after: `docs/visual/ui/`.
 - Dense editor forms (plan edit bar, element edit section, spec form) use the tokens and
   `field-sm` but keep their own layout; they are not rebuilt from kit components one by one.
 
-## 25. Build reveal — particle cloud and assembly (2026-11-11)
+## 25. Build reveal — blueprint and construction assembly (2026-11-11)
 
 Scope: a viewer effect only (`apps/web/src/viewer/reveal`, `stores/reveal-store.ts`). The
 BuildingModel, `engine/` (still pure and deterministic), geometry, materials and picking are
-unchanged: particles are never pickable and carry no `elementId`; meshes keep `{ elementId, part }`.
-All constants are in `viewer/render-settings.ts` (`REVEAL`).
+unchanged: pieces are never pickable and carry no `elementId`; meshes keep `{ elementId, part }`.
+All constants are in `viewer/render-settings.ts` (`REVEAL`). It replaces the first version of
+this section (particle cloud, bottom-up clipping sweep).
 
 ### 25.1 Phases (`reveal/machine.ts`, pure)
 
@@ -1184,68 +1185,126 @@ All constants are in `viewer/render-settings.ts` (`REVEAL`).
 idle --wait(stage)--> gathering --model--> assembling --tick / skip--> done
 ```
 
-- **gathering** — while the backend works. `WaitingCloud` fills the canvas area with a swirling
-  particle cloud and shows the backend's real stage label (`AI_STAGES`; never a percentage). A
-  real stage change is one burst and a denser cloud; nothing else drives it. For a spec-form
-  generation (a job without stages) the label is the layout stage's.
-- **assembling** — when the version is open: `RevealLayer` inside the viewer's canvas.
-  `revealFrame(elapsed)` gives the sweep height, veil opacity and particle fade.
+- **gathering** — while the backend works. `WaitingBlueprint` fills the canvas area with a calm
+  drafting table: a faint ground grid and a slow scanning line, on the viewer's own sky colour,
+  with the backend's real stage label (`AI_STAGES`; never a percentage). A real stage change is
+  one brighter pass of the line; nothing else drives it. For a spec-form generation (a job
+  without stages) the label is the layout stage's.
+- **assembling** — when the version is open: `RevealLayer` inside the viewer's canvas. Modes:
+  `build` (the whole model) and `changes` (only changed elements, short).
 - **done** — the effect is unmounted and its GPU resources disposed.
-- `skip` ends a running assembly at once (a click on the viewport or Esc); waiting for the
-  backend cannot be skipped. With `prefers-reduced-motion` the machine never shows the cloud
-  and goes straight to done; the "Replay build animation" toolbar button is disabled.
+- `skip` ends a running assembly at once: any interaction with the viewport (pointer down = the
+  start of a drag or a click, the wheel) or Esc; waiting for the backend cannot be skipped. With
+  `prefers-reduced-motion` the machine never shows the waiting animation and goes straight to
+  done; the "Replay build animation" toolbar button is disabled.
+- The length of an assembly depends on the model; the layer reports it to the store
+  (`setDuration`), the machine takes it from its options.
 
-### 25.2 Assembly (about 3.6 s)
+### 25.2 Construction order and schedule (`reveal/order.ts`, pure)
 
-| Time (s) | What happens |
+`constructionOrder(index)` — independent of the order of `model.elements`:
+
+| Per storey (level index, lowest first) | Then, for the whole building |
 |---|---|
-| 0 – ~2.3 | particles fly from the cloud to their surface points, bottom first (delay = height × `stagger` + jitter, flight `fly`), over a dark veil |
-| `sweepStart` 1.45 – `sweepEnd` 3.2 | the real meshes are revealed bottom-up: a world-space clipping plane (the section-cut mechanism, combined with an active section cut) rises from just above the ground to above the roof; a glowing grid sheet rides on it and landed particles near it brighten, below it they fade |
-| second half of the sweep | the veil lifts |
-| 3.2 – 3.6 | remaining particles fade; clipping is restored to the section cut alone |
+| floor slab (`ground`/`floor`) → room floors → exterior walls, once around the perimeter (angle of the wall midpoint, from the south-west) → interior walls and partitions → doors and windows (in the order of their host walls, then along the wall) → stairs | roofs → entrance canopy → balcony slabs and railings → furniture → site (paving and fence, then each plant) |
 
-- **Targets** (`reveal/sampling.ts`, pure): `sampleSurfaces(scene.descriptors, count, seed)`
-  takes the triangles of the same geometry the viewer draws (descriptor geometry × matrix),
-  chooses triangles by area and points uniformly inside them, with a seeded PRNG
-  (`reveal/prng.ts`: FNV-1a + mulberry32). The seed is the version's `model_hash` (the demo:
-  the model id): the same model always gives the same particles.
-- **Particles** (`reveal/particles.ts`): one `Points` object = one draw call, a custom shader
-  (soft additive glow, a few larger twinkling sparkles), `REVEAL.particleCount` = 40 000
-  (ceiling 50 000). The cloud position is computed in the vertex shader from per-particle seeds,
-  so the waiting cloud and the start of the assembly are the same shape. Two more small draws
-  only during the assembly: the veil (one screen triangle) and the sweep sheet (one quad).
-- The viewer renders on demand; the effect invalidates each frame only while it runs.
+`scheduleConstruction(steps, extents, REVEAL.schedule)` gives each element its start (never
+before the step before it; a stagger inside a group from `stageWeight`, a pause `groupGap`
+between groups), its bottom-to-top arrival spread (height × `spreadPerMeter`, clamped) and the
+times `landed` (every piece is in place), `shown` (the real mesh is opaque) and `vanish` (the
+pieces start to shrink). The whole build is fitted into
+`minDuration + secondsPerElement × elements`, at most `maxDuration` (6–9 s); the first second
+(`lead`) belongs to the blueprint.
 
-### 25.3 When it plays
+### 25.3 Blueprint (`reveal/blueprint.ts`, pure; drawn by `reveal/gpu.ts`)
+
+The real ground-floor plan: the outline of every wall of the lowest storey, from the model,
+drawn wall after wall in construction order as thin accent-blue ribbons with a brighter pen
+tip, on a pale paper sheet with a 1 m grid under the building. It draws itself in `blueprint.draw`
+(1 s), fades to a faint trace while the storey is built on it, and is gone at the end.
+
+### 25.4 Pieces (`reveal/pieces.ts`, pure; `reveal/gpu.ts`)
+
+- **Targets**: `samplePieces` uses `sampleSurfaces` (`reveal/sampling.ts`: the triangles of the
+  geometry the viewer draws, chosen by area, points uniform inside, seeded PRNG
+  `reveal/prng.ts`) per element, seeded by `model_hash + element id` (the demo: the model id).
+  Each point is snapped to a course grid in its surface plane (running bond on vertical
+  surfaces), one piece per cell; surfaces that face down get none.
+- **Size and orientation**: edge = `perRootArea × √(element surface)`, within 0.12–0.2 m; the
+  piece lies in the surface (x along the element's own axis, e.g. along a wall; z along the
+  normal) — no free rotation.
+- **Budget**: at most `maxPieces` = 25 000. The density adapts: each element gets a share by its
+  area and its stage (`stageDensity`: walls and roofs dense, covered layers and small details
+  lighter), at least `minPerItem`.
+- **Motion** (`animatePieces`): a piece starts at the base of its own element (the lowest piece
+  target), directly under its target (horizontal jitter ≤ `startJitter` = 0.12 m), and rises
+  straight up with an ease-out over `rise`; departure = element start + relative height ×
+  spread + a jitter ≤ `jitter`, so the bottom lands first.
+- **Colour**: the brand accent (`REVEAL.accent`, the `--accent` token) with a slight glow while
+  it moves, the element's library colour (`materialHex`: preset colour or the display colour
+  of the material key) as it lands.
+- **GPU**: one mesh with `InstancedBufferGeometry` = one draw call; a `MeshStandardMaterial`
+  whose vertex stage is replaced (`onBeforeCompile`) to compute position, size and colour from
+  per-piece attributes and one time uniform. Lit like the building (sun, HDRI, fog, tone
+  mapping, section cut); no shadows.
+
+### 25.5 Real meshes (`reveal/gate.ts`, `RevealLayer`)
+
+- An element that is not built yet is moved to camera layer 31 (`gateScene`): no camera, shadow
+  pass or raycaster sees it, so it is not rendered and not pickable; its mesh, materials,
+  `userData` and React props are untouched. Elements are found by `userData.elementId`;
+  glTF furniture, the site mesh and plants by a `revealKey` tag (`revealTag`, set in
+  `ModelInstance` / `SiteLayer`).
+- When all pieces of an element have landed, a copy of its meshes (same geometry, cloned
+  materials) fades in over `fade`; when it is opaque the real mesh takes over (same pixels)
+  and the pieces shrink away. The transparent shader variants are compiled during the
+  blueprint second (zero-size copies), not in the middle of the build.
+- Elements drawn by a glTF model, the site mesh and plants appear when their pieces have landed
+  (no fade copy); plants take their pieces from a simple crown stand-in.
+- Only what the viewer currently shows takes part (isolated level, layer toggles, site toggle).
+
+### 25.6 Camera (`reveal/camera.ts`, pure)
+
+`orbitPose(end, progress, REVEAL.camera)`: a slow orbit (`sweep` rad around the vertical axis
+through the target, slightly further out and higher at the start) that eases into `end` — the
+default exterior pose (`cameraPose("exterior")`) — exactly at progress 1. A replay blends from
+the current camera pose. A skipped build also ends on the exterior view. The `changes` mode
+does not move the camera.
+
+### 25.7 When it plays
 
 - After an AI generation and after a spec-form generation (the version that generation
   produced, once; the 3D view is selected). The generation summary card appears after it.
 - "Replay build animation" in the view toolbar (Display group) replays it for the shown model.
-- After "Apply" in Modify with AI: mode `sparkle` — only the elements the preview marked as
-  changed twinkle in place for `REVEAL.sparkle.duration` (no veil, no sweep).
+- After "Apply" in Modify with AI: mode `changes` — only the elements the preview marked as
+  changed re-assemble from pieces (`REVEAL.changes.duration`, no blueprint, no camera move).
 - Not on opening an existing project, switching versions, saving plan edits or importing the demo.
 
-### 25.4 Toolbar and drawers
+### 25.8 Toolbar and drawers
 
 The floating view toolbar keeps to the part of the viewport that an open drawer does not cover
 (`BuildingEditor useDrawerOverlap`: measured from the drawer's layout width, so the slide-in
 animation does not matter): it re-centres there and wraps.
 
-### 25.5 Tests and screenshots
+### 25.9 Tests and screenshots
 
-`reveal/sampling.test.ts` (deterministic, exact count, every point on a source triangle,
-area weighting, matrices and indexed geometry, the real demo scene within its bounds),
-`reveal/machine.test.ts` (idle → gathering → assembling → done, bursts per stage change, skip,
-reduced motion, sparkle, replay, seek; timeline monotonic and within 3–4 s),
-`reveal/reveal-ui.test.tsx` (the waiting text without WebGL, the store),
-`ProjectEditor.test.tsx` ("build animation controls": replay, Esc and click skip, seed).
-Screenshots at fixed times (dev-only `window.__buildaiReveal.freeze(t)`): `docs/visual/reveal/`.
+`reveal/construction.test.ts` (order: every element once, independent of input order, storey
+by storey, stage order, perimeter, openings after their walls; schedule: order, lead, groups,
+6–9 s, changes; pieces: deterministic, budget, size, on the element, start under the target at
+the element base, bottom lands first, colours; blueprint; camera ends on the exterior pose;
+gate), `reveal/sampling.test.ts`, `reveal/machine.test.ts` (phases, skip, reduced motion,
+replay, seek, duration from options), `reveal/reveal-ui.test.tsx` (the waiting text without
+WebGL, the store), `ProjectEditor.test.tsx` ("build animation controls": replay; Esc, click,
+pointer down and wheel skip; seed).
+Screenshots at fixed times (dev-only `window.__buildaiReveal.freeze(t, changedIds?)`):
+`docs/visual/reveal/`.
 
-### 25.6 Limits
+### 25.10 Limits
 
-- Furniture drawn by glTF models and the site (trees, fence, paving) are revealed by the same
-  clipping sweep but get no particles of their own (targets come from the model's descriptors).
-- The dark veil covers the whole viewport during the first part of the assembly, including the
-  ground and site.
-- No frame-rate measurement on real integrated GPUs was possible here (headless software
-  rendering only); the budget is one 40k-point draw call with a short vertex shader.
+- With 25 000 pieces a large house is covered to roughly a third to a half on walls and less
+  elsewhere: the pieces read as courses being laid, not as a closed surface.
+- glTF furniture, the site mesh and plants appear without a fade when their pieces have landed.
+- The shadow of an element appears when its fade starts.
+- No frame-rate measurement on a real integrated GPU was possible here (headless software
+  rendering only, about 1 fps for the plain scene as well); the effect adds one instanced draw
+  call (≤ 25 000 boxes) and about 0.1 ms of CPU per frame.

@@ -1,5 +1,5 @@
 // Seeded random numbers for the build reveal: the same model hash always gives the same
-// particles (no Math.random, no clock).
+// pieces (no Math.random, no clock).
 
 /** FNV-1a (32-bit) of a string. */
 export function hashString(text: string): number {

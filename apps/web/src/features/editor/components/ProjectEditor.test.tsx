@@ -635,6 +635,14 @@ describe("build animation controls", () => {
     await userEvent.click(screen.getByRole("button", { name: "Skip the build animation" }));
     expect(useRevealStore.getState().phase).toBe("done");
     expect(screen.queryByRole("button", { name: "Skip the build animation" })).toBeNull();
+
+    // Any interaction with the viewport skips: the start of a drag, the wheel.
+    await userEvent.click(replay);
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Skip the build animation" }));
+    expect(useRevealStore.getState().phase).toBe("done");
+    await userEvent.click(replay);
+    fireEvent.wheel(screen.getByRole("button", { name: "Skip the build animation" }));
+    expect(useRevealStore.getState().phase).toBe("done");
   });
 
   it("seeds the animation with the version's model hash", async () => {

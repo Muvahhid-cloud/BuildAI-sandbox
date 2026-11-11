@@ -116,9 +116,11 @@ export function CameraRig({ scene }: { scene: SceneGraph }) {
     // Build reveal at a fixed time (screenshots in docs/visual/reveal).
     const reveal = w as unknown as { __buildaiReveal?: unknown };
     reveal.__buildaiReveal = {
-      freeze: (elapsed: number) => {
+      // With element ids: the short re-assembly of those elements ("changes").
+      freeze: (elapsed: number, changedIds?: string[]) => {
         const store = useRevealStore.getState();
-        if (store.phase !== "assembling") store.play("build");
+        const mode = changedIds ? "changes" : "build";
+        if (store.phase !== "assembling" || store.mode !== mode) store.play(mode, changedIds);
         useRevealStore.getState().freeze(elapsed);
       },
     };

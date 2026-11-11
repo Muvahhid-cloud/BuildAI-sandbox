@@ -133,6 +133,7 @@ function FurnitureModel({
       <ModelInstance
         model={model}
         matrix={matrix}
+        revealKey={d.elementId}
         fallback={<ElementMesh descriptor={d} mode="visible" selected={selected} />}
       />
     </>

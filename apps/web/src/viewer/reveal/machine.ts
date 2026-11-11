@@ -118,8 +118,8 @@ const smooth = (x: number) => {
 
 /**
  * What the "build" assembly shows at `elapsed` seconds: the sweep height rises from the bottom
- * to just above the top between sweepStart and sweepEnd, the veil lifts with it, the particles
- * fade after it. Monotonic in `elapsed`; at `duration` everything is revealed and nothing glows.
+ * to just above the top between sweepStart and sweepEnd, the veil lifts over its second half,
+ * the particles fade after it. Monotonic in `elapsed`; at `duration` everything is revealed and nothing glows.
  */
 export function revealFrame(
   elapsed: number,
@@ -133,7 +133,8 @@ export function revealFrame(
   return {
     sweepZ: minZ + (top - minZ) * sweep,
     sweep,
-    veil: t.veilOpacity * (1 - sweep),
+    // Dark until the sweep is past halfway (the glow reads against it), then it lifts.
+    veil: t.veilOpacity * (1 - smooth((sweep - 0.5) / 0.5)),
     particles: 1 - tail,
   };
 }

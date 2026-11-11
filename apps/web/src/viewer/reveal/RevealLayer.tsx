@@ -58,6 +58,8 @@ function Assembly({ scene }: { scene: SceneGraph }) {
       minZ: sample.minZ,
       maxZ: sample.maxZ,
       sparkle,
+      // Larger buildings are seen from further away: keep the points readable.
+      size: REVEAL.pointSize * Math.min(Math.max(size / 9, 1), 2.6),
     });
     backdrop?.place(max.x - min.x + 4, max.y - min.y + 4, (min.x + max.x) / 2, (min.y + max.y) / 2);
     return {

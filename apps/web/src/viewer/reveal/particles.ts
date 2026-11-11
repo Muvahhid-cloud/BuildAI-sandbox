@@ -66,7 +66,7 @@ const VERTEX = /* glsl */ `
     pos.xy += vec2(-sin(theta), cos(theta)) * swing;
 
     float twinkle = 0.62 + 0.38 * sin(uTime * (2.5 + aSeed.z * 5.0) + aSeed.y * 40.0);
-    float star = step(0.965, aSeed.z);           // a few larger sparkles
+    float star = step(0.965, fract(aSeed.x * 91.7 + aSeed.w * 13.3)); // a few larger sparkles
     float alpha = twinkle * (0.55 + 0.45 * star);
     float size = uSize * (0.55 + 0.9 * aSeed.w) * (1.0 + 1.6 * star) * mix(1.0, 0.6, ease);
 

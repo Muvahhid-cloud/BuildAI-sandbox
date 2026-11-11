@@ -121,6 +121,8 @@ export function ProjectEditor({
     pendingRef.current = pendingReveal;
   }, [pendingReveal]);
   const queueReveal = setPendingReveal;
+  // The summary card waits for the build animation to finish (it would cover it).
+  const revealing = useRevealStore((s) => s.phase === "assembling" && s.mode === "build");
   const status = useBuildingStore((s) => s.status);
   const scene = useBuildingStore((s) => s.scene);
   const buildError = useBuildingStore((s) => s.error);
@@ -428,7 +430,7 @@ export function ProjectEditor({
           </div>
         )}
 
-        {hasVersions && (showSummary || running) && summary.data && (
+        {hasVersions && (showSummary || running) && summary.data && !revealing && (
           <div className="pointer-events-none absolute right-3 top-3 z-[16] flex justify-end lg:right-[19rem] xl:right-[21rem]">
             <div className="pointer-events-auto">
               {showSummary ? (

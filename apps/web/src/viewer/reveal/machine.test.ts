@@ -116,7 +116,14 @@ describe("reveal timeline", () => {
     const mid = revealFrame((REVEAL.sweepStart + REVEAL.sweepEnd) / 2, t, 0, 6);
     expect(mid.sweepZ).toBeGreaterThan(1);
     expect(mid.sweepZ).toBeLessThan(6);
-    expect(mid.veil).toBeLessThan(REVEAL.veilOpacity);
+    expect(mid.veil).toBeCloseTo(REVEAL.veilOpacity); // still dark at half height
+    const late = revealFrame(
+      REVEAL.sweepStart + 0.85 * (REVEAL.sweepEnd - REVEAL.sweepStart),
+      t,
+      0,
+      6,
+    );
+    expect(late.veil).toBeLessThan(REVEAL.veilOpacity * 0.5);
     const end = revealFrame(REVEAL.duration, t, 0, 6);
     expect(end.sweepZ).toBeGreaterThan(6); // above the top: nothing is clipped
     expect(end.veil).toBe(0);

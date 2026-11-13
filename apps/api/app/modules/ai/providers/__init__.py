@@ -14,7 +14,7 @@ _override: AIProvider | None = None
 
 def create_provider(settings: Settings) -> AIProvider:
     if settings.ai_provider == "mock":
-        return MockAIProvider()
+        return MockAIProvider(stream_delay_s=settings.ai_mock_stream_delay_ms / 1000)
     if settings.ai_provider == "anthropic":
         if settings.anthropic_api_key is None or not settings.ai_model:
             raise AIConfigurationError("anthropic: ANTHROPIC_API_KEY and AI_MODEL are required")

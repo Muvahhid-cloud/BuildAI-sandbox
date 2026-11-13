@@ -4,7 +4,7 @@ from typing import Any
 
 from sqlalchemy import DateTime, Float, ForeignKey, Index, String, func
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, deferred, mapped_column
 
 from app.core.db import Base, UUIDPrimaryKeyMixin, utcnow
 
@@ -26,6 +26,10 @@ class Job(UUIDPrimaryKeyMixin, Base):
     input: Mapped[dict[str, Any]] = mapped_column(JSONB)
     result: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     error: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    # The laid-out model while the rules check and saving still run: the same JSON the
+    # version then stores. Cleared when the job ends. Loaded only by the preview endpoint.
+    preview_model: Mapped[dict[str, Any] | None] = deferred(mapped_column(JSONB))
+    preview_model_hash: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), default=utcnow
     )

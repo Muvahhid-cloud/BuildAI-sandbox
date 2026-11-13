@@ -24,6 +24,12 @@ from app.core.config import get_settings
 from app.core.db import get_sessionmaker, utcnow
 from app.modules.ai.context import generation_context
 from app.modules.ai.errors import AIProviderError
+from app.modules.ai.interim import (
+    InterimFact,
+    interim_facts,
+    merge_facts,
+    spec_facts_for_display,
+)
 from app.modules.ai.interpreter import (
     AttemptRecord,
     Interpretation,
@@ -55,6 +61,10 @@ LAYOUT_MESSAGES = {
     "LAYOUT_INVALID": "The layout engine could not produce a valid building for this request.",
     "MODEL_INVALID": "The layout engine could not produce a valid building for this request.",
 }
+
+
+# Interim facts are re-read from the streamed answer at most this often (seconds).
+INTERIM_FACTS_INTERVAL_S = 0.5
 
 
 def _details(issues: list[Issue]) -> list[dict[str, Any]]:
@@ -113,9 +123,44 @@ class BuildingGenerationService:
         self.session = session
         self.gen = gen
         self.started = time.perf_counter()
+        self._answer = ""  # the first answer's text received so far (streaming)
+        self._facts: list[InterimFact] = []
+        self._facts_read_at = 0.0
 
     async def stage(self, name: str) -> None:
+        if name == "validating":
+            self._read_facts()  # the answer is complete: read what the throttle skipped
         self.gen.stage = name
+        await self.session.commit()
+
+    def _set_facts(self, current: list[InterimFact]) -> bool:
+        facts = merge_facts(self._facts, current)
+        if facts == self._facts:
+            return False
+        self._facts = facts
+        self.gen.interim_facts = [f.model_dump(mode="json") for f in facts]
+        return True
+
+    def _read_facts(self) -> bool:
+        return bool(self._answer) and self._set_facts(interim_facts(self._answer))
+
+    async def on_text(self, text: str) -> None:
+        """A piece of the AI's answer arrived. At most every INTERIM_FACTS_INTERVAL_S the
+        simple facts readable so far are recorded for the client ("Understood so far").
+        Display only: the complete answer is validated as always."""
+        self._answer += text
+        now = time.monotonic()
+        if now - self._facts_read_at < INTERIM_FACTS_INTERVAL_S:
+            return
+        self._facts_read_at = now
+        if self._read_facts():
+            await self.session.commit()
+
+    async def on_layout(self, model: dict[str, Any], model_hash: str) -> None:
+        """The layout is done: expose the model to the client while checking and saving
+        continue (the version will store exactly this JSON)."""
+        self.gen.preview_model = model
+        self.gen.preview_model_hash = model_hash
         await self.session.commit()
 
     async def finish(
@@ -130,6 +175,9 @@ class BuildingGenerationService:
         gen.status = status
         gen.finished_at = utcnow()
         gen.duration_ms = round((time.perf_counter() - self.started) * 1000)
+        # The preview only bridges the time until the version exists (or the failure is known).
+        gen.preview_model = None
+        gen.preview_model_hash = None
         if code is not None:
             gen.error = {
                 "code": code,
@@ -200,6 +248,7 @@ class BuildingGenerationService:
                 max_repairs=settings.ai_max_repairs,
                 max_tokens=settings.ai_max_output_tokens,
                 on_stage=self.stage,
+                on_text=self.on_text,
             )
         except AIProviderError as exc:  # provider could not be created (configuration)
             logger.error("ai_generation id=%s provider error: %s", gen.id, exc.detail)
@@ -228,6 +277,8 @@ class BuildingGenerationService:
             return
         spec = interpretation.spec
         gen.spec = spec.model_dump(mode="json")
+        # From here on the facts are those of the validated specification.
+        self._set_facts(spec_facts_for_display(gen.spec))
         if gen.names_project:
             project.name = spec.name[:200]
         await self.session.commit()
@@ -252,6 +303,7 @@ class BuildingGenerationService:
                     prompt_version=gen.prompt_version,
                 ),
                 on_stage=self.stage,
+                on_layout=self.on_layout,
             )
         except LayoutError as exc:
             await self._fail_after_rollback(

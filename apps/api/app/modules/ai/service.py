@@ -13,6 +13,7 @@ from app.core.config import get_settings
 from app.core.db import utcnow
 from app.core.errors import AppError, NotFoundError
 from app.modules.ai.errors import AIProviderError
+from app.modules.ai.interim import InterimFact
 from app.modules.ai.models import AIGeneration
 from app.modules.ai.orchestrator import run_ai_generation
 from app.modules.ai.prompts.shared import PROMPT_VERSION
@@ -31,6 +32,7 @@ from app.modules.building.specification import BuildingSpecification
 from app.modules.building.summary import ModelSummary
 from app.modules.generation.service import GenerationBusyError, project_busy
 from app.modules.jobs.runner import job_runner
+from app.modules.jobs.schemas import PreviewModelOut
 from app.modules.layout.engine import GFA_WARNING_THRESHOLD
 from app.modules.projects.schemas import ProjectCreate
 from app.modules.projects.service import ProjectService
@@ -128,6 +130,18 @@ class AIGenerationService:
         await self.projects.get(user, gen.project_id)  # deleted projects hide their history
         return await self._out(gen)
 
+    async def preview(self, user: User, generation_id: uuid.UUID) -> PreviewModelOut:
+        """The laid-out model of a running generation (404 before the layout and once the
+        generation has ended: the version holds the model then)."""
+        gen = await self.repo.get(generation_id)
+        if gen is None or gen.user_id != user.id:
+            raise NotFoundError("Generation not found")
+        await self.projects.get(user, gen.project_id)
+        row = await self.repo.preview(generation_id)
+        if row is None:
+            raise NotFoundError("No preview model for this generation")
+        return PreviewModelOut(model=row[0], model_hash=row[1])
+
     async def list_for_project(
         self, user: User, project_id: uuid.UUID
     ) -> list[AIGenerationSummaryOut]:
@@ -183,6 +197,8 @@ class AIGenerationService:
             input_tokens=gen.input_tokens,
             output_tokens=gen.output_tokens,
             started_at=gen.started_at,
+            interim_facts=[InterimFact.model_validate(f) for f in gen.interim_facts or []],
+            preview_model_hash=gen.preview_model_hash,
         )
 
 

@@ -12,7 +12,7 @@ from typing import Any
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, deferred, mapped_column
 
 from app.core.db import Base, UUIDPrimaryKeyMixin, utcnow
 
@@ -40,6 +40,13 @@ class AIGeneration(UUIDPrimaryKeyMixin, Base):
     understanding: Mapped[str | None] = mapped_column(Text)
     spec: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     warnings: Mapped[list[Any]] = mapped_column(JSONB, default=list, server_default="[]")
+    # Facts read from the answer while it is written (ai/interim.py): interim, display only.
+    interim_facts: Mapped[list[Any]] = mapped_column(JSONB, default=list, server_default="[]")
+    # The laid-out model while the rules check and saving still run (docs/ai-pipeline.md §6.1):
+    # the same JSON the version then stores. Cleared when the generation ends. Large: loaded
+    # only by the preview endpoint.
+    preview_model: Mapped[dict[str, Any] | None] = deferred(mapped_column(JSONB))
+    preview_model_hash: Mapped[str | None] = mapped_column(String(64))
     clarification_questions: Mapped[list[Any]] = mapped_column(
         JSONB, default=list, server_default="[]"
     )

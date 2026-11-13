@@ -1,6 +1,7 @@
 """AnthropicProvider: Claude through the official `anthropic` SDK (the only file importing it).
 
-One Messages API call per request. The answer is constrained with structured outputs
+One Messages API call per request (streamed when the caller wants the text as it arrives:
+`stream_structured`, same parameters). The answer is constrained with structured outputs
 (`output_config.format` = JSON Schema of `SpecificationDraft`), which works on every current
 Claude model (unlike forced `tool_choice`). Unsupported numeric/length constraints are moved
 into field descriptions (`json_schema.structured_output_schema`) and enforced by Pydantic
@@ -33,7 +34,7 @@ from app.modules.ai.providers.json_schema import (
     prompt_schema_system,
     structured_output_schema,
 )
-from app.modules.ai.structured import StructuredRequest, StructuredResult
+from app.modules.ai.structured import StructuredRequest, StructuredResult, TextCallback
 
 __all__ = ["AnthropicProvider", "structured_output_schema"]
 
@@ -95,9 +96,16 @@ class AnthropicProvider(AIProvider):
             params["output_config"] = output_config
         return params
 
-    async def _create(self, params: dict[str, Any]) -> Any:
+    async def _create(self, params: dict[str, Any], on_text: TextCallback | None = None) -> Any:
+        """One Messages API call. With `on_text` the same request is streamed: the text is
+        reported as it arrives and the SDK's accumulated final message is returned."""
         try:
-            return await self._client.messages.create(**params)
+            if on_text is None:
+                return await self._client.messages.create(**params)
+            async with self._client.messages.stream(**params) as stream:
+                async for text in stream.text_stream:
+                    await on_text(text)
+                return await stream.get_final_message()
         except anthropic.APITimeoutError as exc:
             raise AITimeoutError(f"anthropic: timeout ({exc})") from exc
         except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
@@ -114,10 +122,22 @@ class AnthropicProvider(AIProvider):
             raise AIUnavailableError(f"anthropic: connection failed ({exc})") from exc
 
     async def complete_structured(self, request: StructuredRequest) -> StructuredResult:
+        return await self._complete(request, None)
+
+    async def stream_structured(
+        self, request: StructuredRequest, on_text: TextCallback
+    ) -> StructuredResult:
+        """The same single request, streamed (`messages.stream`): identical parameters,
+        fallback and parsing; only the transport differs."""
+        return await self._complete(request, on_text)
+
+    async def _complete(
+        self, request: StructuredRequest, on_text: TextCallback | None
+    ) -> StructuredResult:
         started = time.perf_counter()
         mode = self.output_mode
         try:
-            response = await self._create(self._params(request, mode))
+            response = await self._create(self._params(request, mode), on_text)
         except AIUnavailableError as err:
             cause = err.__cause__
             if not (
@@ -126,9 +146,10 @@ class AnthropicProvider(AIProvider):
                 and is_schema_too_complex(_error_text(cause))
             ):
                 raise
-            # The API cannot compile the schema into a grammar (rejected before generation).
-            # Fall back once, and for every later call, to the schema in the system prompt;
-            # the interpreter validates the answer exactly like a structured output.
+            # The API cannot compile the schema into a grammar (rejected before generation,
+            # so nothing has been streamed yet). Fall back once, and for every later call, to
+            # the schema in the system prompt; the interpreter validates the answer exactly
+            # like a structured output.
             logger.warning(
                 "anthropic: structured outputs rejected the %s schema (%s); using %s mode",
                 request.output_name,
@@ -137,7 +158,7 @@ class AnthropicProvider(AIProvider):
             )
             self._schema_rejected = True
             mode = PROMPT_SCHEMA
-            response = await self._create(self._params(request, mode))
+            response = await self._create(self._params(request, mode), on_text)
         latency_ms = round((time.perf_counter() - started) * 1000)
 
         text = "".join(

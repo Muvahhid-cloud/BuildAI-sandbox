@@ -119,6 +119,8 @@ async def _fail(
 ) -> None:
     job.status = "failed"
     job.finished_at = utcnow()
+    job.preview_model = None
+    job.preview_model_hash = None
     job.error = {"code": code, "message": message, "details": details}
     await session.commit()
 
@@ -143,6 +145,12 @@ async def run_generation_job(job_id: uuid.UUID) -> None:
         async def stage(name: str) -> None:
             await _stage(session, job, name)
 
+        async def expose(model: dict[str, Any], model_hash: str) -> None:
+            # The laid-out model, readable while the rules check and saving continue.
+            job.preview_model = model
+            job.preview_model_hash = model_hash
+            await session.commit()
+
         try:
             result = await layout_and_save(
                 session,
@@ -154,6 +162,7 @@ async def run_generation_job(job_id: uuid.UUID) -> None:
                 source="generation",
                 spec_warnings=spec_warnings,
                 on_stage=stage,
+                on_layout=expose,
             )
         except LayoutError as exc:
             logger.info(
@@ -178,6 +187,8 @@ async def run_generation_job(job_id: uuid.UUID) -> None:
         job.stage = "done"
         job.progress = 1.0
         job.finished_at = utcnow()
+        job.preview_model = None
+        job.preview_model_hash = None
         job.result = {
             "version_id": str(version.id),
             "version_number": version.number,

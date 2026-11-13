@@ -7,6 +7,7 @@ from typing import Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.modules.ai.interim import InterimFact
 from app.modules.ai.schemas.generation import GenerationOptions
 from app.modules.building.issues import Issue
 from app.modules.building.requirements import RequirementCheck
@@ -84,6 +85,12 @@ class AIGenerationOut(AIGenerationSummaryOut):
     input_tokens: int
     output_tokens: int
     started_at: datetime | None
+    # Read from the AI's answer while it is written ("Understood so far"): interim, display
+    # only, never used for geometry. Replaced by the validated specification's facts.
+    interim_facts: list[InterimFact] = Field(default_factory=list)
+    # Set while the laid-out model can be read from GET /ai/generations/{id}/preview: after
+    # the layout stage, until the generation ends (the version then holds the same model).
+    preview_model_hash: str | None = None
 
 
 class AIGenerationList(BaseModel):

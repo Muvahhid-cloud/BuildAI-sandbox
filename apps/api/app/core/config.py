@@ -75,6 +75,9 @@ class Settings(BaseSettings):
     ai_generations_per_hour: int = Field(default=30, ge=1, le=10000)  # per user
     # Log the full prompt text (off by default: only length and a hash are logged).
     ai_log_prompts: bool = False
+    # Development only: pause between two streamed pieces of the mock provider's answer, so
+    # the live "Understood so far" facts can be watched without a language model.
+    ai_mock_stream_delay_ms: int = Field(default=0, ge=0, le=2000)
 
     @field_validator("database_url")
     @classmethod

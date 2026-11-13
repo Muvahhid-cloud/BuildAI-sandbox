@@ -2,7 +2,8 @@
 
 Usage:  python -m app.modules.ai.export_schema <output-dir>
 
-Writes ai-generation.schema.json: the generation record, the history list and the request,
+Writes ai-generation.schema.json: the generation record, the history list, the request and the
+preview model of a running generation,
 all in serialization shape (one definition per model), so the web app validates responses with
 generated Zod schemas instead of a hand-written copy.
 """
@@ -16,6 +17,7 @@ from pydantic.json_schema import models_json_schema
 
 from app.modules.ai.schemas.responses import AIGenerateRequest, AIGenerationList, AIGenerationOut
 from app.modules.building.export_schema import strip_property_titles
+from app.modules.jobs.schemas import PreviewModelOut
 
 AI_SCHEMA_FILE = "ai-generation.schema.json"
 
@@ -26,6 +28,7 @@ def ai_generation_json_schema() -> dict[str, Any]:
             (AIGenerationOut, "serialization"),
             (AIGenerationList, "serialization"),
             (AIGenerateRequest, "serialization"),
+            (PreviewModelOut, "serialization"),
         ],
         ref_template="#/$defs/{model}",
     )

@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +17,17 @@ class JobRepository:
     async def get(self, job_id: uuid.UUID) -> Job | None:
         return await self.session.get(Job, job_id)
 
+    async def preview(self, job_id: uuid.UUID) -> tuple[dict[str, Any], str] | None:
+        """(model JSON, model hash) of the job's preview, if it has one."""
+        row = (
+            await self.session.execute(
+                select(Job.preview_model, Job.preview_model_hash).where(Job.id == job_id)
+            )
+        ).first()
+        if row is None or row[0] is None or row[1] is None:
+            return None
+        return row[0], row[1]
+
     def add(self, job: Job) -> None:
         self.session.add(job)
 
@@ -27,6 +39,8 @@ class JobRepository:
             .values(
                 status="failed",
                 finished_at=utcnow(),
+                preview_model=None,
+                preview_model_hash=None,
                 error={
                     "code": "JOB_INTERRUPTED",
                     "message": "The server restarted while this job was running. Try again.",

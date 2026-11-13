@@ -249,6 +249,23 @@
               "type": "null"
             }
           ]
+        },
+        "interim_facts": {
+          "items": {
+            "$ref": "#/$defs/InterimFact"
+          },
+          "type": "array"
+        },
+        "preview_model_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -914,6 +931,37 @@
       "title": "GenerationOptions",
       "type": "object"
     },
+    "InterimFact": {
+      "description": "One fact read from the answer so far. `key` is a `FactKey` or `room:<room type>`.",
+      "properties": {
+        "key": {
+          "pattern": "^([a-z][a-z0-9_]{0,39})(:[a-z][a-z0-9_]{0,39})?$",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "InterimFact",
+      "type": "object"
+    },
     "InteriorStyle": {
       "enum": [
         "minimalist",
@@ -1147,6 +1195,24 @@
         "rooms_on_facade"
       ],
       "title": "ModelSummary",
+      "type": "object"
+    },
+    "PreviewModelOut": {
+      "description": "The laid-out building of a running generation (spec-form job or AI generation), before\nit is saved: exactly the JSON (and hash) the new version will store.",
+      "properties": {
+        "model": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "model_hash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "model",
+        "model_hash"
+      ],
+      "title": "PreviewModelOut",
       "type": "object"
     },
     "Priority": {

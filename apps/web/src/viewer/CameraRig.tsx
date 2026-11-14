@@ -3,13 +3,20 @@
 import { OrbitControls, OrthographicCamera, PerspectiveCamera } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { type ComponentRef, useCallback, useEffect, useRef, useState } from "react";
-import { type Camera, OrthographicCamera as ThreeOrthographicCamera, Vector3 } from "three";
+import {
+  type Box3,
+  type Camera,
+  OrthographicCamera as ThreeOrthographicCamera,
+  Vector3,
+} from "three";
 
 import { modelToWorld, type XYZ } from "@/engine/math/coords";
-import type { SceneGraph } from "@/engine/scene/build-scene";
+import type { ModelIndex } from "@/engine/model/model-index";
 import { cameraPose } from "@/engine/scene/camera-presets";
 import { useRevealStore } from "@/stores/reveal-store";
 import { useViewerStore } from "@/stores/viewer-store";
+
+import { waitingPose } from "./reveal/waiting";
 
 const ANIMATION_MS = 700;
 
@@ -33,7 +40,7 @@ const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
  * switch), so the controls instance is tracked in state and every pose is applied to the camera
  * those controls drive (`controls.object`).
  */
-export function CameraRig({ scene }: { scene: SceneGraph }) {
+export function CameraRig({ bounds, index }: { bounds: Box3; index: ModelIndex | null }) {
   const projection = useViewerStore((s) => s.projection);
   const request = useViewerStore((s) => s.cameraRequest);
   const setLevelFilter = useViewerStore((s) => s.setLevelFilter);
@@ -49,12 +56,12 @@ export function CameraRig({ scene }: { scene: SceneGraph }) {
   const fitZoom = useCallback(
     (camera: Camera) => {
       if (!(camera instanceof ThreeOrthographicCamera)) return;
-      const b = scene.bounds;
+      const b = bounds;
       const extent = Math.max(b.max.x - b.min.x, b.max.y - b.min.y, b.max.z - b.min.z);
       camera.zoom = (Math.min(size.width, size.height) / extent) * 0.8;
       camera.updateProjectionMatrix();
     },
-    [scene.bounds, size.width, size.height],
+    [bounds, size.width, size.height],
   );
 
   // New camera/controls: keep looking where we were looking.
@@ -69,11 +76,30 @@ export function CameraRig({ scene }: { scene: SceneGraph }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [controls, invalidate]);
 
-  // Apply each camera preset request exactly once.
+  // No model yet (a design is being created): a calm view of the empty site. The build
+  // then leaves this pose smoothly (reveal/RevealLayer).
+  const waiting = index === null;
+  useEffect(() => {
+    if (!controls || !waiting) return;
+    const pose = waitingPose(bounds);
+    tween.current = null;
+    controls.object.position.copy(modelToWorld(pose.position));
+    controls.target.copy(modelToWorld(pose.target));
+    lastPos.current.copy(controls.object.position);
+    lastTarget.current.copy(controls.target);
+    fitZoom(controls.object);
+    controls.update();
+    invalidate();
+    // Only when waiting starts (or the controls are replaced); fitZoom is not a trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controls, waiting, invalidate]);
+
+  // Apply each camera preset request exactly once (requests wait for a model).
   useEffect(() => {
     if (!controls || !request || appliedNonce.current === request.nonce) return;
     appliedNonce.current = request.nonce;
-    const pose = cameraPose(request.preset, scene.bounds, scene.index);
+    if (!index) return; // asked for while there was no model: the waiting view stays
+    const pose = cameraPose(request.preset, bounds, index);
     if (pose.levelFilter) setLevelFilter(pose.levelFilter);
     const camera = controls.object;
     const toPos = modelToWorld(pose.position);
@@ -96,7 +122,7 @@ export function CameraRig({ scene }: { scene: SceneGraph }) {
       controls.update();
     }
     invalidate();
-  }, [controls, request, scene, setLevelFilter, fitZoom, invalidate]);
+  }, [controls, request, bounds, index, setLevelFilter, fitZoom, invalidate]);
 
   // Development aid for reproducible screenshots (docs/visual): set an exact pose in MODEL
   // coordinates. Never present in production builds.
@@ -113,15 +139,18 @@ export function CameraRig({ scene }: { scene: SceneGraph }) {
         invalidate();
       },
     };
-    // Build reveal at a fixed time (screenshots in docs/visual/reveal).
+    // Construction at a fixed time (frame reviews, screenshots in docs/visual/reveal).
     const reveal = w as unknown as { __buildaiReveal?: unknown };
     reveal.__buildaiReveal = {
       // With element ids: the short re-assembly of those elements ("changes").
-      freeze: (elapsed: number, changedIds?: string[]) => {
+      // `holdCamera`: keep the camera where it is (a close-up set with __buildaiViewer).
+      freeze: (elapsed: number, changedIds?: string[] | null, holdCamera = false) => {
         const store = useRevealStore.getState();
         const mode = changedIds ? "changes" : "build";
-        if (store.phase !== "assembling" || store.mode !== mode) store.play(mode, changedIds);
-        useRevealStore.getState().freeze(elapsed);
+        if (store.phase !== "assembling" || store.mode !== mode) {
+          store.play(mode, changedIds ?? undefined);
+        }
+        useRevealStore.getState().freeze(elapsed, holdCamera);
       },
     };
     return () => {

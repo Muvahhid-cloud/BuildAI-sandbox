@@ -75,7 +75,7 @@ export function useJob(jobId: string | null) {
     enabled: jobId !== null,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      return status === "succeeded" || status === "failed" ? false : 400;
+      return status === "succeeded" || status === "failed" ? false : 250;
     },
   });
 }

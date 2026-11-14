@@ -110,14 +110,59 @@ describe("AIGenerationStatus", () => {
       .map((li) => li.textContent);
     expect(items).toEqual([
       "✓Understanding your requirements",
-      "✓Validating the building specification",
+      "✓Validating the specification",
       "✓Generating the layout",
       "Checking building rules",
       "Saving the new version",
-      "Building the 3D model and opening the project",
-    ]);
+    ]); // only the backend's own stages
     expect(screen.queryByText(/%/)).toBeNull();
+    expect(screen.getByText("Every step below is the real backend stage")).toBeVisible();
     expect(screen.getByText("Offline mock interpreter (development mode)")).toBeVisible();
+  });
+
+  it("shows what the AI has stated so far as chips, in the order the facts appeared", () => {
+    const facts = [
+      { key: "storeys", value: 2 },
+      { key: "floor_area_m2", value: 280 },
+      { key: "room:bedroom", value: 4 },
+      { key: "room:wc", value: 1 },
+      { key: "garage_cars", value: 2 },
+      { key: "style", value: "modern" },
+      { key: "balconies", value: 1 },
+      { key: "terrace", value: true },
+      { key: "something_new", value: 3 }, // an unknown fact is not shown, never guessed
+    ];
+    const { rerender } = render(
+      <StageList
+        generation={
+          generation({ status: "running", stage: "interpreting", interim_facts: [] }) as never
+        }
+      />,
+    );
+    const section = screen.getByRole("region", { name: "Understood so far" });
+    expect(within(section).queryAllByRole("listitem")).toHaveLength(0);
+    expect(within(section).getByText("Reading your description…")).toBeVisible();
+    rerender(
+      <StageList
+        generation={
+          generation({ status: "running", stage: "interpreting", interim_facts: facts }) as never
+        }
+      />,
+    );
+    expect(
+      within(screen.getByRole("region", { name: "Understood so far" }))
+        .getAllByRole("listitem")
+        .map((li) => li.textContent),
+    ).toEqual([
+      "2 floors",
+      "about 280 m²",
+      "4 bedrooms",
+      "1 WC",
+      "Garage · 2 cars",
+      "Modern style",
+      "1 balcony",
+      "Terrace",
+    ]);
   });
 
   it("shows the repair step only when it happened", () => {

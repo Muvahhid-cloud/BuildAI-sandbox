@@ -293,3 +293,97 @@ def test_property_named_like_a_keyword_is_kept() -> None:
     }
     out = structured_output_schema(schema)
     assert out["properties"]["pattern"] == {"type": "string", "description": "(max length 3)"}
+
+
+# --- streaming (same single request, text reported as it arrives) ---------------------------
+
+
+class _FakeStream:
+    def __init__(self, outcome: Any, pieces: int) -> None:
+        self.outcome = outcome
+        self.pieces = pieces
+
+    async def __aenter__(self) -> "_FakeStream":
+        if isinstance(self.outcome, Exception):
+            raise self.outcome
+        return self
+
+    async def __aexit__(self, *exc: object) -> None:
+        return None
+
+    @property
+    def text_stream(self) -> Any:
+        text = self.outcome.content[0].text
+        size = max(1, len(text) // self.pieces)
+
+        async def chunks() -> Any:
+            for start in range(0, len(text), size):
+                yield text[start : start + size]
+
+        return chunks()
+
+    async def get_final_message(self) -> Any:
+        return self.outcome
+
+
+class StreamingMessages(SequencedMessages):
+    """`messages.stream(...)` of the SDK: one outcome per call, text delivered in pieces."""
+
+    def stream(self, **kwargs: Any) -> _FakeStream:
+        self.calls.append(kwargs)
+        return _FakeStream(self.outcomes.pop(0), pieces=7)
+
+
+def _streaming(*outcomes: Any) -> tuple[AnthropicProvider, StreamingMessages]:
+    messages = StreamingMessages(*outcomes)
+    client = SimpleNamespace(messages=messages)
+    return AnthropicProvider(api_key="unused", model="claude-opus-5", client=client), messages
+
+
+async def test_stream_is_the_same_request_and_result_with_the_text_on_the_way() -> None:
+    text = json.dumps(valid_draft())
+    plain, plain_messages = provider(response(text))
+    expected = await plain.complete_structured(request())
+
+    p, messages = _streaming(response(text))
+    seen: list[str] = []
+
+    async def on_text(piece: str) -> None:
+        seen.append(piece)
+
+    result = await p.stream_structured(request(), on_text)
+    assert len(messages.calls) == 1  # one call: no extra request for the stream
+    assert messages.calls[0] == plain_messages.calls[0]  # identical parameters
+    assert len(seen) > 3 and "".join(seen) == text
+    assert result.data == expected.data and result.raw_output == text
+    assert result.input_tokens == expected.input_tokens
+    assert result.stop_reason == "end_turn"
+
+
+async def test_stream_maps_errors_and_falls_back_before_any_text() -> None:
+    p, _ = _streaming(
+        anthropic.APITimeoutError(
+            request=httpx2.Request("POST", "https://api.anthropic.com/v1/messages")
+        )
+    )
+    with pytest.raises(AITimeoutError):
+        await p.stream_structured(request(), _ignore)
+
+    text = json.dumps(valid_draft())
+    p, messages = _streaming(
+        bad_request("The compiled grammar is too large, which would cause performance issues."),
+        response(text),
+    )
+    seen: list[str] = []
+
+    async def on_text(piece: str) -> None:
+        seen.append(piece)
+
+    result = await p.stream_structured(request(), on_text)
+    assert len(messages.calls) == 2 and "output_config" not in messages.calls[1]
+    assert "".join(seen) == text  # nothing was streamed by the rejected request
+    assert result.metadata["output_mode"] == "prompt_schema"
+
+
+async def _ignore(_: str) -> None:
+    return None

@@ -2,10 +2,8 @@
 
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { type Camera, Group, type Material, Mesh, type Vector3 } from "three";
+import { type Box3, type Camera, Group, type Object3D, type Vector3 } from "three";
 
-import type { RenderDescriptor } from "@/engine/builders/types";
-import { materialCache } from "@/engine/materials/material-cache";
 import { modelsFor } from "@/engine/materials/models";
 import { MODEL_ROOT_ROTATION, modelToWorld } from "@/engine/math/coords";
 import type { SceneGraph } from "@/engine/scene/build-scene";
@@ -18,45 +16,18 @@ import { useViewerStore } from "@/stores/viewer-store";
 import { REVEAL } from "../render-settings";
 import { useServedAssets } from "../served-assets";
 import { blueprintFrame, blueprintPlan } from "./blueprint";
-import { orbitPose } from "./camera";
+import { easeInOut, orbitPose } from "./camera";
 import { gateScene, ungateScene } from "./gate";
 import { createRevealBlueprint, createRevealPieces } from "./gpu";
+import { createGrowth, createObjectGrowth, type Growth } from "./growth";
+import { growthAt } from "./order";
 import { buildRevealPlan } from "./plan";
-
-interface Fade {
-  group: Group;
-  materials: Material[];
-  /** Opacity of each material when fully shown. */
-  opacity: number[];
-}
-
-/**
- * A copy of an element's meshes with their own (cloned) materials: only its opacity changes;
- * when it is opaque the real mesh takes over, pixel for pixel. Never pickable.
- */
-function fadeCopy(parts: readonly RenderDescriptor[]): Fade {
-  const fade: Fade = { group: new Group(), materials: [], opacity: [] };
-  for (const d of parts) {
-    const list = d.materials.map((id) => {
-      const mat = materialCache.get(id).clone();
-      fade.materials.push(mat);
-      fade.opacity.push(mat.opacity);
-      mat.transparent = true;
-      return mat;
-    });
-    const mesh = new Mesh(d.geometry, list.length === 1 ? list[0] : list);
-    mesh.matrixAutoUpdate = false;
-    mesh.matrix.copy(d.matrix);
-    mesh.castShadow = d.castShadow;
-    mesh.receiveShadow = true;
-    mesh.raycast = () => undefined;
-    fade.group.add(mesh);
-  }
-  return fade;
-}
+import { WaitingGround } from "./WaitingGround";
 
 /** Height of the site ground in model space (SceneEnvironment GROUND_Y) plus a hair. */
 const GROUND_Z = -0.05 + 0.012;
+/** The front starts a hair below the base, so nothing of the element shows before it grows. */
+const BELOW_BASE = 0.003;
 
 interface OrbitTarget {
   object: Camera;
@@ -64,27 +35,39 @@ interface OrbitTarget {
   update: () => void;
 }
 
+const smoothstep = (a: number, b: number, x: number) => {
+  const t = Math.min(Math.max((x - a) / (b - a), 0), 1);
+  return t * t * (3 - 2 * t);
+};
+
 /**
- * The construction of the model inside the 3D viewer: the ground-floor plan draws itself, then
- * every element assembles from small pieces in construction order; when an element's pieces
- * have landed its real mesh fades in and the pieces shrink away. Mounted only while the reveal
- * runs; every GPU resource is disposed when it ends. Model, geometry, materials and picking are
- * untouched: unbuilt meshes are only moved to a hidden camera layer (gate.ts).
+ * Live creation inside the 3D viewer's own canvas: the drafting sheet while the backend works
+ * (`WaitingGround`), then — as soon as there is a model — its ground-floor plan draws itself
+ * and the building is constructed: every element grows from its base to its top, with thin
+ * slices of its own material settling at the growing front. Mounted only while it runs; every
+ * GPU resource is disposed when it ends. Model, geometry, materials and picking are untouched:
+ * unfinished meshes only wait on a hidden camera layer (gate.ts).
  */
-export function RevealLayer({ scene }: { scene: SceneGraph }) {
+export function RevealLayer({ scene, bounds }: { scene: SceneGraph | null; bounds: Box3 }) {
   const phase = useRevealStore((s) => s.phase);
   const nonce = useRevealStore((s) => s.nonce);
-  if (phase !== "assembling") return null;
-  return <Assembly key={nonce} scene={scene} />;
+  return (
+    <>
+      <WaitingGround bounds={bounds} />
+      {phase === "assembling" && scene && <Assembly key={nonce} scene={scene} />}
+    </>
+  );
 }
 
 function Assembly({ scene }: { scene: SceneGraph }) {
   const root = useThree((s) => s.scene);
+  const get = useThree((s) => s.get);
   const invalidate = useThree((s) => s.invalidate);
   const controls = useThree((s) => s.controls) as unknown as OrbitTarget | null;
   const served = useServedAssets();
-  const fades = useRef(new Map<string, Fade>());
-  const fadeRoot = useMemo(() => new Group(), []);
+  const growths = useRef(new Map<string, Growth>());
+  const modelRoot = useMemo(() => new Group(), []);
+  const worldRoot = useMemo(() => new Group(), []);
   const from = useRef<{ position: Vector3; target: Vector3 } | null>(null);
 
   const fx = useMemo(() => {
@@ -110,9 +93,10 @@ function Assembly({ scene }: { scene: SceneGraph }) {
       seed: `${seed}:${mode}`,
       include: build ? visible : (id) => visible(id) && changedIds.has(id),
       site: build && view.showSite ? { plants } : null,
+      modelServed: (file) => served?.has(file) ?? false,
       short: !build,
     });
-    const pieces = createRevealPieces(plan.pieces, plan.motion);
+    const pieces = createRevealPieces(plan.pieces, plan.front);
     const { min, max } = scene.bounds;
     const m = REVEAL.blueprint.margin;
     const blueprint = build
@@ -134,94 +118,99 @@ function Assembly({ scene }: { scene: SceneGraph }) {
     };
   }, [scene, served]);
 
-  /** Hides what is not built yet; fades in what has just been completed. */
+  const drop = (key: string) => {
+    growths.current.get(key)?.dispose();
+    growths.current.delete(key);
+  };
+
+  /** Hides what is not complete yet; grows what is being built right now. */
   const apply = (elapsed: number) => {
     const { timings } = fx.plan.schedule;
-    const models = new Set<string>();
-    // Hidden until the pieces have landed; while the copy fades in, the copy stands in.
+    const g = REVEAL.growth;
+    const tagged = new Map<string, Object3D>();
+    // The real mesh waits until its front has reached the top; its stand-in grows meanwhile.
     gateScene(
       root,
       (key) => {
         const t = timings.get(key);
-        return t !== undefined && elapsed < (models.has(key) ? t.landed : t.shown);
+        return t !== undefined && elapsed < t.end;
       },
-      models,
+      tagged,
     );
     for (const step of fx.plan.steps) {
       const t = timings.get(step.id)!;
-      const parts = scene.byElement.get(step.id);
-      const fading = parts && !models.has(step.id) && elapsed >= t.landed && elapsed < t.shown;
-      let fade = fades.current.get(step.id);
-      if (!fading) {
-        if (fade) {
-          fadeRoot.remove(fade.group);
-          fade.materials.forEach((mat) => mat.dispose());
-          fades.current.delete(step.id);
-        }
+      if (elapsed < t.start || elapsed >= t.end) {
+        if (growths.current.has(step.id)) drop(step.id);
         continue;
       }
-      if (!fade) {
-        fade = fadeCopy(parts);
-        fadeRoot.add(fade.group);
-        fades.current.set(step.id, fade);
+      let growth = growths.current.get(step.id);
+      if (!growth) {
+        // Drawn by an object of its own (glTF model, site mesh, plant): grown from that
+        // object, once it is loaded; otherwise from the element's render descriptors.
+        const object = tagged.get(step.id);
+        const parts = scene.byElement.get(step.id);
+        if (fx.plan.objects.has(step.id)) {
+          if (!object) continue;
+          growth = createObjectGrowth(object);
+        } else if (parts) {
+          growth = createGrowth(parts);
+        } else {
+          continue;
+        }
+        (growth.space === "model" ? modelRoot : worldRoot).add(growth.object);
+        growths.current.set(step.id, growth);
       }
-      const k = (elapsed - t.landed) / Math.max(t.shown - t.landed, 1e-6);
-      fade.materials.forEach((mat, i) => {
-        mat.opacity = fade!.opacity[i]! * k;
-      });
+      const share = growthAt(t, elapsed);
+      const height = t.topZ - t.baseZ + g.overshoot + BELOW_BASE;
+      growth.setFront(
+        t.baseZ - BELOW_BASE + share * height,
+        g.edgeGain * (1 - smoothstep(1 - g.edgeFadeOut, 1, share)),
+      );
     }
   };
 
   useLayoutEffect(() => {
-    // Fading copies use the transparent variant of each material's shader. One zero-size
-    // copy per material is drawn from the first frame (while the blueprint draws), so no
-    // shader is compiled in the middle of the build.
-    const warm: Fade[] = [];
+    // Growing stand-ins and cut surfaces use clipped variants of the material shaders. One
+    // zero-size stand-in per material is drawn from the first frame (while the blueprint
+    // draws), so no shader is compiled in the middle of the build.
+    const warm: Growth[] = [];
     const warmed = new Set<string>();
     for (const step of fx.plan.steps) {
+      if (fx.plan.objects.has(step.id)) continue;
       for (const d of scene.byElement.get(step.id) ?? []) {
         if (d.materials.every((id) => warmed.has(id))) continue;
         d.materials.forEach((id) => warmed.add(id));
-        const copy = fadeCopy([d]);
-        copy.materials.forEach((mat) => (mat.opacity = 0));
-        copy.group.children.forEach((mesh) => {
+        const growth = createGrowth([d]);
+        growth.object.children.forEach((mesh) => {
           mesh.matrix.makeScale(0, 0, 0);
           mesh.castShadow = false;
           mesh.frustumCulled = false;
         });
-        fadeRoot.add(copy.group);
-        warm.push(copy);
+        modelRoot.add(growth.object);
+        warm.push(growth);
       }
     }
+    // Each stand-in is cut by its own plane (three.js local clipping).
+    const { gl } = get();
+    const localClipping = gl.localClippingEnabled;
+    gl.localClippingEnabled = true;
     const store = useRevealStore.getState();
     store.setDuration(store.mode, fx.plan.schedule.duration);
     apply(store.elapsed); // before the first frame: the finished model never flashes
-    const live = fades.current;
+    const live = growths.current;
     return () => {
       fx.pieces.dispose();
       fx.blueprint?.dispose();
-      fx.plan.owned.forEach((g) => g.dispose());
-      for (const fade of [...live.values(), ...warm]) {
-        fadeRoot.remove(fade.group);
-        fade.materials.forEach((mat) => mat.dispose());
-      }
+      fx.plan.owned.forEach((geometry) => geometry.dispose());
+      for (const growth of [...live.values(), ...warm]) growth.dispose();
       live.clear();
+      gl.localClippingEnabled = localClipping;
       ungateScene(root);
       invalidate();
     };
     // `apply` reads only fx, scene and refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fx, root, invalidate]);
-
-  // The build ends on the default exterior view — also when it is skipped.
-  useEffect(() => {
-    if (!fx.build || !controls) return;
-    return () => {
-      controls.object.position.copy(modelToWorld(fx.end.position));
-      controls.target.copy(modelToWorld(fx.end.target));
-      controls.update();
-    };
-  }, [fx, controls]);
+  }, [fx, root, get, invalidate]);
 
   // A frame frozen at another time (screenshots) is drawn once.
   const frozenAt = useRevealStore((s) => (s.frozen ? s.elapsed : -1));
@@ -231,23 +220,32 @@ function Assembly({ scene }: { scene: SceneGraph }) {
     const store = useRevealStore.getState();
     if (store.phase !== "assembling") return;
     if (!store.frozen) store.dispatch({ type: "tick", dt: Math.min(delta, 0.1) });
-    const { elapsed, frozen, phase } = useRevealStore.getState();
-    if (phase !== "assembling") return; // finished on this tick: the cleanup shows everything
+    const { elapsed, frozen, cameraHeld, phase } = useRevealStore.getState();
     const duration = fx.plan.schedule.duration;
+    if (phase !== "assembling") {
+      // Built to the end on this tick: the camera rests exactly on the exterior view (a
+      // skipped build leaves the camera where the user took it over). The cleanup shows all.
+      if (fx.build && controls && phase === "done") {
+        controls.object.position.copy(modelToWorld(fx.end.position));
+        controls.target.copy(modelToWorld(fx.end.target));
+        controls.update();
+      }
+      return;
+    }
     fx.pieces.update(elapsed);
     apply(elapsed);
     fx.blueprint?.update(blueprintFrame(elapsed, duration, REVEAL.blueprint));
-    if (fx.build && controls) {
+    if (fx.build && controls && !cameraHeld) {
       const pose = orbitPose(fx.end, elapsed / duration, REVEAL.camera);
       const position = modelToWorld(pose.position);
       const target = modelToWorld(pose.target);
-      // Leave the camera's current pose smoothly (a replay can start from anywhere).
+      // Leave the camera's current pose smoothly (the waiting view, or wherever a replay
+      // starts from).
       from.current ??= {
         position: controls.object.position.clone(),
         target: controls.target.clone(),
       };
-      const blend = frozen ? 1 : Math.min(elapsed / REVEAL.camera.blend, 1);
-      const k = blend * blend * (3 - 2 * blend);
+      const k = frozen ? 1 : easeInOut(elapsed / REVEAL.camera.blend);
       controls.object.position.lerpVectors(from.current.position, position, k);
       controls.target.lerpVectors(from.current.target, target, k);
       controls.update();
@@ -257,11 +255,14 @@ function Assembly({ scene }: { scene: SceneGraph }) {
   });
 
   return (
-    <group rotation={MODEL_ROOT_ROTATION}>
-      {fx.blueprint && <primitive object={fx.blueprint.sheet} />}
-      {fx.blueprint && <primitive object={fx.blueprint.lines} />}
-      <primitive object={fadeRoot} />
-      <primitive object={fx.pieces.mesh} />
-    </group>
+    <>
+      <group rotation={MODEL_ROOT_ROTATION}>
+        {fx.blueprint && <primitive object={fx.blueprint.sheet} />}
+        {fx.blueprint && <primitive object={fx.blueprint.lines} />}
+        <primitive object={modelRoot} />
+        <primitive object={fx.pieces.group} />
+      </group>
+      <primitive object={worldRoot} />
+    </>
   );
 }

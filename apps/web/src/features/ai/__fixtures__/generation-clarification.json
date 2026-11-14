@@ -38,5 +38,7 @@
   "checks": [],
   "input_tokens": 0,
   "output_tokens": 0,
-  "started_at": "2026-09-28T07:17:09.380978Z"
+  "started_at": "2026-09-28T07:17:09.380978Z",
+  "interim_facts": [],
+  "preview_model_hash": null
 }

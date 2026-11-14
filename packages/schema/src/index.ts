@@ -6,7 +6,11 @@ import { z } from "zod";
 import aiGenerationJsonSchema from "../generated/ai-generation.schema.json";
 import buildingModelJsonSchema from "../generated/building-model.schema.json";
 import buildingSpecificationJsonSchema from "../generated/building-specification.schema.json";
-import type { AIGenerationList, AIGenerationOut } from "./generated/ai-generation";
+import type {
+  AIGenerationList,
+  AIGenerationOut,
+  PreviewModelOut,
+} from "./generated/ai-generation";
 import type { BuildingModel } from "./generated/building-model";
 import type { BuildingSpecification } from "./generated/building-specification";
 
@@ -58,6 +62,8 @@ export type {
   AIGenerationSummaryOut,
   GenerationErrorOut,
   GenerationOptions,
+  InterimFact,
+  PreviewModelOut,
   RequirementCheck,
 } from "./generated/ai-generation";
 export { aiGenerationJsonSchema };
@@ -73,6 +79,14 @@ function aiDefinition(name: string): JsonSchemaInput {
 export const aiGenerationSchema = z.fromJSONSchema(
   aiDefinition("AIGenerationOut"),
 ) as z.ZodType<AIGenerationOut>;
+
+/**
+ * Validator for the laid-out model of a running generation (GET …/preview). The model inside
+ * is validated like any other model when it is loaded (building store).
+ */
+export const previewModelSchema = z.fromJSONSchema(
+  aiDefinition("PreviewModelOut"),
+) as z.ZodType<PreviewModelOut>;
 
 /** Validator for a project's generation history. */
 export const aiGenerationListSchema = z.fromJSONSchema(

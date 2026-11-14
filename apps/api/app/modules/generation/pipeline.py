@@ -15,6 +15,7 @@ import asyncio
 import uuid
 from collections.abc import Awaitable, Callable
 from dataclasses import asdict, dataclass
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -40,10 +41,12 @@ from app.modules.versions.schemas import (
     PatternUse,
     TopologyOut,
 )
-from app.modules.versions.service import VersionService
+from app.modules.versions.service import VersionService, model_hash
 from app.shared.data_files import material_ids, rules_profile
 
 StageCallback = Callable[[str], Awaitable[None]]
+# Receives the laid-out model as it will be stored: (model JSON, model hash).
+LayoutCallback = Callable[[dict[str, Any], str], Awaitable[None]]
 
 
 @dataclass(frozen=True)
@@ -84,8 +87,15 @@ async def layout_and_save(
     prompt: str | None = None,
     provenance: GenerationProvenance | None = None,
     on_stage: StageCallback = _noop,
+    on_layout: LayoutCallback | None = None,
 ) -> PipelineResult:
     """Run the layout engine for `spec` and store the result as the project's new version.
+
+    `on_layout` is called as soon as the layout stage has produced the model, before the
+    final validation, the rules check and saving, with exactly the JSON and hash the version
+    will store (`VersionService.create` serializes the same model the same way) — so a client
+    can show the building while the remaining stages run. A later stage can still fail.
+
 
     Raises LayoutError (LAYOUT_INFEASIBLE / LAYOUT_REQUIREMENTS_UNMET / LAYOUT_INVALID /
     MODEL_INVALID). Commits."""
@@ -136,6 +146,8 @@ async def layout_and_save(
         design_system=design_system,
         patterns=pattern_library(registry),
     )
+    if on_layout is not None:
+        await on_layout(result.model.model_dump(mode="json"), model_hash(result.model))
     await on_stage("checking")
     model_errors = errors(validate_model(result.model, material_ids=materials))
     if model_errors:  # the engine validates its candidates; this is a last line of defence

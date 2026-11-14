@@ -2,9 +2,14 @@ import uuid
 
 from fastapi import APIRouter, status
 
-from app.modules.ai.schemas.responses import AIGenerateRequest, AIGenerationList, AIGenerationOut
+from app.modules.ai.schemas.responses import (
+    AIGenerateRequest,
+    AIGenerationList,
+    AIGenerationOut,
+)
 from app.modules.ai.service import AIGenerationService
 from app.modules.auth.dependencies import CurrentUser, SessionDep
+from app.modules.jobs.schemas import PreviewModelOut
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 project_router = APIRouter(prefix="/projects/{project_id}", tags=["ai"])
@@ -26,6 +31,16 @@ async def get_generation(
     generation_id: uuid.UUID, user: CurrentUser, session: SessionDep
 ) -> AIGenerationOut:
     return await AIGenerationService(session).get(user, generation_id)
+
+
+@router.get("/generations/{generation_id}/preview")
+async def get_generation_preview(
+    generation_id: uuid.UUID, user: CurrentUser, session: SessionDep
+) -> PreviewModelOut:
+    """The laid-out building of a running generation, available as soon as the layout stage
+    is done (`preview_model_hash` on the generation), while the rules check and saving
+    continue. It is exactly the model the new version stores."""
+    return await AIGenerationService(session).preview(user, generation_id)
 
 
 @project_router.get("/generations")

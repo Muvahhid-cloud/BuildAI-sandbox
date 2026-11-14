@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,6 +48,19 @@ class AIGenerationRepository:
         )
         return int(count or 0)
 
+    async def preview(self, generation_id: uuid.UUID) -> tuple[dict[str, Any], str] | None:
+        """(model JSON, model hash) of the generation's preview, if it has one."""
+        row = (
+            await self.session.execute(
+                select(AIGeneration.preview_model, AIGeneration.preview_model_hash).where(
+                    AIGeneration.id == generation_id
+                )
+            )
+        ).first()
+        if row is None or row[0] is None or row[1] is None:
+            return None
+        return row[0], row[1]
+
     async def runs_for(self, generation_id: uuid.UUID) -> list[AIRun]:
         result = await self.session.scalars(
             select(AIRun).where(AIRun.generation_id == generation_id).order_by(AIRun.created_at)
@@ -61,6 +75,8 @@ class AIGenerationRepository:
             .values(
                 status="failed",
                 finished_at=utcnow(),
+                preview_model=None,
+                preview_model_hash=None,
                 error={
                     "code": "JOB_INTERRUPTED",
                     "message": "The server restarted while this generation was running. Try again.",

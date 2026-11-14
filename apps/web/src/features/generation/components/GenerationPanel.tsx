@@ -26,8 +26,8 @@ export interface GenerationPanelProps {
   /** Pre-fill (e.g. the spec of the version on screen). */
   initialSpec?: BuildingSpecification | null;
   onGenerated: (versionId: string) => void;
-  /** The layout job is running (the canvas area shows the waiting cloud). */
-  onRunningChange?: (running: boolean) => void;
+  /** The job being followed, in every state (null: none, or the panel was left). */
+  onProgress?: (job: Job | null) => void;
   onClose?: () => void;
 }
 
@@ -35,7 +35,7 @@ export function GenerationPanel({
   projectId,
   initialSpec,
   onGenerated,
-  onRunningChange,
+  onProgress,
   onClose,
 }: GenerationPanelProps) {
   const qc = useQueryClient();
@@ -53,10 +53,12 @@ export function GenerationPanel({
   const handled = useRef<string | null>(null);
 
   const running = start.isPending || (jobId !== null && !isFinished(job.data));
+  // Report the job upwards: the canvas follows its real stage and shows the laid-out model.
+  const followed = jobId !== null ? (job.data ?? null) : null;
   useEffect(() => {
-    onRunningChange?.(running);
-  }, [running, onRunningChange]);
-  useEffect(() => () => onRunningChange?.(false), [onRunningChange]);
+    onProgress?.(followed);
+  }, [followed, onProgress]);
+  useEffect(() => () => onProgress?.(null), [onProgress]);
 
   useEffect(() => {
     const data = job.data;

@@ -1171,36 +1171,63 @@ before/after: `docs/visual/ui/`.
 - Dense editor forms (plan edit bar, element edit section, spec form) use the tokens and
   `field-sm` but keep their own layout; they are not rebuilt from kit components one by one.
 
-## 25. Build reveal — blueprint and construction assembly (2026-11-11)
+## 25. Live creation — one canvas, blueprint and construction (2026-11-13)
 
-Scope: a viewer effect only (`apps/web/src/viewer/reveal`, `stores/reveal-store.ts`). The
-BuildingModel, `engine/` (still pure and deterministic), geometry, materials and picking are
-unchanged: pieces are never pickable and carry no `elementId`; meshes keep `{ elementId, part }`.
-All constants are in `viewer/render-settings.ts` (`REVEAL`). It replaces the first version of
-this section (particle cloud, bottom-up clipping sweep).
+Scope: a viewer effect only (`apps/web/src/viewer/reveal`, `stores/reveal-store.ts`; the product
+flow that feeds it is `features/live/live-creation.ts`). The BuildingModel, `engine/` (still
+pure and deterministic), geometry, materials and picking are unchanged: nothing the effect draws
+is pickable or carries an `elementId`; meshes keep `{ elementId, part }`. All constants are in
+`viewer/render-settings.ts` (`REVEAL`). It replaces the second version of this section (pieces
+rising from the element base, then the mesh fading in). Backend side: ai-pipeline.md §6.1.
 
-### 25.1 Phases (`reveal/machine.ts`, pure)
+Everything shown is real: the stage list is the backend's stage, the chips are what the AI's
+answer states so far, the house is the laid-out model — exactly the model that is saved.
+
+### 25.1 One canvas (`viewer/ViewerHost.tsx`)
+
+`ViewerHost` renders the 3D viewer once, into an element of its own (a portal), and
+`ViewerSlot` moves that element to wherever the layout shows the 3D view: the live stage while
+a design is created, the editor's viewport once it is saved. The WebGL context, the camera and
+everything on screen survive the change of layout — no reload, no flash. `BuildingViewer`
+accepts `scene: null` (the empty site, framed by `REVEAL.waiting.bounds`); `CameraRig` then
+holds the waiting view and drops camera requests. The ground disc follows the building only in
+whole texture tiles, so the grass does not jump when a model replaces the empty site.
+
+### 25.2 Flow (`reveal/machine.ts`, pure; `features/live/live-creation.ts`)
 
 ```
 idle --wait(stage)--> gathering --model--> assembling --tick / skip--> done
+                          |                     |                        |
+                          +------- fail --------+--------- fail ---------+--> collapsing --> idle
 ```
 
-- **gathering** — while the backend works. `WaitingBlueprint` fills the canvas area with a calm
-  drafting table: a faint ground grid and a slow scanning line, on the viewer's own sky colour,
-  with the backend's real stage label (`AI_STAGES`; never a percentage). A real stage change is
-  one brighter pass of the line; nothing else drives it. For a spec-form generation (a job
-  without stages) the label is the layout stage's.
-- **assembling** — when the version is open: `RevealLayer` inside the viewer's canvas. Modes:
-  `build` (the whole model) and `changes` (only changed elements, short).
-- **done** — the effect is unmounted and its GPU resources disposed.
-- `skip` ends a running assembly at once: any interaction with the viewport (pointer down = the
-  start of a drag or a click, the wheel) or Esc; waiting for the backend cannot be skipped. With
-  `prefers-reduced-motion` the machine never shows the waiting animation and goes straight to
-  done; the "Replay build animation" toolbar button is disabled.
-- The length of an assembly depends on the model; the layer reports it to the store
-  (`setDuration`), the machine takes it from its options.
+`flowStep(state, lead)` names the step for the UI and tests:
+`waiting → facts → blueprint → construction → built | saved` (and `failed`).
 
-### 25.2 Construction order and schedule (`reveal/order.ts`, pure)
+| Step | What the backend reported | Canvas |
+|---|---|---|
+| waiting | a stage (`wait`), no facts yet | `WaitingGround`: a pale drafting sheet on the ground, a 1 m grid, a slow scanning line; a real stage change is one brighter pass |
+| facts | `interim_facts` of the generation (`facts`) | the same; once the floor area is stated the plot outline opens up (`plotFor`: area ÷ storeys, fixed proportion + margin — a display hint, never geometry) |
+| blueprint | `preview_model_hash`: the layout stage is done; the client fetched `…/preview` and loaded that model (`model`, `saved: false`) | the sheet fades under the real ground-floor plan, which draws itself in thin accent-blue lines |
+| construction | checking / saving still run | §25.4 |
+| built | — (construction ended or skipped, not saved yet) | the finished model |
+| saved | status `completed` and the version's `model_hash` equals the shown preview's | nothing changes on screen: the building store is **not** reloaded, the camera is not reset, a running construction continues (`saved`); the editor chrome appears around the same canvas |
+| failed | status `failed` after the house was shown | the construction stops, the canvas fades out (`REVEAL.fail.fade`), then the previous version (or the empty start view) is back; the panel shows the backend's real error |
+
+- If the generation is saved before the preview could be fetched (the window is only the
+  checking + saving time; the client polls every 250 ms from the layout stage on), the stored
+  model is loaded and built instead — same screen, `saved` from the start.
+- `skip` (§25.7) ends only the animation: `saved` and the stage stay exactly what the backend
+  reported; the stage list never marks a stage done early.
+- A failure or clarification before any house was shown simply ends the waiting. A stored
+  version is never taken away by `fail`.
+- With `prefers-reduced-motion` nothing animates: no waiting state, the finished model is
+  shown directly when it arrives; "Replay build animation" is disabled.
+- The summary card and the "Generated" banner appear only after the construction has ended.
+- Spec-form generation uses the same flow (`liveFromJob`: the job's stage and
+  `preview_model_hash`, `GET /jobs/{id}/preview`); it has no facts.
+
+### 25.3 Construction order and schedule (`reveal/order.ts`, pure)
 
 `constructionOrder(index)` — independent of the order of `model.elements`:
 
@@ -1208,103 +1235,132 @@ idle --wait(stage)--> gathering --model--> assembling --tick / skip--> done
 |---|---|
 | floor slab (`ground`/`floor`) → room floors → exterior walls, once around the perimeter (angle of the wall midpoint, from the south-west) → interior walls and partitions → doors and windows (in the order of their host walls, then along the wall) → stairs | roofs → entrance canopy → balcony slabs and railings → furniture → site (paving and fence, then each plant) |
 
-`scheduleConstruction(steps, extents, REVEAL.schedule)` gives each element its start (never
-before the step before it; a stagger inside a group from `stageWeight`, a pause `groupGap`
-between groups), its bottom-to-top arrival spread (height × `spreadPerMeter`, clamped) and the
-times `landed` (every piece is in place), `shown` (the real mesh is opaque) and `vanish` (the
-pieces start to shrink). The whole build is fitted into
-`minDuration + secondsPerElement × elements`, at most `maxDuration` (6–9 s); the first second
-(`lead`) belongs to the blueprint.
+`scheduleConstruction(steps, extents, cfg)`: every element gets `start` (its first slices
+appear), `from` (the front leaves its base) and `end` (the front is at its top) with its own
+`baseZ`/`topZ` (the bounds of its real geometry). Growth time = height × `growPerMeter`, within
+`[minGrow, maxGrow]` = 0.8–2.2 s, so windows, doors, railings, stairs and furniture are visibly
+built too. Starts follow the order (never before the step before), staggered by `stageWeight`
+with a pause `groupGap` between groups, and overlap: the next wall starts while the one before
+still grows. The whole build is fitted into `minDuration + secondsPerElement × elements`, at
+most `maxDuration` (6–10 s); the first `lead` seconds belong to the blueprint. The front moves
+with `frontEase` (sine in-out: slow off the base, slow onto the top — never linear);
+`growthAt` / `frontTime` are the two directions of that mapping.
 
-### 25.3 Blueprint (`reveal/blueprint.ts`, pure; drawn by `reveal/gpu.ts`)
+### 25.4 Growing elements (`reveal/growth.ts`, `reveal/gate.ts`, `RevealLayer`)
+
+- An element that is not complete waits on camera layer 31 (`gateScene`): no camera, shadow
+  pass or raycaster sees it; its mesh, materials, `userData` and React props are untouched.
+- While it grows, a stand-in is drawn: the element's own geometry with **copies of its real
+  materials** (same textures, roughness, glass) clipped by one horizontal plane per element
+  (three.js local clipping) that rises from its base to its top — bottom to top for every
+  element, slabs included, never sideways. `clipShadows`: the shadow grows with the building.
+  When the front is at the top the real mesh takes over, pixel for pixel.
+- **The cut is closed.** A back face of a closed solid can only be seen through its open cut,
+  so a stencil mask (`maskMaterial`, one stencil value per growing element, drawn after all
+  opaque meshes) records exactly the pixels of the section; there the cut surface is drawn
+  (`capMaterial`): shaded as a horizontal face in the material's colour, with the depth of the
+  cut plane (`gl_FragDepth`, perspective and orthographic). Walls are never hollow or
+  see-through, and N8AO sees a solid top. The canvas and the effect composer therefore have a
+  stencil buffer.
+- A faint line along the growing edge: the material's own albedo, brightened by
+  `growth.edgeGain` within `edgeWidth` below the cut, fading out before the element is complete
+  (the cut overshoots the top by `overshoot`, so the line leaves the mesh).
+- Elements the viewer draws as objects of their own — glTF furniture, the site mesh, plants
+  (`revealKey` tags) — grow from a copy of that object with copies of its materials, both sides
+  drawn (such meshes need not be closed, so they get no cut surface).
+- The clipped shader variants are compiled during the blueprint (one zero-size stand-in per
+  material), not in the middle of the build.
+- Only what the viewer currently shows takes part (isolated level, layer toggles, site toggle).
+
+### 25.5 Pieces (`reveal/pieces.ts`, pure; `reveal/gpu.ts`)
+
+Pieces exist only at the growing front — never before an element grows, never after, never
+"pieces first, then the element".
+
+- **Shape**: thin flat slices of 0.36 × 0.22 × 0.035 m, scaled to the element
+  (`perRootArea × √surface`, at least `minScale`). A slice lies flat on the surface: thin axis
+  = surface normal, long axis horizontal (level courses on walls and roof slopes; with the
+  element's own axis on flat faces), snapped to a running-bond course grid, one per cell.
+- **Targets**: `sampleSurfaces` (`reveal/sampling.ts`: the triangles of the geometry the viewer
+  draws, chosen by area, seeded PRNG) per element, seeded by `model_hash + element id`. No
+  slices on faces that look down, on flat upward faces (floors, slab tops, roof decks: the
+  front reaches them all at once — they would only flash; stair treads keep theirs), or on
+  glTF furniture and plants (their placeholder box is not their surface).
+- **Material**: the real one. Pieces are grouped by library material; each group is one
+  instanced mesh drawn with a copy of that `MaterialCache` material (albedo/normal/roughness
+  maps, glass), with UVs continuing the surface's meter projection. They receive and cast
+  shadows (a patched depth material). No accent tint, no spinning.
+- **Motion** (`pieceState`, mirrored in the vertex shader): a slice appears `settle` = 0.3 s
+  before the front reaches its height, comes from `approach` = 0.5 m above and outside with an
+  ease-out, presses the last `settleDrop` = 2.5 cm into place, and sinks into the surface over
+  `absorb` once the front has passed. One time uniform per frame.
+- **Budget**: at most `maxPieces` = 16 000 in total; the density adapts (share by area and
+  `stageDensity`, at least `minPerItem` per element), the slice size never drops below
+  `minScale`. Draw calls: one per library material in use (about 10–15).
+
+### 25.6 Blueprint and camera (`reveal/blueprint.ts`, `reveal/camera.ts`, pure)
 
 The real ground-floor plan: the outline of every wall of the lowest storey, from the model,
 drawn wall after wall in construction order as thin accent-blue ribbons with a brighter pen
-tip, on a pale paper sheet with a 1 m grid under the building. It draws itself in `blueprint.draw`
-(1 s), fades to a faint trace while the storey is built on it, and is gone at the end.
+tip on a pale sheet; it fades to a faint trace while the storey is built and is gone at the end.
 
-### 25.4 Pieces (`reveal/pieces.ts`, pure; `reveal/gpu.ts`)
+`orbitPose(end, progress, REVEAL.camera)`: a slow dolly and orbit (`sweep` rad around the
+vertical axis through the target, further out and higher at the start, quintic ease-in-out)
+that ends exactly on `end` — the default exterior pose. The target never moves, so the whole
+house stays framed. The build leaves the camera's current pose (the waiting view, or wherever a
+replay starts) over `blend` seconds. The `changes` mode does not move the camera.
 
-- **Targets**: `samplePieces` uses `sampleSurfaces` (`reveal/sampling.ts`: the triangles of the
-  geometry the viewer draws, chosen by area, points uniform inside, seeded PRNG
-  `reveal/prng.ts`) per element, seeded by `model_hash + element id` (the demo: the model id).
-  Each point is snapped to a course grid in its surface plane (running bond on vertical
-  surfaces), one piece per cell; surfaces that face down get none.
-- **Size and orientation**: edge = `perRootArea × √(element surface)`, within 0.12–0.2 m; the
-  piece lies in the surface (x along the element's own axis, e.g. along a wall; z along the
-  normal) — no free rotation.
-- **Budget**: at most `maxPieces` = 25 000. The density adapts: each element gets a share by its
-  area and its stage (`stageDensity`: walls and roofs dense, covered layers and small details
-  lighter), at least `minPerItem`.
-- **Motion** (`animatePieces`): a piece starts at the base of its own element (the lowest piece
-  target), directly under its target (horizontal jitter ≤ `startJitter` = 0.12 m), and rises
-  straight up with an ease-out over `rise`; departure = element start + relative height ×
-  spread + a jitter ≤ `jitter`, so the bottom lands first.
-- **Colour**: the brand accent (`REVEAL.accent`, the `--accent` token) with a slight glow while
-  it moves, the element's library colour (`materialHex`: preset colour or the display colour
-  of the material key) as it lands.
-- **GPU**: one mesh with `InstancedBufferGeometry` = one draw call; a `MeshStandardMaterial`
-  whose vertex stage is replaced (`onBeforeCompile`) to compute position, size and colour from
-  per-piece attributes and one time uniform. Lit like the building (sun, HDRI, fog, tone
-  mapping, section cut); no shadows.
+### 25.7 Interaction (`reveal/RevealSurface.tsx`)
 
-### 25.5 Real meshes (`reveal/gate.ts`, `RevealLayer`)
+Any pointer-down (the start of a drag or a click), the wheel, or Esc ends a running
+construction at once and shows the finished model. The events are only observed in the capture
+phase: the same pointer-down or wheel event still reaches OrbitControls, so the camera is the
+user's from that very gesture, and it stays where it is (no jump to the exterior view). A
+click that ended the construction does not also select an element. Waiting for the backend
+cannot be skipped. A build that runs to its end rests exactly on the exterior view.
 
-- An element that is not built yet is moved to camera layer 31 (`gateScene`): no camera, shadow
-  pass or raycaster sees it, so it is not rendered and not pickable; its mesh, materials,
-  `userData` and React props are untouched. Elements are found by `userData.elementId`;
-  glTF furniture, the site mesh and plants by a `revealKey` tag (`revealTag`, set in
-  `ModelInstance` / `SiteLayer`).
-- When all pieces of an element have landed, a copy of its meshes (same geometry, cloned
-  materials) fades in over `fade`; when it is opaque the real mesh takes over (same pixels)
-  and the pieces shrink away. The transparent shader variants are compiled during the
-  blueprint second (zero-size copies), not in the middle of the build.
-- Elements drawn by a glTF model, the site mesh and plants appear when their pieces have landed
-  (no fade copy); plants take their pieces from a simple crown stand-in.
-- Only what the viewer currently shows takes part (isolated level, layer toggles, site toggle).
+### 25.8 When it plays
 
-### 25.6 Camera (`reveal/camera.ts`, pure)
-
-`orbitPose(end, progress, REVEAL.camera)`: a slow orbit (`sweep` rad around the vertical axis
-through the target, slightly further out and higher at the start) that eases into `end` — the
-default exterior pose (`cameraPose("exterior")`) — exactly at progress 1. A replay blends from
-the current camera pose. A skipped build also ends on the exterior view. The `changes` mode
-does not move the camera.
-
-### 25.7 When it plays
-
-- After an AI generation and after a spec-form generation (the version that generation
-  produced, once; the 3D view is selected). The generation summary card appears after it.
+- AI generation and spec-form generation: the live flow of §25.2.
 - "Replay build animation" in the view toolbar (Display group) replays it for the shown model.
 - After "Apply" in Modify with AI: mode `changes` — only the elements the preview marked as
-  changed re-assemble from pieces (`REVEAL.changes.duration`, no blueprint, no camera move).
+  changed grow again (`REVEAL.changes.duration`, no blueprint, no camera move).
 - Not on opening an existing project, switching versions, saving plan edits or importing the demo.
 
-### 25.8 Toolbar and drawers
-
-The floating view toolbar keeps to the part of the viewport that an open drawer does not cover
-(`BuildingEditor useDrawerOverlap`: measured from the drawer's layout width, so the slide-in
-animation does not matter): it re-centres there and wraps.
-
-### 25.9 Tests and screenshots
+### 25.9 Tests
 
 `reveal/construction.test.ts` (order: every element once, independent of input order, storey
 by storey, stage order, perimeter, openings after their walls; schedule: order, lead, groups,
-6–9 s, changes; pieces: deterministic, budget, size, on the element, start under the target at
-the element base, bottom lands first, colours; blueprint; camera ends on the exterior pose;
-gate), `reveal/sampling.test.ts`, `reveal/machine.test.ts` (phases, skip, reduced motion,
-replay, seek, duration from options), `reveal/reveal-ui.test.tsx` (the waiting text without
-WebGL, the store), `ProjectEditor.test.tsx` ("build animation controls": replay; Esc, click,
-pointer down and wheel skip; seed).
-Screenshots at fixed times (dev-only `window.__buildaiReveal.freeze(t, changedIds?)`):
-`docs/visual/reveal/`.
+growth from the element's own base to its top, minimum growth time, eased front, overlap,
+6–10 s, deterministic, changes; pieces: deterministic, budget, slice size, flat on the surface
+with a horizontal long axis, one batch per real material, only at the front, settle motion, no
+pieces on flat tops / glTF models; blueprint; camera; gate), `reveal/machine.test.ts` (the
+flow waiting → facts → blueprint → construction → saved, built-before-saved, skip without
+marking anything, failure before/after the house, a stored version is never removed, replay,
+seek, reduced motion), `reveal/reveal-ui.test.tsx` (`RevealSurface`: pointer-down, wheel, click,
+Esc; the event still reaches the canvas; the fade after a failure; the plot; growth stand-ins:
+clipping plane, copied materials, shadow, mask + section with their stencil values, object
+growth; the store), `features/live/live-creation.test.tsx` (the project page end to end
+against a fake backend: the same canvas node from waiting to the saved version, no reload of
+the model, skip, failure after and before the layout, saved-before-preview, reduced motion,
+spec-form job mapping), `sampling.test.ts`, `ProjectEditor.test.tsx` ("build animation
+controls").
+
+Frames were reviewed in headless Chromium (SwiftShader) with the dev-only
+`window.__buildaiReveal.freeze(t)` at 0.5 s steps plus close-ups; see `docs/visual/reveal/`.
 
 ### 25.10 Limits
 
-- With 25 000 pieces a large house is covered to roughly a third to a half on walls and less
-  elsewhere: the pieces read as courses being laid, not as a closed surface.
-- glTF furniture, the site mesh and plants appear without a fade when their pieces have landed.
-- The shadow of an element appears when its fade starts.
+- The laid-out preview is offered only while checking and saving run (usually well under a
+  second); when the client misses it, the stored model is built instead.
+- The failure fade is a fade of the whole canvas, not of the house alone.
+- Cut surfaces are flat-coloured (no texture) and receive no shadow; meshes that are not
+  closed (room floors, glTF models) get none.
+- At most 255 elements can have a cut surface at the same moment (stencil values); the
+  schedule keeps far fewer growing at once.
+- A texture that finishes loading while an element grows reaches its stand-in only for pieces
+  (`syncMaterial`); a stand-in keeps the maps it was created with (under a second).
+- No dust puff at wall bases (optional in the brief; left out rather than done cheaply).
 - No frame-rate measurement on a real integrated GPU was possible here (headless software
-  rendering only, about 1 fps for the plain scene as well); the effect adds one instanced draw
-  call (≤ 25 000 boxes) and about 0.1 ms of CPU per frame.
+  rendering only). The effect adds, while it runs, about 10–15 instanced draw calls for the
+  pieces and three small draw calls per element that is growing at that moment.

@@ -1,11 +1,15 @@
 """Provider-neutral request/response types shared by prompts, providers and the interpreter."""
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from decimal import Decimal
 from enum import StrEnum
 from typing import Any, Literal
 
 from app.modules.ai.schemas.generation import GenerationOptions
+
+# Receives the answer's text as it is produced (streaming), piece by piece, in order.
+TextCallback = Callable[[str], Awaitable[None]]
 
 
 class AITask(StrEnum):

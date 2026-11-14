@@ -631,17 +631,18 @@ describe("build animation controls", () => {
     await userEvent.keyboard("{Escape}");
     expect(useRevealStore.getState().phase).toBe("done");
 
+    // Any interaction with the viewport skips: a click, the start of a drag, the wheel.
+    const viewport = screen.getByTestId("3d");
     await userEvent.click(replay);
-    await userEvent.click(screen.getByRole("button", { name: "Skip the build animation" }));
+    expect(screen.getByRole("note")).toHaveTextContent(/skip the build animation/i);
+    await userEvent.click(viewport);
     expect(useRevealStore.getState().phase).toBe("done");
-    expect(screen.queryByRole("button", { name: "Skip the build animation" })).toBeNull();
-
-    // Any interaction with the viewport skips: the start of a drag, the wheel.
+    expect(screen.queryByRole("note")).toBeNull();
     await userEvent.click(replay);
-    fireEvent.pointerDown(screen.getByRole("button", { name: "Skip the build animation" }));
+    fireEvent.pointerDown(viewport);
     expect(useRevealStore.getState().phase).toBe("done");
     await userEvent.click(replay);
-    fireEvent.wheel(screen.getByRole("button", { name: "Skip the build animation" }));
+    fireEvent.wheel(viewport);
     expect(useRevealStore.getState().phase).toBe("done");
   });
 

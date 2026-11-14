@@ -45,10 +45,18 @@ export function useAIGeneration(id: string | null) {
     queryFn: () =>
       apiRequest(`/ai/generations/${encodeURIComponent(id ?? "")}`, aiGenerationSchema),
     enabled: id !== null,
-    refetchInterval: (query) => (isTerminal(query.state.data) ? false : 600),
+    // Faster once the layout runs: the laid-out model is offered only until it is saved.
+    refetchInterval: (query) =>
+      isTerminal(query.state.data) ? false : LATE_STAGES.has(query.state.data?.stage) ? 250 : 600,
     staleTime: (query) => (isTerminal(query.state.data) ? Number.POSITIVE_INFINITY : 0),
   });
 }
+
+const LATE_STAGES: ReadonlySet<string | null | undefined> = new Set([
+  "layout",
+  "checking",
+  "saving",
+]);
 
 export function useProjectGenerations(projectId: string) {
   return useQuery({
@@ -69,7 +77,7 @@ export function useProjectGenerations(projectId: string) {
  */
 export const AI_STAGES = [
   { id: "interpreting", label: "Understanding your requirements" },
-  { id: "validating", label: "Validating the building specification" },
+  { id: "validating", label: "Validating the specification" },
   { id: "repairing", label: "Correcting the specification" },
   { id: "layout", label: "Generating the layout" },
   { id: "checking", label: "Checking building rules" },

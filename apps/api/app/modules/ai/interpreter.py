@@ -33,7 +33,7 @@ from app.modules.ai.schemas.generation import (
     InterpretationOutcome,
     SpecificationDraft,
 )
-from app.modules.ai.structured import AITask, RepairInput, StructuredResult
+from app.modules.ai.structured import AITask, RepairInput, StructuredResult, TextCallback
 from app.modules.building.footprint import normalize_shape_requirement
 from app.modules.building.issues import Issue, errors, pointer
 from app.modules.building.requirements import changed_facts, spec_facts
@@ -235,7 +235,11 @@ async def interpret(
     max_repairs: int = 1,
     max_tokens: int = 16000,
     on_stage: StageCallback | None = None,
+    on_text: TextCallback | None = None,
 ) -> Interpretation:
+    """`on_text` receives the text of the first answer while it is written (the same single
+    call, streamed). It is for interim display only: nothing seen there is ever accepted —
+    the complete answer goes through the validation below."""
     attempts: list[AttemptRecord] = []
 
     async def stage(name: str) -> None:
@@ -246,7 +250,11 @@ async def interpret(
         try:
             if repair is None:
                 return await provider.generate_building_specification(
-                    prompt, options=options, context=context, max_tokens=max_tokens
+                    prompt,
+                    options=options,
+                    context=context,
+                    max_tokens=max_tokens,
+                    on_text=on_text,
                 )
             return await provider.repair_building_specification(
                 prompt, options=options, context=context, repair=repair, max_tokens=max_tokens

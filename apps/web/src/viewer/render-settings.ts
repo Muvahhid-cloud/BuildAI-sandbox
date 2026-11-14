@@ -30,131 +30,147 @@ export const RENDER = {
 } as const;
 
 /**
- * Build reveal (docs/3d-engine.md §25): the blueprint state while a design is generated and the
- * construction of the finished model from small pieces. Viewer effect only — never part of the
- * BuildingModel. Times in seconds, sizes in meters, angles in radians.
+ * Live creation and construction of the model (docs/3d-engine.md §25). Every constant of the
+ * effect lives here; the effect itself only in viewer/reveal.
  */
 export const REVEAL = {
-  /** The pieces: instanced blocks, one draw call. */
+  /** Thin slices that settle on an element's surfaces at its growing front (reveal/pieces.ts). */
   pieces: {
-    /** Hard ceiling (performance budget on integrated GPUs); density adapts below it. */
-    maxPieces: 25_000,
-    minPerItem: 6,
-    /** Largest share of a surface that pieces cover. */
-    fill: 0.75,
-    /** Piece edge: perRootArea × √(element surface), within [min, max]. */
-    min: 0.12,
-    max: 0.2,
-    perRootArea: 0.06,
-    /** Course height on vertical surfaces as a share of the edge (brick proportion). */
-    course: 0.8,
-    thickness: 0.3,
-    /** Share of its cell a piece fills (the rest reads as the joint). */
-    joint: 0.9,
-    /** Largest horizontal offset of a piece's start from the point under its target. */
-    startJitter: 0.12,
+    /** Hard ceiling of the piece count (instanced; one draw call per library material). */
+    maxPieces: 16000,
+    /** Fewest pieces an element gets, so small elements are visibly built too. */
+    minPerItem: 4,
+    /** Largest share of a surface that pieces cover (courses being laid, not a closed skin). */
+    fill: 0.6,
+    /** A slice at full size: long (horizontal) × short × thick, meters. */
+    length: 0.36,
+    height: 0.22,
+    thickness: 0.035,
+    /** Scaled to the element: `perRootArea × √(surface)`, within [minScale, 1]. */
+    perRootArea: 0.14,
+    minScale: 0.42,
+    /** Share of its cell a slice fills (the rest is the joint). */
+    joint: 0.94,
+    /** A slice comes from this far above and outside its place (meters)… */
+    approach: 0.5,
+    /** …in this time (ease-out), pressing the last centimeters into place. */
+    settle: 0.3,
+    settleDrop: 0.025,
+    /** Once the front has passed, the slice sinks into the surface over this time. */
+    absorb: 0.09,
+    /** A slice is in place up to this long before the front reaches it (irregular rhythm). */
+    early: 0.06,
   },
   /** Timing of the construction (reveal/order.ts scheduleConstruction). */
   schedule: {
-    /** The blueprint draws itself before the first element starts. */
-    lead: 1,
+    /** The plan draws itself on the ground before the first element starts. */
+    lead: 1.1,
     /** Whole build: minDuration + secondsPerElement × elements, at most maxDuration. */
     minDuration: 6,
-    maxDuration: 9,
-    secondsPerElement: 0.025,
-    /** One piece's rise from the element base to its place (ease-out). */
-    rise: 0.55,
-    /** Largest per-piece random delay. */
-    jitter: 0.12,
-    /** Bottom-to-top arrival spread of an element: height × this, within [min, max]. */
-    spreadPerMeter: 0.22,
-    minSpread: 0.12,
-    maxSpread: 0.7,
-    /** The real mesh fades in once every piece of the element has landed. */
-    fade: 0.3,
-    /** The pieces shrink away, starting shrinkDelay × fade into the fade. */
-    shrink: 0.35,
-    shrinkDelay: 0.6,
-    /** Relative time an element of each stage takes before the next one starts. */
+    maxDuration: 10,
+    secondsPerElement: 0.02,
+    /** An element grows bottom to top in height × growPerMeter seconds, within [min, max]. */
+    growPerMeter: 0.6,
+    minGrow: 0.8,
+    maxGrow: 2.2,
+    /** Relative time between the start of an element of each stage and the next element. */
     stageWeight: {
       slab: 3,
-      floor: 0.6,
+      floor: 0.5,
       exterior_wall: 3,
-      interior_wall: 1.6,
+      interior_wall: 1.5,
       opening: 0.6,
       stair: 2,
       roof: 4,
       canopy: 2,
       balcony: 1.2,
-      furniture: 0.5,
+      furniture: 0.45,
       site: 1.5,
     },
     /** Extra pause between two groups (same units as the weights). */
-    groupGap: 2,
+    groupGap: 1.5,
   },
   /**
    * Share of the piece budget per stage: walls and roofs read as the building, so they are
    * laid densely; small details and layers that end up covered get fewer pieces.
    */
   stageDensity: {
-    slab: 0.35,
-    floor: 0.4,
+    slab: 0.5,
+    floor: 0.25,
     exterior_wall: 1,
     interior_wall: 0.8,
-    opening: 0.25,
+    opening: 0.5,
     stair: 0.8,
-    roof: 0.8,
+    roof: 0.45,
     canopy: 0.8,
-    balcony: 0.6,
-    furniture: 0.3,
-    site: 0.35,
+    balcony: 0.7,
+    furniture: 0.5,
+    site: 0.3,
   },
-  /** A piece grows from nothing over this time as it leaves the base. */
-  grow: 0.14,
-  /** Moving pieces: the brand accent (globals.css --accent) and how much of it glows. */
-  accent: "#5b5ee8",
-  glow: 0.3,
-  /** Roughness of a landed piece (matte, like plaster and concrete). */
-  roughness: 0.85,
+  /** The growing front of an element (reveal/growth.ts). */
+  growth: {
+    /** The cut rises this far past the element's top, so the edge line leaves it cleanly. */
+    overshoot: 0.02,
+    /** Highlight along the growing edge: the material's own tone, brightened by this share… */
+    edgeGain: 0.16,
+    /** …within this distance below the cut (meters), fading out near the end of the growth. */
+    edgeWidth: 0.045,
+    edgeFadeOut: 0.18,
+    /** Roughness of the cut surface (a fresh, matte section in the material's colour). */
+    capRoughness: 0.92,
+  },
   /** The plan that draws itself on the ground, and the paper sheet under it. */
   blueprint: {
-    draw: 1,
-    settle: 0.8,
-    trace: 0.28,
-    out: 1.2,
+    draw: 1.1,
+    settle: 0.9,
+    trace: 0.3,
+    out: 1.4,
     line: "#4f4ee0",
-    lineWidth: 0.06,
+    lineWidth: 0.05,
     /** Height of the lines above the storey's floor level. */
     lift: 0.03,
     sheet: "#f3f5fb",
-    sheetOpacity: 0.4,
+    sheetOpacity: 0.42,
     /** Sheet margin around the building and its grid spacing. */
     margin: 2.5,
     grid: 1,
   },
-  /** Camera: a slow orbit that ends on the default exterior view. */
+  /** Camera: a slow dolly and orbit that ends exactly on the default exterior view. */
   camera: {
-    sweep: 0.95,
-    distance: 1.03,
-    lift: 0.06,
-    /** Blend from the camera's pose when the build starts. */
-    blend: 0.9,
+    /** Angle travelled around the building (radians). */
+    sweep: 1.05,
+    /** Distance and extra height at the start, relative to the final view. */
+    distance: 1.14,
+    lift: 0.1,
+    /** Blend from the camera's pose when the build starts (seconds, ease-in-out). */
+    blend: 1.6,
   },
-  /** While the backend works: a ground grid and a slow scanning line (WaitingBlueprint). */
+  /** While the backend works: the drafting sheet on the ground (reveal/WaitingGround). */
   waiting: {
-    background: RENDER.sky.horizon,
     line: "#4f4ee0",
-    /** Grid spacing, opacity of its lines and how far it reaches. */
+    paper: "#f6f7fc",
+    paperOpacity: 0.86,
+    /** Grid spacing, opacity of its lines and how far the sheet reaches (meters). */
     grid: 1,
-    gridOpacity: 0.3,
-    reach: 22,
-    /** One pass of the scanning line over the grid. */
-    scanPeriod: 6,
-    scanOpacity: 0.85,
+    gridOpacity: 0.34,
+    reach: 28,
+    /** One pass of the scanning line over the sheet. */
+    scanPeriod: 6.5,
+    scanOpacity: 0.55,
     /** A real stage change: one brighter pass that decays at this rate (per second). */
     pulse: 0.5,
     pulseDecay: 0.9,
+    /** Fade of the sheet when waiting starts and when the model arrives (per second). */
+    fade: 3.2,
+    /** The plot outline once the floor area is known: footprint proportion and margin. */
+    plotAspect: 1.3,
+    plotMargin: 3,
+    plotOpacity: 0.7,
+    /** The view while there is no model yet (model space, meters). */
+    bounds: { width: 14, depth: 11, height: 6.5 },
   },
-  /** After "Apply" in Modify with AI: only the changed elements re-assemble. */
+  /** A stage failed after the house was shown: the canvas fades out, then shows the ground. */
+  fail: { fade: 0.7 },
+  /** After "Apply" in Modify with AI: only the changed elements grow again. */
   changes: { duration: 2.4 },
 } as const;

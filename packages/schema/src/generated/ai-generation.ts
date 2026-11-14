@@ -276,6 +276,8 @@ export interface AIGenerationOut {
   input_tokens: number;
   output_tokens: number;
   started_at: string | null;
+  interim_facts?: InterimFact[];
+  preview_model_hash?: string | null;
 }
 /**
  * This interface was referenced by `AIGenerationContracts`'s JSON-Schema
@@ -526,4 +528,27 @@ export interface RequirementCheck {
   requested: string;
   delivered: string;
   met: boolean;
+}
+/**
+ * One fact read from the answer so far. `key` is a `FactKey` or `room:<room type>`.
+ *
+ * This interface was referenced by `AIGenerationContracts`'s JSON-Schema
+ * via the `definition` "InterimFact".
+ */
+export interface InterimFact {
+  key: string;
+  value: number | string | boolean;
+}
+/**
+ * The laid-out building of a running generation (spec-form job or AI generation), before
+ * it is saved: exactly the JSON (and hash) the new version will store.
+ *
+ * This interface was referenced by `AIGenerationContracts`'s JSON-Schema
+ * via the `definition` "PreviewModelOut".
+ */
+export interface PreviewModelOut {
+  model: {
+    [k: string]: unknown;
+  };
+  model_hash: string;
 }

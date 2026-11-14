@@ -1,17 +1,19 @@
 "use client";
 
 import type { AIGenerationOut } from "@buildai/schema";
-import { Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 import { useState } from "react";
 
 import { Button, Callout, Input, Skeleton } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
 import { AI_STAGES } from "../api";
+import { InterimFacts } from "./InterimFacts";
 
 /**
  * Progress of one generation, driven only by the backend's real `stage` (no invented
- * percentages), plus the clarification and failure states.
+ * percentages) and the facts the AI has stated so far, plus the clarification and failure
+ * states.
  */
 export function AIGenerationStatus({
   generation,
@@ -49,54 +51,23 @@ export function StageList({ generation }: { generation: AIGenerationOut }) {
   );
   const done = generation.status === "completed";
   const current = stages.findIndex((s) => s.id === generation.stage);
-  // The backend's stages plus the client's own last step (building the scene).
-  const steps: { id: string; label: string; state: StepState }[] = [
-    ...stages.map((stage, i) => ({
-      id: stage.id as string,
-      label: stage.label as string,
-      state: (done || i < current ? "done" : i === current ? "active" : "pending") as StepState,
-    })),
-    {
-      id: "opening",
-      label: "Building the 3D model and opening the project",
-      state: done ? "active" : "pending",
-    },
-  ];
+  // Only what the backend reports: a step is done when the backend has moved past it.
+  const steps: { id: string; label: string; state: StepState }[] = stages.map((stage, i) => ({
+    id: stage.id as string,
+    label: stage.label as string,
+    state: (done || i < current ? "done" : i === current ? "active" : "pending") as StepState,
+  }));
   const active = steps.find((s) => s.state === "active");
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <span
-          aria-hidden
-          className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-text"
-        >
-          <Sparkles size={17} />
-          <span className="absolute inset-0 animate-ping rounded-xl bg-accent/20 [animation-duration:2s]" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-[15px] font-semibold leading-tight tracking-tight">
-            Designing your building
-          </p>
-          <p className="truncate text-xs text-fg-subtle" aria-live="polite">
-            {active ? `${active.label}…` : "Waiting to start…"}
-          </p>
-        </div>
-      </div>
-      {/* One segment per real stage: filled when the backend reports it done. No percentages. */}
-      <div aria-hidden className="flex gap-1">
-        {steps.map((step) => (
-          <span
-            key={step.id}
-            className={cn(
-              "h-1 flex-1 rounded-full transition-colors duration-500",
-              step.state === "done"
-                ? "bg-accent"
-                : step.state === "active"
-                  ? "animate-pulse bg-accent/60"
-                  : "bg-neutral-200 dark:bg-neutral-800",
-            )}
-          />
-        ))}
+      <div>
+        <p className="text-[15px] font-semibold leading-tight tracking-tight">
+          Designing your building
+        </p>
+        <p className="mt-0.5 text-xs text-fg-subtle">Every step below is the real backend stage</p>
+        <p className="sr-only" aria-live="polite">
+          {done ? "The new version is saved." : active ? `${active.label}…` : "Waiting to start…"}
+        </p>
       </div>
       <p className="rounded-lg border border-line bg-bg-subtle p-3 text-sm italic text-fg-muted">
         “{generation.prompt}”
@@ -108,29 +79,32 @@ export function StageList({ generation }: { generation: AIGenerationOut }) {
               <span
                 aria-hidden
                 className={cn(
-                  "absolute left-[9px] top-[26px] h-[calc(100%-18px)] w-px",
+                  "absolute left-[9px] top-[26px] h-[calc(100%-18px)] w-px transition-colors duration-500",
                   step.state === "done" ? "bg-accent/50" : "bg-line",
                 )}
               />
             )}
             <StepIcon state={step.state} />
             <span
-              className={
+              className={cn(
+                "transition-colors duration-300",
                 step.state === "pending"
                   ? "text-fg-subtle"
                   : step.state === "active"
                     ? "font-medium text-fg"
-                    : "text-fg-muted"
-              }
+                    : "text-fg-muted",
+              )}
             >
               {step.label}
             </span>
           </li>
         ))}
       </ol>
+      <InterimFacts facts={generation.interim_facts ?? []} />
       {generation.understanding && (
         <p className="text-xs text-fg-subtle">
-          <span className="font-medium text-fg-muted">Understood:</span> {generation.understanding}
+          <span className="font-medium text-fg-muted">In one sentence:</span>{" "}
+          {generation.understanding}
         </p>
       )}
       <p className="text-xs text-fg-subtle">

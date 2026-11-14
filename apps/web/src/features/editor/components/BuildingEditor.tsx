@@ -13,7 +13,8 @@ import { useRevealStore } from "@/stores/reveal-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useViewerStore } from "@/stores/viewer-store";
-import { BuildingViewer } from "@/viewer/BuildingViewer";
+import { RevealSurface } from "@/viewer/reveal/RevealSurface";
+import { ViewerSlot } from "@/viewer/ViewerHost";
 
 import { LeftPanel } from "./LeftPanel";
 import { PropertiesPanel } from "./PropertiesPanel";
@@ -26,9 +27,6 @@ function isTyping(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
   return !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
 }
-
-/** Any interaction with the viewport ends a running build animation (drag, click, wheel). */
-const skipReveal = () => useRevealStore.getState().dispatch({ type: "skip" });
 
 /**
  * Editor layout. Large screens: controls (left) · 3D viewport or floor plan (center) ·
@@ -51,7 +49,6 @@ export function BuildingEditor({
   const left = useUIStore((s) => s.left);
   const right = useUIStore((s) => s.right);
   const toggle = useUIStore((s) => s.toggle);
-  const assembling = useRevealStore((s) => s.phase === "assembling" && s.mode === "build");
   // An open drawer covers the right part of the viewport: the floating toolbar keeps to the
   // part that is still visible (re-centred there, wrapping if it has to).
   const viewport = useRef<HTMLDivElement>(null);
@@ -60,10 +57,9 @@ export function BuildingEditor({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        // Esc first skips a running build animation, otherwise it clears the selection.
-        const reveal = useRevealStore.getState();
-        if (reveal.phase === "assembling") reveal.dispatch({ type: "skip" });
-        else select(null);
+        // Esc first skips a running build animation (RevealSurface), otherwise it clears the
+        // selection.
+        if (useRevealStore.getState().phase !== "assembling") select(null);
       }
       if (isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === "[") toggle("left");
@@ -81,23 +77,13 @@ export function BuildingEditor({
             {viewMode === "plan" ? (
               <PlanView index={scene.index} onEditsSaved={onEditsSaved} />
             ) : (
-              <BuildingViewer scene={scene} />
+              // Any drag, wheel, click or Esc ends a running construction; the camera is the
+              // user's from that same gesture.
+              <RevealSurface>
+                <ViewerSlot scene={scene} />
+              </RevealSurface>
             )}
           </div>
-          {assembling && viewMode === "3d" && (
-            <button
-              type="button"
-              aria-label="Skip the build animation"
-              onClick={skipReveal}
-              onPointerDown={skipReveal}
-              onWheel={skipReveal}
-              className="absolute inset-0 z-[5] flex cursor-pointer items-start justify-center bg-transparent pt-4"
-            >
-              <span className="glass flex animate-fade-in items-center gap-1.5 rounded-full px-3 py-1 text-xs text-fg-muted shadow-md">
-                Click or <Kbd>Esc</Kbd> to skip
-              </span>
-            </button>
-          )}
           <div className="pointer-events-none absolute inset-y-0 left-0" style={{ right: overlap }}>
             <ViewerToolbar scene={scene} drawing={drawing} />
           </div>

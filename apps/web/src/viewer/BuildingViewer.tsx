@@ -10,16 +10,24 @@ import { CameraRig } from "./CameraRig";
 import { MaterialTextures } from "./MaterialTextures";
 import { ModelRoot } from "./ModelRoot";
 import { PostEffects } from "./PostEffects";
-import { RENDER } from "./render-settings";
+import { RENDER, REVEAL } from "./render-settings";
 import { RenderOnResize } from "./RenderOnResize";
 import { RevealLayer } from "./reveal/RevealLayer";
+import { waitingBounds } from "./reveal/waiting";
 import { SceneEnvironment } from "./SceneEnvironment";
 import { SectionPlane } from "./SectionPlane";
 import { SiteLayer } from "./SiteLayer";
 
-/** Interactive 3D view of a built SceneGraph. Renders on demand (no idle GPU work). */
-export function BuildingViewer({ scene }: { scene: SceneGraph }) {
+/** What the camera frames while there is no model yet (a design is being created). */
+const WAITING_BOUNDS = waitingBounds(REVEAL.waiting.bounds);
+
+/**
+ * Interactive 3D view of a built SceneGraph. Renders on demand (no idle GPU work). Without a
+ * scene it shows the empty site: the same canvas a design is then created in (§25).
+ */
+export function BuildingViewer({ scene }: { scene: SceneGraph | null }) {
   const select = useSelectionStore((s) => s.select);
+  const bounds = scene?.bounds ?? WAITING_BOUNDS;
   return (
     <Canvas
       shadows="percentage"
@@ -28,6 +36,8 @@ export function BuildingViewer({ scene }: { scene: SceneGraph }) {
       gl={{
         antialias: true,
         preserveDrawingBuffer: false,
+        // The cut surfaces of growing elements are masked with the stencil buffer (§25).
+        stencil: true,
       }}
       onCreated={({ gl }) => {
         // ACES Filmic (also applied by the post-processing ToneMapping effect when enabled).
@@ -41,12 +51,12 @@ export function BuildingViewer({ scene }: { scene: SceneGraph }) {
     >
       <color attach="background" args={[RENDER.sky.horizon]} />
       <MaterialTextures />
-      <SceneEnvironment bounds={scene.bounds} />
-      <ModelRoot scene={scene} />
-      <SiteLayer scene={scene} />
-      <CameraRig scene={scene} />
+      <SceneEnvironment bounds={bounds} />
+      {scene && <ModelRoot scene={scene} />}
+      {scene && <SiteLayer scene={scene} />}
+      <CameraRig bounds={bounds} index={scene?.index ?? null} />
       <SectionPlane />
-      <RevealLayer scene={scene} />
+      <RevealLayer scene={scene} bounds={bounds} />
       <PostEffects />
       <RenderOnResize />
     </Canvas>

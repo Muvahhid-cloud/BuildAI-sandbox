@@ -63,7 +63,9 @@
         "max_area_m2": null,
         "level": 0,
         "adjacent_to": [],
-        "open_to": ["kitchen"],
+        "open_to": [
+          "kitchen"
+        ],
         "features": [],
         "faces": null,
         "separate_from": []
@@ -109,7 +111,9 @@
         "level": 1,
         "adjacent_to": [],
         "open_to": [],
-        "features": ["en_suite"],
+        "features": [
+          "en_suite"
+        ],
         "faces": null,
         "separate_from": []
       },
@@ -357,5 +361,36 @@
   ],
   "input_tokens": 0,
   "output_tokens": 0,
-  "started_at": "2026-10-26T08:37:19.808146Z"
+  "started_at": "2026-10-26T08:37:19.808146Z",
+  "interim_facts": [
+    {
+      "key": "storeys",
+      "value": 2
+    },
+    {
+      "key": "floor_area_m2",
+      "value": 280.0
+    },
+    {
+      "key": "style",
+      "value": "modern"
+    },
+    {
+      "key": "room:bedroom",
+      "value": 4
+    },
+    {
+      "key": "room:bathroom",
+      "value": 3
+    },
+    {
+      "key": "garage_cars",
+      "value": 2
+    },
+    {
+      "key": "balconies",
+      "value": 1
+    }
+  ],
+  "preview_model_hash": null
 }

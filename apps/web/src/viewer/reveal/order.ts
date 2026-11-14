@@ -4,6 +4,9 @@
 // Order (derived from the model): per storey (level index) the floor slab, the room floors, the
 // exterior walls going around the perimeter, the interior walls, doors and windows, stairs;
 // then roofs, the entrance canopy, balconies and railings; then furniture; then the site.
+//
+// Timing: every element grows from its base to its top (a rising cut, never sideways) for at
+// least a minimum time; consecutive elements overlap.
 import type { ModelIndex } from "@/engine/model/model-index";
 import type { BuildingElement, Wall } from "@/engine/model/types";
 
@@ -179,10 +182,11 @@ export function constructionOrder(
   return steps;
 }
 
-/** What the schedule needs to know about a step's pieces. */
+/** What the schedule needs to know about a step: where the element starts and ends. */
 export interface StepExtent {
-  /** Height of the element's pieces (top target − base), meters. */
-  height: number;
+  /** Lowest and highest point of the element (model z, meters). */
+  baseZ: number;
+  topZ: number;
 }
 
 export interface ScheduleConfig {
@@ -192,62 +196,85 @@ export interface ScheduleConfig {
   minDuration: number;
   maxDuration: number;
   secondsPerElement: number;
-  /** One piece's rise from the element base to its place. */
-  rise: number;
-  /** Largest per-piece random delay. */
-  jitter: number;
-  /** Bottom-to-top arrival spread of an element: height × this, within [min, max]. */
-  spreadPerMeter: number;
-  minSpread: number;
-  maxSpread: number;
-  /** The real mesh fades in over this time once every piece has landed. */
-  fade: number;
-  /** The pieces shrink away over this time, starting `shrinkDelay × fade` into the fade. */
-  shrink: number;
-  shrinkDelay: number;
-  /** Relative time each stage's elements take before the next one starts. */
+  /** Bottom-to-top growth of an element: height × this, within [minGrow, maxGrow] seconds. */
+  growPerMeter: number;
+  minGrow: number;
+  maxGrow: number;
+  /** A piece settles on the front over this time; the first ones before the front leaves. */
+  settle: number;
+  /** A piece sinks into the surface over this time once the front has passed it. */
+  absorb: number;
+  /** Relative time between the start of an element of each stage and the next element. */
   stageWeight: Readonly<Record<ConstructionStage, number>>;
   /** Extra pause (in the same units) between two groups. */
   groupGap: number;
 }
 
 export interface StepTiming {
-  /** The element's first piece leaves the base. */
+  /** The element's first pieces appear above its base. */
   start: number;
-  /** Arrival spread between the lowest and the highest piece. */
-  spread: number;
-  /** Every piece has landed: the real mesh starts to appear. */
-  landed: number;
-  /** The real mesh is fully shown. */
-  shown: number;
-  /** The pieces start to shrink / are gone. */
-  vanish: number;
+  /** The growing front leaves the base… */
+  from: number;
+  /** …and reaches the top: the element is complete. */
   end: number;
+  /** The element's base and top (model z). */
+  baseZ: number;
+  topZ: number;
 }
 
 export interface ConstructionSchedule {
   timings: ReadonlyMap<string, StepTiming>;
-  /** Seconds until the last piece is gone. */
+  /** Seconds until the last element is complete and its last piece is gone. */
   duration: number;
 }
 
+/** The front's way up an element: slow off the base, slow onto the top (never linear). */
+export function frontEase(k: number): number {
+  const t = Math.min(Math.max(k, 0), 1);
+  return (1 - Math.cos(Math.PI * t)) / 2;
+}
+
+/** Inverse of `frontEase`: the share of the growth time at which the front is at `f`. */
+export function frontEaseInverse(f: number): number {
+  const t = Math.min(Math.max(f, 0), 1);
+  return Math.acos(1 - 2 * t) / Math.PI;
+}
+
 /**
- * Start times follow the construction order (never earlier than the step before), with a
- * small stagger inside a group and a pause between groups; the whole build is fitted into the
- * duration for the model's size.
+ * Share of the element revealed at `elapsed` (0 = nothing, 1 = complete): the growing front
+ * is at `baseZ + share × (topZ − baseZ)`.
+ */
+export function growthAt(t: StepTiming, elapsed: number): number {
+  if (elapsed <= t.from) return 0;
+  if (elapsed >= t.end) return 1;
+  return frontEase((elapsed - t.from) / (t.end - t.from));
+}
+
+/** The moment the front of an element reaches height `z`. */
+export function frontTime(t: StepTiming, z: number): number {
+  const height = t.topZ - t.baseZ;
+  const share = height > 1e-6 ? (z - t.baseZ) / height : 0;
+  return t.from + frontEaseInverse(share) * (t.end - t.from);
+}
+
+/**
+ * Start times follow the construction order (never earlier than the step before) and
+ * overlap: the next element starts while the one before still grows — a small stagger inside
+ * a group, a pause between groups. Every element grows for at least `minGrow` seconds. The
+ * whole build is fitted into the duration for the model's size.
  */
 export function scheduleConstruction(
   steps: readonly ConstructionStep[],
   extents: ReadonlyMap<string, StepExtent>,
   cfg: ScheduleConfig,
 ): ConstructionSchedule {
-  const spreads = steps.map((s) => {
-    const h = extents.get(s.id)?.height ?? 0;
-    return Math.min(Math.max(h * cfg.spreadPerMeter, cfg.minSpread), cfg.maxSpread);
+  const grows = steps.map((s) => {
+    const e = extents.get(s.id);
+    const height = e ? Math.max(e.topZ - e.baseZ, 0) : 0;
+    return Math.min(Math.max(height * cfg.growPerMeter, cfg.minGrow), cfg.maxGrow);
   });
-  // Time from an element's start until its pieces are gone.
-  const tail = (i: number) =>
-    spreads[i]! + cfg.jitter + cfg.rise + cfg.shrinkDelay * cfg.fade + cfg.shrink;
+  // Time from an element's start until its last piece is gone.
+  const tail = (i: number) => cfg.settle + grows[i]! + cfg.absorb;
   const offsets: number[] = [];
   let cursor = 0;
   steps.forEach((s, i) => {
@@ -272,19 +299,12 @@ export function scheduleConstruction(
   const timings = new Map<string, StepTiming>();
   let duration = cfg.lead;
   steps.forEach((s, i) => {
+    const e = extents.get(s.id);
     const start = cfg.lead + offsets[i]! * unit;
-    const landed = start + spreads[i]! + cfg.jitter + cfg.rise;
-    const vanish = landed + cfg.shrinkDelay * cfg.fade;
-    const end = Math.max(vanish + cfg.shrink, landed + cfg.fade);
-    timings.set(s.id, {
-      start,
-      spread: spreads[i]!,
-      landed,
-      shown: landed + cfg.fade,
-      vanish,
-      end,
-    });
-    duration = Math.max(duration, end);
+    const from = start + cfg.settle;
+    const end = from + grows[i]!;
+    timings.set(s.id, { start, from, end, baseZ: e?.baseZ ?? 0, topZ: e?.topZ ?? 0 });
+    duration = Math.max(duration, end + cfg.absorb);
   });
   return { timings, duration };
 }

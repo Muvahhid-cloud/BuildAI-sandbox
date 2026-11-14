@@ -419,6 +419,8 @@ export const jobSchema = z.object({
       details: z.array(z.object({ message: z.string() }).loose()),
     })
     .nullable(),
+  /** Set while the laid-out model can be read from GET /jobs/{id}/preview. */
+  preview_model_hash: z.string().nullable().optional(),
   created_at: z.string(),
   started_at: z.string().nullable(),
   finished_at: z.string().nullable(),

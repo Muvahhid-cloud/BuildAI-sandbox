@@ -13,7 +13,7 @@ import {
   Vector3,
 } from "three";
 
-import { SITE_GROUND_MATERIAL } from "@/engine/materials/library";
+import { materialPreset, SITE_GROUND_MATERIAL } from "@/engine/materials/library";
 import { materialCache } from "@/engine/materials/material-cache";
 import { modelToWorld } from "@/engine/math/coords";
 import { groundDiscGeometry, siteRadius } from "@/engine/scene/site";
@@ -136,8 +136,16 @@ class LoadBoundary extends Component<{ fallback: ReactNode; children: ReactNode 
   }
 }
 
-/** Textured grass disc (library material `site_grass`, UVs in meters). */
-function SiteGround({ center, radius }: { center: Vector3; radius: number }) {
+/**
+ * Textured grass disc (library material `site_grass`, UVs in meters). The disc follows the
+ * building, but only in whole texture tiles: when a model replaces the empty site of a live
+ * creation (§25) the ground texture stays where it is instead of jumping.
+ */
+function SiteGround({ center: at, radius }: { center: Vector3; radius: number }) {
+  const center = useMemo(() => {
+    const [tx, ty] = materialPreset(SITE_GROUND_MATERIAL).textures?.tile_size_m ?? [1, 1];
+    return { x: Math.round(at.x / tx) * tx, z: Math.round(at.z / ty) * ty };
+  }, [at]);
   const geometry = useMemo(() => groundDiscGeometry(radius), [radius]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   const material = materialCache.get(SITE_GROUND_MATERIAL);

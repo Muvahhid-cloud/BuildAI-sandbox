@@ -1,19 +1,21 @@
-// The pieces of the build reveal: small blocks laid on the surfaces of the elements, like
-// bricks on a wall plane. Pure (no GPU, no clock): targets are sampled on the geometry the
-// viewer draws with a PRNG seeded by the model hash, snapped to courses in the surface plane;
-// every piece starts at the base of its own element, directly under its target, and rises.
-import { Color, Matrix4, Quaternion, Vector3 } from "three";
+// The pieces of the construction: thin flat slices that settle on an element's surfaces just
+// ahead of its growing front and are gone as soon as the front has passed them — courses being
+// laid, never a cloud that turns into a wall. Pure (no GPU, no clock): targets are sampled on
+// the geometry the viewer draws (area-weighted, PRNG seeded by the model hash) and snapped to
+// courses in the surface plane; a slice lies flat on its surface (thin axis = surface normal,
+// long axis horizontal) and is drawn in the real material of the face it lies on.
+import { Matrix4, Quaternion, Vector3 } from "three";
 
-import type { ConstructionSchedule, StepExtent } from "./order";
+import { type ConstructionSchedule, frontTime } from "./order";
 import { sampleSurfaces, type SurfaceSource } from "./sampling";
 
-/** One renderable part of an item: geometry, placement and the color of each material group. */
+/** One renderable part of an item: geometry, placement and its material keys. */
 export interface PiecePart extends SurfaceSource {
-  /** sRGB hex per geometry material group (the element's real library colors). */
-  colors: readonly string[];
+  /** Library material key per geometry material group (what the real mesh is drawn with). */
+  materials: readonly string[];
 }
 
-/** Everything that assembles as one unit (an element, the site, a plant). */
+/** Everything that grows as one unit (an element, the site). */
 export interface PieceItem {
   key: string;
   parts: readonly PiecePart[];
@@ -22,75 +24,96 @@ export interface PieceItem {
 }
 
 export interface PieceConfig {
-  /** Hard ceiling of the piece count (one instanced draw call). */
+  /** Hard ceiling of the piece count. */
   maxPieces: number;
-  /** Fewest pieces an item gets, so small elements still assemble. */
+  /** Fewest pieces an item gets, so small elements are visibly built too. */
   minPerItem: number;
   /** Largest share of a surface that pieces cover. */
   fill: number;
-  /** Piece edge: `perRootArea × √(item area)`, within [min, max] meters. */
-  min: number;
-  max: number;
-  perRootArea: number;
-  /** Height of a course on vertical surfaces, as a share of the edge (brick proportion). */
-  course: number;
-  /** Thickness as a share of the edge. */
+  /** A slice at full size: long (horizontal) × short × thick, meters. */
+  length: number;
+  height: number;
   thickness: number;
-  /** Share of its cell a piece fills (the rest is the joint). */
+  /** Scaled to the element: `perRootArea × √(item surface)`, within [minScale, 1]. */
+  perRootArea: number;
+  minScale: number;
+  /** Share of its cell a slice fills (the rest is the joint). */
   joint: number;
-  /** Largest horizontal distance between a piece's start and its target (meters). */
-  startJitter: number;
 }
 
-export interface ItemRange {
-  /** First piece and number of pieces of the item. */
+/** A run of pieces drawn with one material (one instanced draw call). */
+export interface PieceBatch {
+  material: string;
   offset: number;
   count: number;
-  /** Lowest and highest piece target: the element's base and top. */
-  baseZ: number;
-  topZ: number;
-  /** Sampled surface area (m²) and the piece edge chosen for it. */
-  area: number;
-  edge: number;
 }
 
 export interface PieceTargets {
   count: number;
-  /** xyz per piece, model space (Z-up): where the piece ends up. */
+  /** xyz per piece, model space (Z-up): the centre of the slice where it lies. */
   target: Float32Array;
-  /** Rotation (xyzw) that lays the piece on its surface: x/y in the plane, z along the normal. */
+  /** Rotation (xyzw): local x = long axis, y = short axis, z = surface normal. */
   quat: Float32Array;
-  /** Piece size (in-plane x, in-plane y, thickness), meters. */
+  /** Slice size (long, short, thick), meters. */
   scale: Float32Array;
-  /** Linear RGB of the element's library color at the piece. */
-  color: Float32Array;
-  /** Three random numbers in [0, 1) per piece (start jitter x/y, arrival jitter). */
-  seeds: Float32Array;
-  ranges: ReadonlyMap<string, ItemRange>;
+  /** Texture coordinates of the slice centre in meters (the surface's own projection). */
+  uv: Float32Array;
+  /** One random number in [0, 1) per piece. */
+  seed: Float32Array;
+  /** Index into `keys`: the item each piece belongs to. */
+  item: Uint32Array;
+  keys: readonly string[];
+  /** Pieces are grouped by material: each batch is a contiguous run. */
+  batches: readonly PieceBatch[];
+  /** Number of pieces per item key. */
+  counts: ReadonlyMap<string, number>;
 }
 
-/** Normals with z below this face down. */
+/** Normals with z below this face down: nothing is laid from below. */
 const DOWN = -0.5;
+/** Normals with |z| above this are floors, slab tops and flat roofs. */
+const FLAT = 0.9;
+/**
+ * A flat face this close to the element's top is reached by the front all at once, at the
+ * very end: pieces there would only flash, so it gets none (the element's sides carry them).
+ */
+const TOP_FACE = 0.02;
 
-const edgeFor = (area: number, cfg: PieceConfig) =>
-  Math.min(Math.max(cfg.perRootArea * Math.sqrt(area), cfg.min), cfg.max);
+/** Size factor of an item's slices for its surface area. */
+export function pieceScale(area: number, cfg: PieceConfig): number {
+  return Math.min(Math.max(cfg.perRootArea * Math.sqrt(area), cfg.minScale), 1);
+}
+
+interface Draft {
+  x: number;
+  y: number;
+  z: number;
+  q: [number, number, number, number];
+  s: [number, number, number];
+  u: number;
+  v: number;
+  seed: number;
+  item: number;
+}
 
 /**
  * Piece targets for the items, in the given order. The count adapts to the total surface (at
- * most `maxPieces`): each item gets a share by its area. Same items + same seed = same pieces.
+ * most `maxPieces`): each item gets a share by its area and density. Same items + same seed =
+ * same pieces.
  */
 export function samplePieces(
   items: readonly PieceItem[],
   seed: string,
   cfg: PieceConfig,
 ): PieceTargets {
-  // First pass: area and piece edge per item, to share the budget. Surfaces that face down
-  // (soffits, undersides) get no pieces: nothing is laid from below.
+  // First pass: area and slice size per item, to share the budget.
   const drafts = items.map((item) => {
     const probe = sampleSurfaces(item.parts, 0, "");
-    const edge = edgeFor(probe.area, cfg);
+    const size = pieceScale(probe.area, cfg);
+    const cell = cfg.length * size * cfg.height * size;
     const { corners, cumulative } = probe.triangles;
-    let cells = 0; // pieces that would cover the item completely
+    let top = -Infinity;
+    for (let i = 2; i < corners.length; i += 3) top = Math.max(top, corners[i]!);
     let laid = 0; // area that takes pieces
     for (let i = 0; i < cumulative.length; i++) {
       const area = cumulative[i]! - (i > 0 ? cumulative[i - 1]! : 0);
@@ -99,35 +122,33 @@ export function samplePieces(
       const uy = corners[o + 4]! - corners[o + 1]!;
       const vx = corners[o + 6]! - corners[o]!;
       const vy = corners[o + 7]! - corners[o + 1]!;
+      if (!(area > 0)) continue;
       const nz = (ux * vy - uy * vx) / (2 * area);
-      if (nz < DOWN) continue;
+      if (nz < DOWN || (nz > FLAT && corners[o + 2]! > top - TOP_FACE)) continue;
       laid += area;
-      cells += area / (edge * edge * (Math.abs(nz) < 0.5 ? cfg.course : 1));
     }
+    const cells = laid / cell;
     const share = probe.area > 0 ? laid / probe.area : 0;
-    return { item, area: probe.area, edge, share, cells, full: cells * (item.density ?? 1) };
+    return { item, area: probe.area, size, share, cells, top, full: cells * (item.density ?? 1) };
   });
   const full = drafts.reduce((s, d) => s + d.full, 0);
   const budget = Math.max(cfg.maxPieces - cfg.minPerItem * items.length, 0);
   const fill = full > 0 ? Math.min(cfg.fill, budget / full) : 0;
 
-  const target: number[] = [];
-  const quat: number[] = [];
-  const scale: number[] = [];
-  const color: number[] = [];
-  const seeds: number[] = [];
-  const ranges = new Map<string, ItemRange>();
+  const byMaterial = new Map<string, Draft[]>();
+  const counts = new Map<string, number>();
+  const keys: string[] = [];
   const n = new Vector3();
   const t = new Vector3();
   const b = new Vector3();
   const axis = new Vector3();
+  const up = new Vector3(0, 0, 1);
   const basis = new Matrix4();
   const q = new Quaternion();
-  const tint = new Color();
-  const tints = new Map<string, [number, number, number]>();
   let count = 0;
 
   for (const d of drafts) {
+    const index = keys.push(d.item.key) - 1;
     if (!(d.area > 0) || !(d.share > 0)) continue;
     const room = cfg.maxPieces - count;
     if (room <= 0) break;
@@ -139,10 +160,11 @@ export function samplePieces(
     const sample = sampleSurfaces(d.item.parts, draw, `${seed}:${d.item.key}`);
     const { corners, source, material } = sample.triangles;
     const used = new Set<string>();
-    const offset = count;
-    let baseZ = Infinity;
-    let topZ = -Infinity;
-    for (let i = 0; i < draw && count - offset < want; i++) {
+    const cw = cfg.length * d.size;
+    const ch = cfg.height * d.size;
+    const thick = cfg.thickness * d.size;
+    let placed = 0;
+    for (let i = 0; i < draw && placed < want; i++) {
       const tri = sample.triangle[i]!;
       const o = tri * 9;
       // Surface normal from the triangle's winding.
@@ -157,128 +179,142 @@ export function samplePieces(
         corners[o + 8]! - corners[o + 2]!,
       );
       n.crossVectors(t, b).normalize();
-      if (n.z < DOWN) continue;
-      // In-plane x: the part's own x axis laid into the surface (its y or z axis for a face
-      // across x), so pieces run along walls and with the element — never at a random angle.
+      if (n.z < DOWN || (n.z > FLAT && corners[o + 2]! > d.top - TOP_FACE)) continue;
       const part = d.item.parts[source[tri]!]!;
-      for (let column = 0; column < 3; column++) {
-        axis.setFromMatrixColumn(part.matrix, column).normalize();
-        t.copy(axis).addScaledVector(n, -axis.dot(n));
-        if (t.lengthSq() > 0.12) break;
+      if (Math.abs(n.z) > FLAT) {
+        // A flat surface: the long axis runs with the element (its own x axis in the plane).
+        for (let column = 0; column < 3; column++) {
+          axis.setFromMatrixColumn(part.matrix, column).normalize();
+          t.copy(axis).addScaledVector(n, -axis.dot(n));
+          if (t.lengthSq() > 0.12) break;
+        }
+        t.normalize();
+      } else {
+        // Walls and slopes: the long axis is horizontal, so courses run level.
+        t.crossVectors(up, n).normalize();
       }
-      t.normalize();
       b.crossVectors(n, t);
-      const vertical = Math.abs(n.z) < 0.5;
-      const cw = d.edge;
-      const ch = vertical ? d.edge * cfg.course : d.edge;
-      // Snap to courses in the surface plane (running bond on vertical surfaces).
+      // Snap to courses in the surface plane (running bond: every other course is shifted).
       const px = sample.positions[i * 3]!;
       const py = sample.positions[i * 3 + 1]!;
       const pz = sample.positions[i * 3 + 2]!;
       const u = px * t.x + py * t.y + pz * t.z;
       const v = px * b.x + py * b.y + pz * b.z;
       const row = Math.round(v / ch);
-      const shift = vertical && row % 2 !== 0 ? 0.5 : 0;
+      const shift = row % 2 !== 0 ? 0.5 : 0;
       const col = Math.round(u / cw - shift);
-      const du = (col + shift) * cw - u;
-      const dv = row * ch - v;
-      const thick = d.edge * cfg.thickness;
-      const x = px + du * t.x + dv * b.x + n.x * thick * 0.5;
-      const y = py + du * t.y + dv * b.y + n.y * thick * 0.5;
-      const z = pz + du * t.z + dv * b.z + n.z * thick * 0.5;
+      const su = (col + shift) * cw;
+      const sv = row * ch;
+      const x = px + (su - u) * t.x + (sv - v) * b.x + n.x * thick * 0.5;
+      const y = py + (su - u) * t.y + (sv - v) * b.y + n.y * thick * 0.5;
+      const z = pz + (su - u) * t.z + (sv - v) * b.z + n.z * thick * 0.5;
       const cell = `${Math.round(x * 1000)},${Math.round(y * 1000)},${Math.round(z * 1000)}`;
       if (used.has(cell)) continue; // one piece per cell
       used.add(cell);
 
-      target.push(x, y, z);
       basis.makeBasis(t, b, n);
       q.setFromRotationMatrix(basis);
-      quat.push(q.x, q.y, q.z, q.w);
-      scale.push(cw * cfg.joint, ch * cfg.joint, thick);
-      const hex = part.colors[material[tri]!] ?? part.colors[0] ?? "#ffffff";
-      let rgb = tints.get(hex);
-      if (!rgb) {
-        tint.set(hex);
-        rgb = [tint.r, tint.g, tint.b];
-        tints.set(hex, rgb);
-      }
-      color.push(rgb[0], rgb[1], rgb[2]);
-      seeds.push(sample.seeds[i * 4]!, sample.seeds[i * 4 + 1]!, sample.seeds[i * 4 + 2]!);
-      if (z < baseZ) baseZ = z;
-      if (z > topZ) topZ = z;
-      count++;
-    }
-    if (count > offset) {
-      ranges.set(d.item.key, {
-        offset,
-        count: count - offset,
-        baseZ,
-        topZ,
-        area: d.area,
-        edge: d.edge,
+      const key = part.materials[material[tri]!] ?? part.materials[0] ?? "";
+      let list = byMaterial.get(key);
+      if (!list) byMaterial.set(key, (list = []));
+      list.push({
+        x,
+        y,
+        z,
+        q: [q.x, q.y, q.z, q.w],
+        s: [cw * cfg.joint, ch * cfg.joint, thick],
+        u: su,
+        v: sv,
+        seed: sample.seeds[i * 4]!,
+        item: index,
       });
+      placed++;
+    }
+    count += placed;
+    if (placed > 0) counts.set(d.item.key, placed);
+  }
+
+  const target = new Float32Array(count * 3);
+  const quat = new Float32Array(count * 4);
+  const scale = new Float32Array(count * 3);
+  const uv = new Float32Array(count * 2);
+  const seeds = new Float32Array(count);
+  const item = new Uint32Array(count);
+  const batches: PieceBatch[] = [];
+  let at = 0;
+  for (const [material, list] of byMaterial) {
+    batches.push({ material, offset: at, count: list.length });
+    for (const p of list) {
+      target.set([p.x, p.y, p.z], at * 3);
+      quat.set(p.q, at * 4);
+      scale.set(p.s, at * 3);
+      uv.set([p.u, p.v], at * 2);
+      seeds[at] = p.seed;
+      item[at] = p.item;
+      at++;
     }
   }
-  return {
-    count,
-    target: new Float32Array(target),
-    quat: new Float32Array(quat),
-    scale: new Float32Array(scale),
-    color: new Float32Array(color),
-    seeds: new Float32Array(seeds),
-    ranges,
-  };
+  return { count, target, quat, scale, uv, seed: seeds, item, keys, batches, counts };
 }
 
-/** Height of each item's pieces, for the schedule. */
-export function pieceExtents(pieces: PieceTargets): Map<string, StepExtent> {
-  const out = new Map<string, StepExtent>();
-  for (const [key, r] of pieces.ranges) out.set(key, { height: r.topZ - r.baseZ });
-  return out;
-}
+/** A piece that is never shown (its item is not scheduled). */
+export const NEVER = 1e9;
 
-export interface PieceMotion {
-  /** xyz per piece: where it starts — at its element's base, directly under its target. */
-  start: Float32Array;
-  /** Per piece: departure time, arrival time, time it starts to shrink away (seconds). */
-  time: Float32Array;
+export interface PieceMotionConfig {
+  /** Largest time a piece is early at the front (a little irregularity; seconds). */
+  jitter: number;
 }
 
 /**
- * Start points and times of every piece. A piece leaves the base of its own element (within
- * `startJitter` of the point under its target) and rises straight up; lower pieces arrive
- * first (departure = element start + relative height × spread + a small jitter).
+ * When the growing front of its element reaches each piece (seconds; `NEVER` for an item
+ * that is not scheduled). A piece settles onto the front just before that moment and sinks
+ * into the surface right after it, so pieces exist only at the growing front.
  */
-export function animatePieces(
-  pieces: PieceTargets,
-  schedule: ConstructionSchedule,
-  cfg: { rise: number; jitter: number; startJitter: number },
-): PieceMotion {
-  const start = new Float32Array(pieces.count * 3);
-  const time = new Float32Array(pieces.count * 3);
-  for (const [key, r] of pieces.ranges) {
-    const timing = schedule.timings.get(key);
-    const height = r.topZ - r.baseZ;
-    for (let i = r.offset; i < r.offset + r.count; i++) {
-      const z = pieces.target[i * 3 + 2]!;
-      // Jitter inside a disc of radius startJitter.
-      const angle = pieces.seeds[i * 3]! * 2 * Math.PI;
-      const radius = Math.sqrt(pieces.seeds[i * 3 + 1]!) * cfg.startJitter;
-      start[i * 3] = pieces.target[i * 3]! + Math.cos(angle) * radius;
-      start[i * 3 + 1] = pieces.target[i * 3 + 1]! + Math.sin(angle) * radius;
-      start[i * 3 + 2] = r.baseZ;
-      if (!timing) {
-        // Not scheduled: never shown.
-        time[i * 3] = time[i * 3 + 1] = time[i * 3 + 2] = -1;
-        continue;
-      }
-      // Relative height inside the element (a flat element lands at once).
-      const level = height > 1e-3 ? Math.min(Math.max((z - r.baseZ) / height, 0), 1) : 0;
-      const depart = timing.start + level * timing.spread + pieces.seeds[i * 3 + 2]! * cfg.jitter;
-      time[i * 3] = depart;
-      time[i * 3 + 1] = depart + cfg.rise;
-      time[i * 3 + 2] = timing.vanish;
-    }
+export function animatePieces(pieces: PieceTargets, schedule: ConstructionSchedule): Float32Array {
+  const time = new Float32Array(pieces.count);
+  for (let i = 0; i < pieces.count; i++) {
+    const timing = schedule.timings.get(pieces.keys[pieces.item[i]!]!);
+    time[i] = timing ? frontTime(timing, pieces.target[i * 3 + 2]!) : NEVER;
   }
-  return { start, time };
+  return time;
+}
+
+export interface PieceMotionConfig {
+  /** Distance a piece comes from (above and outside its place), meters. */
+  approach: number;
+  /** Time it takes to settle (ease-out), pressing the last `settleDrop` meters into place. */
+  settle: number;
+  settleDrop: number;
+  /** Time it takes to sink into the surface once the front has passed. */
+  absorb: number;
+  /** A piece is in place up to this long before the front reaches it (× its seed). */
+  early: number;
+}
+
+/**
+ * Where a piece is `elapsed` seconds into the build — the same arithmetic as the vertex
+ * shader (gpu.ts), for tests. `front` is the moment the front reaches it: the piece is
+ * `visible` only around that moment; `offset` is its distance from its place (meters),
+ * `size` its scale (0..1).
+ */
+export function pieceState(
+  front: number,
+  seed: number,
+  elapsed: number,
+  cfg: PieceMotionConfig,
+): { visible: boolean; offset: number; size: number } {
+  const appear = front - seed * cfg.early - cfg.settle;
+  const k = Math.min(Math.max((elapsed - appear) / cfg.settle, 0), 1);
+  const visible = elapsed >= appear && elapsed < front + cfg.absorb;
+  const ease = 1 - (1 - k) ** 3;
+  const smooth = (a: number, c: number, x: number) => {
+    const s = Math.min(Math.max((x - a) / (c - a), 0), 1);
+    return s * s * (3 - 2 * s);
+  };
+  const out = 1 - smooth(front, front + cfg.absorb, elapsed);
+  return {
+    visible,
+    offset: cfg.approach * (1 - ease) + cfg.settleDrop * (1 - smooth(0.7, 1, k)),
+    size: visible ? smooth(0, 0.35, k) * out : 0,
+  };
 }

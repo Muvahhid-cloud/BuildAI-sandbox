@@ -1,129 +1,183 @@
-// GPU objects of the build reveal, created and disposed by RevealLayer: the pieces (one
-// instanced mesh = one draw call), the blueprint lines and the paper sheet under them. Nothing
-// here is pickable and nothing carries an elementId.
+// GPU objects of the construction, created and disposed by RevealLayer: the pieces (instanced,
+// one draw call per library material, drawn with that material), the blueprint lines with the
+// paper sheet under them, and the drafting sheet shown while the backend works. Nothing here
+// is pickable and nothing carries an elementId. Growing elements: growth.ts.
 import {
   BoxGeometry,
   BufferAttribute,
   BufferGeometry,
   Color,
   DoubleSide,
-  IcosahedronGeometry,
+  Group,
   InstancedBufferAttribute,
   InstancedBufferGeometry,
+  type Material,
   Mesh,
-  MeshStandardMaterial,
+  MeshDepthMaterial,
+  type MeshStandardMaterial,
   PlaneGeometry,
+  ShaderChunk,
   ShaderMaterial,
 } from "three";
 
+import { materialCache } from "@/engine/materials/material-cache";
+
 import { REVEAL } from "../render-settings";
 import type { BlueprintPlan } from "./blueprint";
-import type { PieceMotion, PieceTargets } from "./pieces";
+import type { PieceTargets } from "./pieces";
 
 const NO_RAYCAST = () => undefined;
 
+// The same arithmetic as pieces.ts `pieceState` (tests cover that one).
 const PIECE_VERTEX_PARS = /* glsl */ `
   attribute vec3 aTarget;
-  attribute vec3 aStart;
   attribute vec4 aQuat;
   attribute vec3 aScale;
-  attribute vec3 aColor;
-  attribute vec3 aTime;      // departure, arrival, start of the shrink
+  attribute vec2 aPieceUv;
+  attribute float aFront;    // the moment the growing front reaches the piece
+  attribute float aSeed;
   uniform float uTime;
-  uniform float uGrow;
-  uniform float uShrink;
-  varying vec3 vPieceColor;
-  varying float vPieceMoving;
+  uniform float uSettle;
+  uniform float uApproach;
+  uniform float uDrop;
+  uniform float uAbsorb;
+  uniform float uEarly;
   vec3 pieceRotate(vec3 v) {
     return v + 2.0 * cross(aQuat.xyz, cross(aQuat.xyz, v) + aQuat.w * v);
   }
 `;
 
 const PIECE_BEGIN_VERTEX = /* glsl */ `
-  float pieceK = clamp((uTime - aTime.x) / max(aTime.y - aTime.x, 0.0001), 0.0, 1.0);
-  float pieceEase = 1.0 - pow(1.0 - pieceK, 3.0);            // ease-out: settles into place
-  float pieceSize = smoothstep(0.0, uGrow, uTime - aTime.x)    // grows as it leaves the base
-    * (1.0 - smoothstep(aTime.z, aTime.z + uShrink, uTime));   // shrinks once the mesh is there
-  vec3 transformed = mix(aStart, aTarget, pieceEase) + pieceRotate(position * aScale * pieceSize);
-  vPieceMoving = 1.0 - smoothstep(0.72, 1.0, pieceK);
-  vPieceColor = aColor;
+  float pieceAppear = aFront - aSeed * uEarly - uSettle;
+  float pieceK = clamp((uTime - pieceAppear) / uSettle, 0.0, 1.0);
+  float pieceEase = 1.0 - pow(1.0 - pieceK, 3.0);               // ease-out: settles into place
+  float pieceAlive = step(pieceAppear, uTime)
+    * (1.0 - smoothstep(aFront, aFront + uAbsorb, uTime));      // gone once the front has passed
+  float pieceIn = smoothstep(0.0, 0.35, pieceK) * pieceAlive;
+  vec3 pieceNormal = pieceRotate(vec3(0.0, 0.0, 1.0));
+  // From just above and outside (model space is Z-up), then the last centimeters pressed in.
+  vec3 pieceFrom = normalize(pieceNormal * 0.55 + vec3(0.0, 0.0, 0.85));
+  vec3 pieceOffset = pieceFrom * uApproach * (1.0 - pieceEase)
+    + pieceNormal * uDrop * (1.0 - smoothstep(0.7, 1.0, pieceK));
+  vec3 pieceSize = aScale * vec3(pieceIn, pieceIn, pieceIn * pieceAlive);
+  vec3 transformed = aTarget + pieceOffset + pieceRotate(position * pieceSize);
 `;
 
+// The slice continues the surface's texture: its UVs are the surface's own meter coordinates.
+const PIECE_UV_VERTEX =
+  "vec2 pieceUv = aPieceUv + position.xy * aScale.xy;\n" +
+  ShaderChunk.uv_vertex.replace(/\b[A-Z0-9_]*MAP_UV\b/g, "pieceUv");
+
 export interface RevealPieces {
-  mesh: Mesh<InstancedBufferGeometry, MeshStandardMaterial>;
+  /** One instanced mesh per library material. */
+  group: Group;
+  /** Draw calls of the pieces (= materials in use). */
+  batches: number;
   /** Seconds since the assembly started. */
   update: (elapsed: number) => void;
   dispose: () => void;
 }
 
 /**
- * All pieces as one instanced mesh. Position, size and color are computed in the vertex shader
- * from per-piece attributes and the time, so a frame costs one uniform. Lit like the building
- * (standard material: sun, HDRI, fog, tone mapping, section cut); casts no shadow.
+ * The pieces: thin slices, instanced. Each run of pieces of one library material is one mesh
+ * (one draw call) drawn with a copy of that material — the same colour, textures, roughness
+ * and glass as the finished element — whose vertex stage places the slice from per-piece
+ * attributes and one time uniform. They receive and cast shadows like the building.
  */
-export function createRevealPieces(pieces: PieceTargets, motion: PieceMotion): RevealPieces {
+export function createRevealPieces(pieces: PieceTargets, front: Float32Array): RevealPieces {
+  const p = REVEAL.pieces;
   const box = new BoxGeometry(1, 1, 1);
-  const geometry = new InstancedBufferGeometry();
-  geometry.setIndex(box.getIndex());
-  geometry.setAttribute("position", box.getAttribute("position"));
-  geometry.setAttribute("normal", box.getAttribute("normal"));
-  geometry.setAttribute("uv", box.getAttribute("uv"));
-  geometry.setAttribute("aTarget", new InstancedBufferAttribute(pieces.target, 3));
-  geometry.setAttribute("aStart", new InstancedBufferAttribute(motion.start, 3));
-  geometry.setAttribute("aQuat", new InstancedBufferAttribute(pieces.quat, 4));
-  geometry.setAttribute("aScale", new InstancedBufferAttribute(pieces.scale, 3));
-  geometry.setAttribute("aColor", new InstancedBufferAttribute(pieces.color, 3));
-  geometry.setAttribute("aTime", new InstancedBufferAttribute(motion.time, 3));
-  geometry.instanceCount = pieces.count;
-
   const uniforms = {
     uTime: { value: 0 },
-    uGrow: { value: REVEAL.grow },
-    uShrink: { value: REVEAL.schedule.shrink },
-    uAccent: { value: new Color(REVEAL.accent) },
-    uGlow: { value: REVEAL.glow },
+    uSettle: { value: p.settle },
+    uApproach: { value: p.approach },
+    uDrop: { value: p.settleDrop },
+    uAbsorb: { value: p.absorb },
+    uEarly: { value: p.early },
   };
-  const material = new MeshStandardMaterial({ roughness: REVEAL.roughness, metalness: 0 });
-  material.onBeforeCompile = (shader) => {
+  const patchVertex = (shader: { uniforms: object; vertexShader: string }) => {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", `#include <common>\n${PIECE_VERTEX_PARS}`)
+      .replace("#include <uv_vertex>", PIECE_UV_VERTEX)
       .replace("#include <beginnormal_vertex>", "vec3 objectNormal = pieceRotate(normal);")
       .replace("#include <begin_vertex>", PIECE_BEGIN_VERTEX);
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        "#include <common>",
-        "#include <common>\nuniform vec3 uAccent;\nuniform float uGlow;\nvarying vec3 vPieceColor;\nvarying float vPieceMoving;",
-      )
-      .replace(
-        "#include <color_fragment>",
-        // Accent while it moves, the element's own color as it lands.
-        "#include <color_fragment>\ndiffuseColor.rgb = mix(vPieceColor, uAccent, vPieceMoving);",
-      )
-      .replace(
-        "#include <emissivemap_fragment>",
-        "#include <emissivemap_fragment>\ntotalEmissiveRadiance += uAccent * (vPieceMoving * uGlow);",
-      );
   };
-  material.customProgramCacheKey = () => "reveal-pieces";
+  // Shadow pass: the same placement, so a slice casts its own small shadow.
+  const depth = new MeshDepthMaterial();
+  depth.onBeforeCompile = patchVertex;
+  depth.customProgramCacheKey = () => "reveal-pieces-depth";
 
-  const mesh = new Mesh(geometry, material);
-  mesh.name = "reveal-pieces";
-  mesh.frustumCulled = false; // positions are computed in the shader
-  mesh.raycast = NO_RAYCAST;
-  mesh.castShadow = false;
-  mesh.receiveShadow = false;
+  const group = new Group();
+  group.name = "reveal-pieces";
+  const geometries: InstancedBufferGeometry[] = [];
+  const materials: { source: MeshStandardMaterial; copy: MeshStandardMaterial }[] = [];
+  for (const batch of pieces.batches) {
+    if (batch.count === 0) continue;
+    const geometry = new InstancedBufferGeometry();
+    geometry.setIndex(box.getIndex());
+    geometry.setAttribute("position", box.getAttribute("position"));
+    geometry.setAttribute("normal", box.getAttribute("normal"));
+    geometry.setAttribute("uv", box.getAttribute("uv"));
+    const slice = (array: Float32Array, size: number) =>
+      new InstancedBufferAttribute(
+        array.subarray(batch.offset * size, (batch.offset + batch.count) * size),
+        size,
+      );
+    geometry.setAttribute("aTarget", slice(pieces.target, 3));
+    geometry.setAttribute("aQuat", slice(pieces.quat, 4));
+    geometry.setAttribute("aScale", slice(pieces.scale, 3));
+    geometry.setAttribute("aPieceUv", slice(pieces.uv, 2));
+    geometry.setAttribute("aSeed", slice(pieces.seed, 1));
+    geometry.setAttribute("aFront", slice(front, 1));
+    geometry.instanceCount = batch.count;
+    geometries.push(geometry);
+
+    const source = materialCache.get(batch.material);
+    const copy = source.clone();
+    copy.onBeforeCompile = patchVertex;
+    copy.customProgramCacheKey = () => "reveal-pieces";
+    materials.push({ source, copy });
+
+    const mesh = new Mesh(geometry, copy);
+    mesh.frustumCulled = false; // positions are computed in the shader
+    mesh.raycast = NO_RAYCAST;
+    mesh.castShadow = !copy.transparent;
+    mesh.receiveShadow = true;
+    mesh.customDepthMaterial = depth;
+    group.add(mesh);
+  }
   return {
-    mesh,
+    group,
+    batches: geometries.length,
     update: (elapsed) => {
       uniforms.uTime.value = elapsed;
+      // A texture that finished loading meanwhile reaches the copy too.
+      for (const { source, copy } of materials) syncMaterial(source, copy);
     },
     dispose: () => {
-      geometry.dispose();
+      geometries.forEach((g) => g.dispose());
+      materials.forEach((m) => m.copy.dispose());
+      depth.dispose();
       box.dispose();
-      material.dispose();
     },
   };
+}
+
+/** Keeps a copied library material in step with its source's maps (they load lazily). */
+export function syncMaterial(source: MeshStandardMaterial, copy: MeshStandardMaterial): void {
+  if (
+    copy.map === source.map &&
+    copy.normalMap === source.normalMap &&
+    copy.roughnessMap === source.roughnessMap
+  ) {
+    return;
+  }
+  copy.map = source.map;
+  copy.normalMap = source.normalMap;
+  copy.roughnessMap = source.roughnessMap;
+  copy.color.copy(source.color);
+  copy.needsUpdate = true;
 }
 
 export interface RevealBlueprint {
@@ -286,11 +340,122 @@ export function createRevealBlueprint(
   };
 }
 
+export interface WaitingSheet {
+  mesh: Mesh<PlaneGeometry, ShaderMaterial>;
+  update: (frame: {
+    opacity: number;
+    /** Position of the scanning line across the sheet, -1..1. */
+    scan: number;
+    pulse: number;
+    /** Half size of the plot outline (0 = not known yet) and its opacity. */
+    plot: readonly [number, number];
+    plotOpacity: number;
+  }) => void;
+  dispose: () => void;
+}
+
 /**
- * A plant's stand-in for sampling pieces (plants are drawn by glTF models that are not part of
- * the scene's descriptors): a low crown of the plant's height. Unit size; scaled by a matrix.
+ * The drafting sheet on the ground while the backend works: pale paper that dissolves into the
+ * site, a 1 m grid, a slow scanning line and — once the floor area is known — the outline of
+ * the plot. One quad with a small shader, centred on `center` (model x, y) at height `z`.
  */
-export function plantProxyGeometry(): BufferGeometry {
-  // Model space is Z-up: the crown sits on z = 0 and is 1 high.
-  return new IcosahedronGeometry(0.5, 1).translate(0, 0, 0.5);
+export function createWaitingSheet(center: readonly [number, number], z: number): WaitingSheet {
+  const w = REVEAL.waiting;
+  const uniforms = {
+    uLine: { value: new Color(w.line) },
+    uPaper: { value: new Color(w.paper) },
+    uPaperOpacity: { value: w.paperOpacity },
+    uCell: { value: w.grid },
+    uGrid: { value: w.gridOpacity },
+    uReach: { value: w.reach },
+    uScan: { value: 0.75 },
+    uScanOpacity: { value: w.scanOpacity },
+    uPulse: { value: 0 },
+    uOpacity: { value: 0 },
+    uPlot: { value: [0, 0] as [number, number] },
+    uPlotOpacity: { value: 0 },
+  };
+  const mesh = new Mesh(
+    new PlaneGeometry(w.reach * 2, w.reach * 2),
+    new ShaderMaterial({
+      vertexShader: /* glsl */ `
+        varying vec2 vPlan;
+        void main() {
+          vPlan = position.xy;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: /* glsl */ `
+        uniform vec3 uLine;
+        uniform vec3 uPaper;
+        uniform float uPaperOpacity;
+        uniform float uCell;
+        uniform float uGrid;
+        uniform float uReach;
+        uniform float uScan;
+        uniform float uScanOpacity;
+        uniform float uPulse;
+        uniform float uOpacity;
+        uniform vec2 uPlot;
+        uniform float uPlotOpacity;
+        varying vec2 vPlan;
+        void main() {
+          vec2 cell = vPlan / uCell;
+          vec2 w = max(fwidth(cell), vec2(1e-5));
+          vec2 g = abs(fract(cell - 0.5) - 0.5) / w;
+          float minor = 1.0 - min(min(g.x, g.y), 1.0);
+          vec2 g5 = abs(fract(cell / 5.0 - 0.5) - 0.5) / (w / 5.0);
+          float major = 1.0 - min(min(g5.x, g5.y), 1.0);
+          // The sheet dissolves into the ground towards its edge.
+          float fade = 1.0 - smoothstep(0.3, 1.0, length(vPlan) / uReach);
+          // The scanning line travels across the sheet; the grid glows softly in its wake.
+          float d = vPlan.y - uScan * uReach;
+          float line = 1.0 - smoothstep(0.0, 0.04 + fwidth(vPlan.y) * 1.5, abs(d));
+          float wake = exp(-max(d, 0.0) * 0.3) * step(0.0, d);
+          float grid = max(minor * 0.5, major);
+          float ink = grid * uGrid * (1.0 + wake * (1.2 + 3.0 * uPulse))
+            + line * uScanOpacity * (1.0 + uPulse)
+            + wake * 0.05;
+          // The plot outline: a thin rectangle with soft corners marks.
+          vec2 q = abs(vPlan) - uPlot;
+          float box = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
+          float aa = max(fwidth(box), 1e-4);
+          float outline = (1.0 - smoothstep(0.03, 0.03 + aa * 1.5, abs(box))) * uPlotOpacity;
+          float inside = (1.0 - smoothstep(-aa, aa, box)) * uPlotOpacity * 0.06;
+          ink = clamp(ink + outline + inside, 0.0, 1.0);
+          float paper = uPaperOpacity * fade;
+          vec3 color = mix(uPaper, uLine, ink);
+          gl_FragColor = vec4(color, clamp(paper + ink * fade, 0.0, 1.0) * uOpacity);
+          #include <colorspace_fragment>
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -1,
+      toneMapped: false,
+      uniforms,
+    }),
+  );
+  mesh.name = "reveal-waiting";
+  mesh.position.set(center[0], center[1], z);
+  mesh.renderOrder = 2;
+  mesh.raycast = NO_RAYCAST;
+  mesh.visible = false;
+  return {
+    mesh,
+    update: (f) => {
+      uniforms.uOpacity.value = f.opacity;
+      uniforms.uScan.value = f.scan;
+      uniforms.uPulse.value = f.pulse;
+      uniforms.uPlot.value = [f.plot[0], f.plot[1]];
+      uniforms.uPlotOpacity.value = f.plotOpacity;
+      mesh.visible = f.opacity > 0.002;
+    },
+    dispose: () => {
+      mesh.geometry.dispose();
+      mesh.material.dispose();
+    },
+  };
 }

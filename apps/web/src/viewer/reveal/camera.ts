@@ -1,5 +1,5 @@
-// Camera path of the build reveal: a slow orbit that ends exactly on a given pose (the default
-// exterior view). Pure, model space (Z-up); the viewer converts with modelToWorld.
+// Camera path of the construction: a slow dolly and orbit that ends exactly on a given pose
+// (the default exterior view). Pure, model space (Z-up); the viewer converts with modelToWorld.
 import type { XYZ } from "@/engine/math/coords";
 
 export interface OrbitPose {
@@ -16,7 +16,7 @@ export interface OrbitConfig {
   lift: number;
 }
 
-/** Smooth in and out, with zero speed at both ends. */
+/** Smooth in and out, with zero speed and zero acceleration at both ends. */
 export function easeInOut(x: number): number {
   const t = Math.min(Math.max(x, 0), 1);
   return t * t * t * (t * (6 * t - 15) + 10);
@@ -24,7 +24,8 @@ export function easeInOut(x: number): number {
 
 /**
  * The camera at `progress` (0 = start of the build, 1 = its end): `end` turned back around the
- * target's vertical axis, a little further out and higher, easing into `end` itself at 1.
+ * target's vertical axis, a little further out and higher, easing into `end` itself at 1. The
+ * target never moves, so the whole house stays framed at every moment.
  */
 export function orbitPose(end: OrbitPose, progress: number, cfg: OrbitConfig): OrbitPose {
   const left = 1 - easeInOut(progress);

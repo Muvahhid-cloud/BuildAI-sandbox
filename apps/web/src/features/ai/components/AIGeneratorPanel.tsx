@@ -19,7 +19,7 @@ export interface AIGeneratorPanelProps {
   /** Resume a generation started elsewhere (e.g. from the projects dashboard). */
   initialGenerationId?: string | null;
   onCompleted: (generation: AIGenerationOut) => void;
-  /** The generation being followed while it is still running (null once it ends or is left). */
+  /** The generation being followed, in every state (null: none, or the panel was left). */
   onProgress?: (generation: AIGenerationOut | null) => void;
   onClose?: () => void;
 }
@@ -53,12 +53,12 @@ export function AIGeneratorPanel({
     ]).then(() => onCompleted(data));
   }, [generation.data, projectId, qc, onCompleted]);
 
-  // Report the real backend stage upwards (the waiting cloud in the canvas area follows it).
-  const live = generationId !== null && generation.data && !isTerminal(generation.data);
-  const liveGeneration = live ? generation.data : null;
+  // Report the generation upwards: the canvas follows its real stage, shows the laid-out
+  // model as soon as there is one, and reacts to a failure.
+  const followed = generationId !== null ? (generation.data ?? null) : null;
   useEffect(() => {
-    onProgress?.(liveGeneration ?? null);
-  }, [liveGeneration, onProgress]);
+    onProgress?.(followed);
+  }, [followed, onProgress]);
   useEffect(() => () => onProgress?.(null), [onProgress]);
 
   function run(text: string, options: Partial<GenerationOptions>) {

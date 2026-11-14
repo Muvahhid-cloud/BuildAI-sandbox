@@ -33,20 +33,26 @@ import {
   toast,
 } from "@/components/ui";
 import { materialCache } from "@/engine/materials/material-cache";
-import { AI_STAGES, isTerminal, useAIGeneration } from "@/features/ai/api";
+import { isTerminal, useAIGeneration } from "@/features/ai/api";
 import { AIGeneratorPanel } from "@/features/ai/components/AIGeneratorPanel";
 import { StageList } from "@/features/ai/components/AIGenerationStatus";
 import { GenerationHistory } from "@/features/ai/components/GenerationHistory";
 import { GenerationSummary } from "@/features/ai/components/GenerationSummary";
 import { hasUnsavedEdits, useEditStore } from "@/features/editing/store";
 import { GenerationPanel } from "@/features/generation/components/GenerationPanel";
+import {
+  type LiveCreation,
+  liveFromGeneration,
+  liveFromJob,
+  useLiveCreation,
+} from "@/features/live/live-creation";
 import { ComparePanel } from "@/features/modification/components/ComparePanel";
 import { ModifyPanel } from "@/features/modification/components/ModifyPanel";
 import { projectKeys, useProject } from "@/features/projects/api";
 import { useImportDemo, useVersion, useVersions, versionKeys } from "@/features/versions/api";
 import { ReportPanel } from "@/features/versions/components/ReportPanel";
 import { ApiError } from "@/lib/api/errors";
-import type { Version } from "@/lib/api/schemas";
+import type { Job, Version } from "@/lib/api/schemas";
 import { useBuildingStore } from "@/stores/building-store";
 import { useHighlightStore } from "@/stores/highlight-store";
 import { useRevealStore } from "@/stores/reveal-store";
@@ -54,7 +60,8 @@ import { useProjectStore } from "@/stores/project-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { useViewerStore } from "@/stores/viewer-store";
 
-import { WaitingBlueprint } from "@/viewer/reveal/WaitingBlueprint";
+import { RevealSurface } from "@/viewer/reveal/RevealSurface";
+import { ViewerHost, ViewerSlot } from "@/viewer/ViewerHost";
 
 import { BuildingEditor } from "./BuildingEditor";
 
@@ -109,10 +116,11 @@ export function ProjectEditor({
       onGenerationReleased?.();
     }
   }, [linkedVersion, openId, onGenerationReleased]);
-  // Build reveal (docs/3d-engine.md §25): what the canvas area shows while a design is made,
-  // and which version plays the assembly (or the re-assembly of changed elements) once it is open.
+  // Live creation (docs/3d-engine.md §25): the design that is being made right now, as the
+  // panel that follows it reports it — or the generation opened from the dashboard link.
   const [liveGeneration, setLiveGeneration] = useState<AIGenerationOut | null>(null);
-  const [formRunning, setFormRunning] = useState(false);
+  const [formJob, setFormJob] = useState<Job | null>(null);
+  // After "Apply" in Modify with AI: the version whose changed elements grow again.
   const [pendingReveal, setPendingReveal] = useState<PendingReveal | null>(null);
   // The version-load effect reads the pending reveal without depending on it.
   const pendingRef = useRef<PendingReveal | null>(null);
@@ -121,41 +129,98 @@ export function ProjectEditor({
     pendingRef.current = pendingReveal;
   }, [pendingReveal]);
   const queueReveal = setPendingReveal;
-  // The summary card waits for the build animation to finish (it would cover it).
+  // The summary card and the banner wait for the construction to end (they would cover it).
   const revealing = useRevealStore((s) => s.phase === "assembling" && s.mode === "build");
   const status = useBuildingStore((s) => s.status);
   const scene = useBuildingStore((s) => s.scene);
   const buildError = useBuildingStore((s) => s.error);
 
+  // A generation followed from the dashboard link is live from the moment it is seen running
+  // on this page (state adjusted during render: no effect, no extra commit).
+  const [followedSummary, setFollowedSummary] = useState<string | null>(null);
+  if (summary.data && !isTerminal(summary.data) && followedSummary !== summary.data.id) {
+    setFollowedSummary(summary.data.id);
+  }
+  const source: LiveCreation | null = liveGeneration
+    ? liveFromGeneration(liveGeneration)
+    : formJob
+      ? liveFromJob(formJob)
+      : summary.data && summary.data.id === followedSummary
+        ? liveFromGeneration(summary.data)
+        : null;
+
+  /** Shows a stored version: the model, the camera on the whole building, the edit session. */
+  const openVersion = useCallback(
+    (data: Version, load: boolean) => {
+      if (load) {
+        useBuildingStore.getState().load(data.model);
+        useSelectionStore.getState().select(null);
+        useViewerStore.getState().reset(); // frames the whole building (exterior camera)
+      }
+      const building = useBuildingStore.getState().index?.model.building;
+      useProjectStore.getState().setProject({
+        id: projectId,
+        name: projectNameRef.current ?? building?.name ?? "Project",
+        source: "project",
+        description: building?.description ?? "",
+      });
+      // Plan edits are made on this version (docs/3d-engine.md §20).
+      useEditStore.getState().begin(projectId, data);
+      // The construction is seeded by the model hash: the same model, the same animation.
+      useRevealStore.getState().setSeed(data.model_hash);
+    },
+    [projectId],
+  );
+  const projectNameRef = useRef<string | null>(null);
+  useEffect(() => {
+    projectNameRef.current = project.data?.name ?? null;
+  }, [project.data?.name]);
+  const versionRef = useRef<Version | null>(null);
+
+  // A creation that fails, needs clarification or is left: back to what was open before.
+  const restore = useCallback(() => {
+    const data = versionRef.current;
+    if (data) openVersion(data, true);
+    else useBuildingStore.getState().clear();
+  }, [openVersion]);
+  const live = useLiveCreation(source, restore);
+  const liveRef = useRef(live);
+  useEffect(() => {
+    liveRef.current = live;
+  });
+
   useEffect(() => {
     const data = version.data;
+    versionRef.current = data ?? null;
     if (!data) return;
-    useBuildingStore.getState().load(data.model);
-    const building = useBuildingStore.getState().index?.model.building;
-    useProjectStore.getState().setProject({
-      id: projectId,
-      name: project.data?.name ?? building?.name ?? "Project",
-      source: "project",
-      description: building?.description ?? "",
-    });
-    useSelectionStore.getState().select(null);
-    useViewerStore.getState().reset(); // frames the whole building (exterior camera)
-    // Plan edits are made on this version (docs/3d-engine.md §20).
-    useEditStore.getState().begin(projectId, data);
-    // The reveal's pieces are seeded by the model hash: the same model, the same animation.
     const reveal = useRevealStore.getState();
-    reveal.setSeed(data.model_hash);
+    const creation = liveRef.current;
+    if (creation.active) {
+      // The canvas belongs to the design being created; only its own version takes over.
+      if (creation.versionId() !== data.id) return;
+      if (creation.shownHash() === data.model_hash) {
+        // The house on screen is exactly the saved model: nothing is reloaded, the canvas,
+        // the camera and a running construction simply continue.
+        openVersion(data, false);
+        reveal.dispatch({ type: "saved" });
+      } else {
+        // Saved before the laid-out preview could be shown: build the stored model.
+        useBuildingStore.getState().load(data.model);
+        openVersion(data, false);
+        reveal.play("build");
+      }
+      creation.finish();
+      return;
+    }
+    openVersion(data, true);
     const pending = pendingRef.current;
     if (pending && pending.versionId === data.id && playedRef.current !== pending) {
       playedRef.current = pending; // each queued reveal plays once
-      if (pending.mode === "build") useViewerStore.getState().setViewMode("3d");
-      if (pending.mode === "build" || (pending.ids?.length ?? 0) > 0) {
-        reveal.play(pending.mode, pending.ids);
-      }
-    } else if (pending?.versionId !== data.id && reveal.phase !== "gathering") {
+      if (pending.ids.length > 0) reveal.play("changes", pending.ids);
+    } else if (pending?.versionId !== data.id) {
       reveal.dispatch({ type: "reset" }); // another version: nothing left over from a reveal
     }
-  }, [version.data, projectId, project.data?.name]);
+  }, [version.data, openVersion]);
 
   // Unsaved plan edits live only in this tab: warn before they are lost.
   useEffect(() => {
@@ -205,56 +270,12 @@ export function ProjectEditor({
     setDrawer("none");
   }, []);
 
-  /** A spec-form generation finished: open it and play the build reveal. */
-  const onFormGenerated = useCallback(
-    (id: string) => {
-      queueReveal({ versionId: id, mode: "build" });
-      onGenerated(id);
-    },
-    [onGenerated, queueReveal],
-  );
-
-  const onAICompleted = useCallback(
-    (generation: AIGenerationOut) => {
-      if (generation.version_id) queueReveal({ versionId: generation.version_id, mode: "build" });
-      setChosen(generation.version_id ?? null);
-      setJustGenerated(null);
-      setSummaryId(generation.id);
-      setDrawer("none");
-    },
-    [queueReveal],
-  );
-
-  // A generation followed from the dashboard link finished while this page was open (state
-  // adjusted during render: no effect, no extra commit).
-  const summaryStatus = summary.data?.status;
-  const summaryVersionId = summary.data?.version_id ?? null;
-  const summaryRunning = summaryStatus === "queued" || summaryStatus === "running";
-  const [sawRunning, setSawRunning] = useState(false);
-  if (summaryRunning && !sawRunning) setSawRunning(true);
-  if (sawRunning && summaryStatus !== undefined && !summaryRunning) {
-    setSawRunning(false);
-    if (summaryStatus === "completed" && summaryVersionId) {
-      setPendingReveal({ versionId: summaryVersionId, mode: "build" });
-    }
-  }
-
-  // The waiting blueprint follows the backend's real stage (never a made-up percentage).
-  const followed =
-    liveGeneration ?? (summary.data && !isTerminal(summary.data) ? summary.data : null);
-  const waiting: Waiting | null = followed
-    ? stageOf(followed.stage ?? "")
-    : formRunning
-      ? stageOf("layout")
-      : pendingReveal?.mode === "build" && version.data?.id !== pendingReveal.versionId
-        ? { label: OPENING_LABEL, stageIndex: AI_STAGES.length }
-        : null;
-  const waitingIndex = waiting?.stageIndex ?? null;
-  useEffect(() => {
-    const reveal = useRevealStore.getState();
-    if (waitingIndex !== null) reveal.dispatch({ type: "wait", stageIndex: waitingIndex });
-    else if (reveal.phase === "gathering") reveal.dispatch({ type: "reset" });
-  }, [waitingIndex]);
+  const onAICompleted = useCallback((generation: AIGenerationOut) => {
+    setChosen(generation.version_id ?? null);
+    setJustGenerated(null);
+    setSummaryId(generation.id);
+    setDrawer("none");
+  }, []);
 
   if (project.isPending) return <EditorSkeleton label="Loading project…" />;
   if (project.isError) {
@@ -275,9 +296,12 @@ export function ProjectEditor({
   const running = summary.data !== undefined && !isTerminal(summary.data);
   const showSummary =
     summary.data?.status === "completed" && version.data?.id === summary.data.version_id;
+  // The stage list of a generation nobody else on the page is showing (the dashboard link).
+  const showStages = running && liveGeneration === null && drawer !== "generate";
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <ViewerHost>
+      <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-line bg-surface px-3 py-1.5">
         <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
           <Link
@@ -377,7 +401,7 @@ export function ProjectEditor({
         </div>
       </div>
 
-      {justGenerated && version.data?.id === justGenerated && (
+      {justGenerated && version.data?.id === justGenerated && !revealing && !live.active && (
         <GeneratedBanner
           version={version.data}
           onReport={() => setDrawer("report")}
@@ -390,10 +414,9 @@ export function ProjectEditor({
           <EditorSkeleton label="Loading versions…" />
         ) : !hasVersions ? (
           <StartView
-            waiting={waiting}
+            live={live.active}
             onProgress={setLiveGeneration}
-            onFormRunning={setFormRunning}
-            onFormGenerated={onFormGenerated}
+            onFormProgress={setFormJob}
             projectId={projectId}
             currency={p.currency}
             mode={mode}
@@ -402,6 +425,8 @@ export function ProjectEditor({
             onGenerated={onGenerated}
             onAICompleted={onAICompleted}
           />
+        ) : live.active ? (
+          <LiveCanvas />
         ) : version.isError ? (
           <Centered tone="error">Could not load this version.</Centered>
         ) : status === "error" ? (
@@ -424,13 +449,7 @@ export function ProjectEditor({
           />
         )}
 
-        {hasVersions && waiting && (
-          <div className="absolute inset-0 z-[15] animate-fade-in">
-            <WaitingBlueprint {...waiting} />
-          </div>
-        )}
-
-        {hasVersions && (showSummary || running) && summary.data && !revealing && (
+        {hasVersions && (showSummary || showStages) && summary.data && !revealing && (
           <div className="pointer-events-none absolute right-3 top-3 z-[16] flex justify-end lg:right-[19rem] xl:right-[21rem]">
             <div className="pointer-events-auto">
               {showSummary ? (
@@ -466,8 +485,8 @@ export function ProjectEditor({
                     <GenerationPanel
                       projectId={projectId}
                       initialSpec={spec}
-                      onGenerated={onFormGenerated}
-                      onRunningChange={setFormRunning}
+                      onGenerated={onGenerated}
+                      onProgress={setFormJob}
                       onClose={() => setDrawer("none")}
                     />
                   )}
@@ -478,9 +497,9 @@ export function ProjectEditor({
                 projectId={projectId}
                 versionNumber={version.data?.number ?? null}
                 onSaved={(v) => {
-                  // Applied: the elements the preview marked as changed re-assemble once.
+                  // Applied: the elements the preview marked as changed grow again, once.
                   const ids = [...useHighlightStore.getState().ids];
-                  if (ids.length > 0) queueReveal({ versionId: v.id, mode: "changes", ids });
+                  if (ids.length > 0) queueReveal({ versionId: v.id, ids });
                   void onEditsSaved(v);
                 }}
                 onClose={() => setDrawer("none")}
@@ -509,30 +528,31 @@ export function ProjectEditor({
           </Drawer>
         )}
       </div>
-    </div>
+      </div>
+    </ViewerHost>
   );
 }
 
+/** The elements of a version that grow again once it is open (Modify with AI). */
 interface PendingReveal {
   versionId: string;
-  mode: "build" | "changes";
-  ids?: string[];
+  ids: string[];
 }
 
-interface Waiting {
-  label: string;
-  stageIndex: number;
-}
-
-/** The client's own last step, as in the stage list (AIGenerationStatus). */
-const OPENING_LABEL = "Building the 3D model and opening the project";
-
-/** Label and position of a real backend stage (AI_STAGES). */
-function stageOf(stage: string): Waiting {
-  const index = AI_STAGES.findIndex((s) => s.id === stage);
-  return index < 0
-    ? { label: AI_STAGES[0].label, stageIndex: 0 }
-    : { label: AI_STAGES[index]!.label, stageIndex: index };
+/**
+ * The canvas while a design is created: the same 3D canvas the editor then shows (ViewerHost),
+ * with the waiting sheet, the blueprint and the construction of the laid-out model.
+ */
+function LiveCanvas() {
+  return (
+    <div className="relative min-h-[320px] flex-1 animate-fade-in bg-bg-subtle">
+      <div className="absolute inset-0">
+        <RevealSurface>
+          <ViewerSlot scene={null} />
+        </RevealSurface>
+      </div>
+    </div>
+  );
 }
 
 const DRAWER_LABEL: Record<Exclude<Drawer, "none">, string> = {
@@ -603,10 +623,9 @@ function reportCount(version: Version): number {
 }
 
 function StartView({
-  waiting,
+  live,
   onProgress,
-  onFormRunning,
-  onFormGenerated,
+  onFormProgress,
   projectId,
   currency,
   mode,
@@ -622,11 +641,10 @@ function StartView({
   generationId: string | null;
   onGenerated: (versionId: string) => void;
   onAICompleted: (generation: AIGenerationOut) => void;
-  /** Shown in the canvas area instead of the introduction while a design is being made. */
-  waiting: Waiting | null;
+  /** A design is being created: the canvas takes the place of the introduction. */
+  live: boolean;
   onProgress: (generation: AIGenerationOut | null) => void;
-  onFormRunning: (running: boolean) => void;
-  onFormGenerated: (versionId: string) => void;
+  onFormProgress: (job: Job | null) => void;
 }) {
   const importDemo = useImportDemo(projectId);
   return (
@@ -645,16 +663,14 @@ function StartView({
           ) : (
             <GenerationPanel
               projectId={projectId}
-              onGenerated={onFormGenerated}
-              onRunningChange={onFormRunning}
+              onGenerated={onGenerated}
+              onProgress={onFormProgress}
             />
           )}
         </div>
       </div>
-      {waiting ? (
-        <div className="min-h-[320px] flex-1 animate-fade-in">
-          <WaitingBlueprint {...waiting} />
-        </div>
+      {live ? (
+        <LiveCanvas />
       ) : (
         <StartIntro importDemo={importDemo} onGenerated={onGenerated} />
       )}

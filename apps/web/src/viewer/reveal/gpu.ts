@@ -11,7 +11,6 @@ import {
   Group,
   InstancedBufferAttribute,
   InstancedBufferGeometry,
-  type Material,
   Mesh,
   MeshDepthMaterial,
   type MeshStandardMaterial,

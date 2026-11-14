@@ -19,7 +19,13 @@ import { REVEAL } from "../render-settings";
  * - If a stage fails after the house was shown, the canvas fades out; when the fade is over
  *   the machine is idle again and the caller shows the ground (or the previous version).
  */
-export function RevealSurface({ children, className }: { children: ReactNode; className?: string }) {
+export function RevealSurface({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const building = useRevealStore((s) => s.phase === "assembling" && s.mode === "build");
   const collapsing = useRevealStore((s) => s.phase === "collapsing");

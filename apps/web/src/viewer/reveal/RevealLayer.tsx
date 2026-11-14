@@ -61,7 +61,7 @@ export function RevealLayer({ scene, bounds }: { scene: SceneGraph | null; bound
 
 function Assembly({ scene }: { scene: SceneGraph }) {
   const root = useThree((s) => s.scene);
-  const gl = useThree((s) => s.gl);
+  const get = useThree((s) => s.get);
   const invalidate = useThree((s) => s.invalidate);
   const controls = useThree((s) => s.controls) as unknown as OrbitTarget | null;
   const served = useServedAssets();
@@ -191,6 +191,7 @@ function Assembly({ scene }: { scene: SceneGraph }) {
       }
     }
     // Each stand-in is cut by its own plane (three.js local clipping).
+    const { gl } = get();
     const localClipping = gl.localClippingEnabled;
     gl.localClippingEnabled = true;
     const store = useRevealStore.getState();
@@ -209,7 +210,7 @@ function Assembly({ scene }: { scene: SceneGraph }) {
     };
     // `apply` reads only fx, scene and refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fx, root, gl, invalidate]);
+  }, [fx, root, get, invalidate]);
 
   // A frame frozen at another time (screenshots) is drawn once.
   const frozenAt = useRevealStore((s) => (s.frozen ? s.elapsed : -1));

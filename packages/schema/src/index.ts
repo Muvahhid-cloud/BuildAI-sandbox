@@ -6,7 +6,11 @@ import { z } from "zod";
 import aiGenerationJsonSchema from "../generated/ai-generation.schema.json";
 import buildingModelJsonSchema from "../generated/building-model.schema.json";
 import buildingSpecificationJsonSchema from "../generated/building-specification.schema.json";
-import type { AIGenerationList, AIGenerationOut } from "./generated/ai-generation";
+import type {
+  AIGenerationList,
+  AIGenerationOut,
+  PreviewModelOut,
+} from "./generated/ai-generation";
 import type { BuildingModel } from "./generated/building-model";
 import type { BuildingSpecification } from "./generated/building-specification";
 

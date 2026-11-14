@@ -260,11 +260,6 @@ export function samplePieces(
 /** A piece that is never shown (its item is not scheduled). */
 export const NEVER = 1e9;
 
-export interface PieceMotionConfig {
-  /** Largest time a piece is early at the front (a little irregularity; seconds). */
-  jitter: number;
-}
-
 /**
  * When the growing front of its element reaches each piece (seconds; `NEVER` for an item
  * that is not scheduled). A piece settles onto the front just before that moment and sinks

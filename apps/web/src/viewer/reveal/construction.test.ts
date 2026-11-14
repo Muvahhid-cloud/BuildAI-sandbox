@@ -4,12 +4,7 @@ import { describe, expect, it } from "vitest";
 import { indexModel } from "@/engine/model/model-index";
 import { buildScene } from "@/engine/scene/build-scene";
 import { cameraPose } from "@/engine/scene/camera-presets";
-import {
-  demoIndex,
-  demoModelJson,
-  generatedLModelJson,
-  generatedModelJson,
-} from "@/engine/test-fixtures";
+import { demoIndex, generatedLModelJson, generatedModelJson } from "@/engine/test-fixtures";
 import { parseBuildingModel } from "@/engine/model/parse";
 
 import { REVEAL } from "../render-settings";
@@ -20,10 +15,15 @@ import {
   BUILDING_STAGES,
   type ConstructionStage,
   constructionOrder,
+  frontEase,
+  frontEaseInverse,
+  frontTime,
+  growthAt,
   scheduleConstruction,
   stageOf,
   STOREY_STAGES,
 } from "./order";
+import { pieceScale, pieceState } from "./pieces";
 import { buildRevealPlan } from "./plan";
 
 const generatedIndex = () => parseBuildingModel(generatedModelJson());
@@ -132,6 +132,7 @@ describe("construction schedule", () => {
   const scene = buildScene(generatedIndex());
   const plan = buildRevealPlan(scene, { seed: "model-hash:build", site: { plants: new Set() } });
   const { timings, duration } = plan.schedule;
+  const p = REVEAL.pieces;
 
   it("starts elements in construction order, after the blueprint, with a stagger", () => {
     const starts = plan.steps.map((s) => timings.get(s.id)!.start);
@@ -151,177 +152,300 @@ describe("construction schedule", () => {
     }
   });
 
-  it("lands, shows the real mesh, then removes the pieces — all within the duration", () => {
-    for (const t of timings.values()) {
-      expect(t.landed).toBeCloseTo(
-        t.start + t.spread + REVEAL.schedule.jitter + REVEAL.schedule.rise,
-      );
-      expect(t.shown).toBeCloseTo(t.landed + REVEAL.schedule.fade);
-      expect(t.vanish).toBeGreaterThan(t.landed); // pieces stay until the mesh is nearly opaque
-      expect(t.vanish).toBeLessThan(t.shown);
-      expect(t.end).toBeLessThanOrEqual(duration + 1e-9);
+  it("grows every element from its own base to its own top, for at least the minimum time", () => {
+    for (const step of plan.steps) {
+      const t = timings.get(step.id)!;
+      const parts = scene.byElement.get(step.id);
+      if (parts) {
+        // The extent is the element's real geometry (model z).
+        let min = Infinity;
+        let max = -Infinity;
+        for (const d of parts) {
+          const box = d.geometry.boundingBox!.clone().applyMatrix4(d.matrix);
+          min = Math.min(min, box.min.z);
+          max = Math.max(max, box.max.z);
+        }
+        expect(t.baseZ).toBeCloseTo(min, 6);
+        expect(t.topZ).toBeCloseTo(max, 6);
+      }
+      expect(t.from - t.start).toBeCloseTo(p.settle + p.early); // the first slices settle
+      const grow = t.end - t.from;
+      expect(grow).toBeGreaterThanOrEqual(REVEAL.schedule.minGrow - 1e-9);
+      expect(grow).toBeLessThanOrEqual(REVEAL.schedule.maxGrow + 1e-9);
+    }
+    // Small elements are visibly built too; a storey-high wall takes longer than a window.
+    const of = (stage: ConstructionStage) => {
+      const t = timings.get(plan.steps.find((s) => s.stage === stage)!.id)!;
+      return t.end - t.from;
+    };
+    expect(of("opening")).toBeGreaterThanOrEqual(0.8 - 1e-9);
+    expect(of("furniture")).toBeGreaterThanOrEqual(0.8 - 1e-9);
+    expect(of("exterior_wall")).toBeGreaterThan(of("opening"));
+  });
+
+  it("moves the front bottom to top only, eased at both ends (never linear, never sideways)", () => {
+    const wall = timings.get(plan.steps.find((s) => s.stage === "exterior_wall")!.id)!;
+    expect(growthAt(wall, wall.start)).toBe(0);
+    expect(growthAt(wall, wall.from)).toBe(0);
+    expect(growthAt(wall, wall.end)).toBe(1);
+    expect(growthAt(wall, wall.end + 5)).toBe(1);
+    let previous = 0;
+    for (let k = 0; k <= 1.0001; k += 0.05) {
+      const share = growthAt(wall, wall.from + k * (wall.end - wall.from));
+      expect(share).toBeGreaterThanOrEqual(previous); // the front never goes back down
+      previous = share;
+    }
+    // Slow off the base and onto the top, fastest in the middle.
+    expect(frontEase(0.1)).toBeLessThan(0.1);
+    expect(frontEase(0.9)).toBeGreaterThan(0.9);
+    expect(frontEase(0.5)).toBeCloseTo(0.5);
+    for (const f of [0, 0.2, 0.5, 0.8, 1]) expect(frontEase(frontEaseInverse(f))).toBeCloseTo(f);
+    // The front reaches a height exactly when the growth share says so.
+    const z = wall.baseZ + 0.3 * (wall.topZ - wall.baseZ);
+    expect(growthAt(wall, frontTime(wall, z))).toBeCloseTo(0.3);
+    expect(frontTime(wall, wall.baseZ)).toBeCloseTo(wall.from);
+    expect(frontTime(wall, wall.topZ)).toBeCloseTo(wall.end);
+  });
+
+  it("overlaps: the next element starts before the one before it is complete", () => {
+    const walls = plan.steps.filter((s) => s.stage === "exterior_wall" && s.storey === 0);
+    expect(walls.length).toBeGreaterThan(2);
+    for (let i = 1; i < walls.length; i++) {
+      expect(timings.get(walls[i]!.id)!.start).toBeLessThan(timings.get(walls[i - 1]!.id)!.end);
     }
   });
 
-  it("scales the duration with the model, between 6 and 9 seconds", () => {
-    for (const json of [demoModelJson(), generatedModelJson(), generatedLModelJson()]) {
-      const s = buildScene(parseBuildingModel(json));
-      const d = buildRevealPlan(s, { seed: "x", site: { plants: new Set() } }).schedule.duration;
-      expect(d).toBeGreaterThanOrEqual(6);
-      expect(d).toBeLessThanOrEqual(9);
+  it("lasts 6 to 10 seconds, scaled with the model, and is deterministic", () => {
+    expect(duration).toBeGreaterThanOrEqual(REVEAL.schedule.minDuration - 1e-6);
+    expect(duration).toBeLessThanOrEqual(REVEAL.schedule.maxDuration + 1e-6);
+    expect(REVEAL.schedule.minDuration).toBe(6);
+    expect(REVEAL.schedule.maxDuration).toBe(10);
+    const small = buildRevealPlan(buildScene(demoIndex()), { seed: "x" });
+    const large = buildRevealPlan(buildScene(parseBuildingModel(generatedLModelJson())), {
+      seed: "x",
+    });
+    for (const other of [small, large]) {
+      expect(other.schedule.duration).toBeGreaterThanOrEqual(6 - 1e-6);
+      expect(other.schedule.duration).toBeLessThanOrEqual(10 + 1e-6);
     }
-    // More elements, more time (until the cap).
-    const few = scheduleConstruction(plan.steps.slice(0, 20), new Map(), REVEAL.schedule);
-    const many = scheduleConstruction(plan.steps.slice(0, 90), new Map(), REVEAL.schedule);
-    expect(few.duration).toBeLessThan(many.duration);
-    expect(few.duration).toBeGreaterThanOrEqual(REVEAL.schedule.minDuration);
+    const again = buildRevealPlan(buildScene(generatedIndex()), {
+      seed: "model-hash:build",
+      site: { plants: new Set() },
+    });
+    expect(again.steps).toEqual(plan.steps);
+    expect([...again.schedule.timings]).toEqual([...timings]);
+    expect(again.front).toEqual(plan.front);
+    const cfg = {
+      ...REVEAL.schedule,
+      settle: p.settle + p.early,
+      absorb: p.absorb,
+    };
+    const one = scheduleConstruction(plan.steps.slice(0, 1), new Map(), cfg);
+    expect(one.duration).toBeLessThan(REVEAL.schedule.minDuration); // nothing is stretched
   });
 
-  it("re-assembles only the changed elements, in a short time, without the blueprint lead", () => {
-    const ids = new Set(plan.steps.slice(10, 14).map((s) => s.id));
+  it("grows only the changed elements again, in a short version without the blueprint", () => {
+    const changed = new Set(plan.steps.slice(40, 46).map((s) => s.id));
     const short = buildRevealPlan(scene, {
       seed: "model-hash:changes",
-      include: (id) => ids.has(id),
+      include: (id) => changed.has(id),
       short: true,
     });
-    expect(new Set(short.steps.map((s) => s.id))).toEqual(ids);
-    expect(new Set(short.pieces.ranges.keys())).toEqual(ids);
+    expect(new Set(short.steps.map((s) => s.id))).toEqual(changed);
+    expect(short.schedule.duration).toBeLessThanOrEqual(REVEAL.changes.duration + 1e-6);
     expect(short.schedule.timings.get(short.steps[0]!.id)!.start).toBe(0);
-    expect(short.schedule.duration).toBeLessThanOrEqual(REVEAL.changes.duration + 1e-9);
-    expect(short.schedule.duration).toBeLessThan(duration / 2);
+    for (const key of short.pieces.keys) expect(changed.has(key)).toBe(true);
   });
 });
 
 describe("pieces", () => {
   const scene = buildScene(generatedIndex());
-  const options = {
-    seed: "model-hash:build",
-    site: { plants: new Set<"tree" | "bush">(["tree"]) },
-  };
-  const plan = buildRevealPlan(scene, options);
-  const { pieces, motion } = plan;
+  const plan = buildRevealPlan(scene, { seed: "model-hash:build", site: { plants: new Set() } });
+  const { pieces, front, schedule } = plan;
+  const p = REVEAL.pieces;
+  const keyOf = (i: number) => pieces.keys[pieces.item[i]!]!;
 
-  it("is deterministic for the same model and seed, different for another seed", () => {
-    const again = buildRevealPlan(scene, options);
-    expect(again.pieces.target).toEqual(pieces.target);
-    expect(again.pieces.quat).toEqual(pieces.quat);
-    expect(again.motion.start).toEqual(motion.start);
-    expect(again.motion.time).toEqual(motion.time);
-    const other = buildRevealPlan(scene, { ...options, seed: "other-hash:build" });
+  it("are deterministic for a model hash and differ for another one", () => {
+    const same = buildRevealPlan(buildScene(generatedIndex()), {
+      seed: "model-hash:build",
+      site: { plants: new Set() },
+    }).pieces;
+    expect(same.target).toEqual(pieces.target);
+    expect(same.quat).toEqual(pieces.quat);
+    expect(same.batches).toEqual(pieces.batches);
+    const other = buildRevealPlan(scene, { seed: "other:build", site: { plants: new Set() } });
     expect(other.pieces.target).not.toEqual(pieces.target);
   });
 
-  it("stays within the piece budget and gives every built element pieces", () => {
-    expect(pieces.count).toBeLessThanOrEqual(REVEAL.pieces.maxPieces);
-    expect(REVEAL.pieces.maxPieces).toBeLessThanOrEqual(25_000);
-    expect(pieces.count).toBeGreaterThan(5_000);
-    let total = 0;
+  it("stay within the budget, adapt their density, and give every built element some", () => {
+    expect(pieces.count).toBeGreaterThan(2000);
+    expect(pieces.count).toBeLessThanOrEqual(p.maxPieces);
+    const walls = plan.steps.filter((s) => s.stage === "exterior_wall");
+    for (const w of walls) expect(pieces.counts.get(w.id)!).toBeGreaterThanOrEqual(p.minPerItem);
+    for (const s of plan.steps.filter((x) => x.stage === "opening" || x.stage === "stair")) {
+      expect(pieces.counts.get(s.id) ?? 0).toBeGreaterThanOrEqual(p.minPerItem);
+    }
+    // A tighter budget gives fewer pieces of the same size (never smaller boxes or dots).
+    const tight = buildRevealPlan(scene, { seed: "model-hash:build" });
+    expect(tight.pieces.count).toBeLessThanOrEqual(p.maxPieces);
+  });
+
+  it("are thin flat slices of about 0.36 × 0.22 × 0.035 m, scaled to the element", () => {
+    expect([p.length, p.height, p.thickness]).toEqual([0.36, 0.22, 0.035]);
+    for (let i = 0; i < pieces.count; i++) {
+      const [long, short, thick] = [
+        pieces.scale[i * 3]!,
+        pieces.scale[i * 3 + 1]!,
+        pieces.scale[i * 3 + 2]!,
+      ];
+      expect(long).toBeLessThanOrEqual(p.length);
+      expect(long).toBeGreaterThanOrEqual(p.length * p.minScale * p.joint - 1e-6);
+      expect(long / short).toBeCloseTo(p.length / p.height, 4);
+      expect(thick).toBeLessThan(short / 4); // thin
+    }
+    expect(pieceScale(100, p)).toBe(1); // a wall: full size
+    expect(pieceScale(1, p)).toBe(p.minScale); // a window: smaller slices
+  });
+
+  it("lie flat on the element's surface: thin axis = surface normal, long axis horizontal", () => {
+    const q = new Quaternion();
+    const long = new Vector3();
+    const normal = new Vector3();
+    let vertical = 0;
+    for (let i = 0; i < pieces.count; i++) {
+      q.fromArray(pieces.quat, i * 4);
+      long.set(1, 0, 0).applyQuaternion(q);
+      normal.set(0, 0, 1).applyQuaternion(q);
+      expect(normal.z).toBeGreaterThanOrEqual(-0.5 - 1e-6); // nothing is laid from below
+      if (Math.abs(normal.z) < 0.9) {
+        vertical++;
+        expect(Math.abs(long.z)).toBeLessThan(1e-5); // level courses on walls and roof slopes
+      }
+      expect(Math.abs(long.dot(normal))).toBeLessThan(1e-5);
+    }
+    expect(vertical).toBeGreaterThan(pieces.count / 2);
+    // On the element: every target is inside the element's bounds (plus the slice thickness).
+    for (let i = 0; i < pieces.count; i += 7) {
+      const t = schedule.timings.get(keyOf(i))!;
+      const z = pieces.target[i * 3 + 2]!;
+      expect(z).toBeGreaterThanOrEqual(t.baseZ - p.height);
+      expect(z).toBeLessThanOrEqual(t.topZ + p.height);
+    }
+  });
+
+  it("are drawn in the element's real material: one batch (draw call) per library material", () => {
+    const used = new Set<string>();
     for (const step of plan.steps) {
-      const r = pieces.ranges.get(step.id)!;
-      expect(r.count).toBeGreaterThan(0);
-      expect(r.offset).toBe(total); // pieces are stored in construction order
-      total += r.count;
+      for (const d of scene.byElement.get(step.id) ?? []) d.materials.forEach((m) => used.add(m));
+    }
+    let total = 0;
+    const seen = new Set<string>();
+    for (const batch of pieces.batches) {
+      expect(seen.has(batch.material)).toBe(false);
+      seen.add(batch.material);
+      expect(batch.offset).toBe(total); // contiguous runs
+      total += batch.count;
+      expect(used.has(batch.material) || batch.material.startsWith("site")).toBe(true);
     }
     expect(total).toBe(pieces.count);
-    expect(plan.steps.some((s) => s.id === SITE_KEY)).toBe(true);
-    expect(plan.steps.some((s) => s.id.startsWith("site:tree:"))).toBe(true);
+    expect(pieces.batches.length).toBeLessThan(40);
+    // A wall's slices use that wall's own material keys.
+    const wall = plan.steps.find((s) => s.stage === "exterior_wall")!;
+    const keys = new Set(scene.byElement.get(wall.id)!.flatMap((d) => d.materials));
+    for (const batch of pieces.batches) {
+      for (let i = batch.offset; i < batch.offset + batch.count; i++) {
+        if (keyOf(i) === wall.id) expect(keys.has(batch.material)).toBe(true);
+      }
+    }
   });
 
-  it("sizes pieces for their element (0.12–0.2 m) and lays them on its surfaces", () => {
+  it("exist only at the growing front: none before or after their element grows", () => {
+    const motion = { ...p };
+    for (let i = 0; i < pieces.count; i += 3) {
+      const t = schedule.timings.get(keyOf(i))!;
+      const at = front[i]!;
+      const seed = pieces.seed[i]!;
+      // The front reaches the piece while its element grows …
+      expect(at).toBeGreaterThanOrEqual(t.from - 1e-4);
+      expect(at).toBeLessThanOrEqual(t.end + 1e-4);
+      expect(at).toBeCloseTo(frontTime(t, pieces.target[i * 3 + 2]!), 4);
+      // … and the piece is there only around that moment.
+      expect(pieceState(at, seed, t.start - 0.01, motion).visible).toBe(false);
+      expect(pieceState(at, seed, at - p.settle - p.early - 0.01, motion).visible).toBe(false);
+      expect(pieceState(at, seed, at - 0.01, motion).visible).toBe(true);
+      expect(pieceState(at, seed, at + p.absorb + 0.001, motion).visible).toBe(false);
+      expect(pieceState(at, seed, t.end + p.absorb + 0.001, motion).size).toBe(0);
+    }
+    // Lower slices of an element are reached first: the front rises.
+    const wall = plan.steps.find((s) => s.stage === "exterior_wall")!;
+    const own = [...Array(pieces.count).keys()].filter((i) => keyOf(i) === wall.id);
+    own.sort((a, b) => pieces.target[a * 3 + 2]! - pieces.target[b * 3 + 2]!);
+    for (let k = 1; k < own.length; k++) {
+      expect(front[own[k]!]!).toBeGreaterThanOrEqual(front[own[k - 1]!]! - 1e-6);
+    }
+    // At any moment only a small share of all pieces is on screen.
+    for (const elapsed of [2, 3.5, 5, 6.5]) {
+      let visible = 0;
+      for (let i = 0; i < pieces.count; i++) {
+        if (pieceState(front[i]!, pieces.seed[i]!, elapsed, motion).visible) visible++;
+      }
+      expect(visible).toBeLessThan(pieces.count * 0.35);
+    }
+  });
+
+  it("settle from about half a meter in about 0.3 s, ease out, and press the last centimeters", () => {
+    expect(p.approach).toBeCloseTo(0.5);
+    expect(p.settle).toBeCloseTo(0.3);
+    expect(p.settleDrop).toBeGreaterThanOrEqual(0.02);
+    expect(p.settleDrop).toBeLessThanOrEqual(0.03);
+    const motion = { ...p };
+    const at = 5;
+    const offset = (elapsed: number) => pieceState(at, 0, elapsed, motion).offset;
+    expect(offset(at - p.settle)).toBeCloseTo(p.approach + p.settleDrop);
+    expect(offset(at)).toBe(0); // exactly in place when the front arrives
+    let previous = Infinity;
+    const steps: number[] = [];
+    for (let k = 0; k <= 1.0001; k += 0.1) {
+      const d = offset(at - p.settle + k * p.settle);
+      expect(d).toBeLessThanOrEqual(previous + 1e-9); // never away from its place
+      if (previous !== Infinity) steps.push(previous - d);
+      previous = d;
+    }
+    expect(steps[0]!).toBeGreaterThan(steps[5]! * 2); // ease-out: fast first, slow at the end
+    // It sinks into the surface as the front passes — no pop.
+    expect(pieceState(at, 0, at + p.absorb / 2, motion).size).toBeGreaterThan(0);
+    expect(pieceState(at, 0, at + p.absorb / 2, motion).size).toBeLessThan(1);
+  });
+
+  it("gives glTF furniture, plants and flat top faces no pieces", () => {
+    const served = buildRevealPlan(scene, {
+      seed: "model-hash:build",
+      site: { plants: new Set(["tree"]) },
+      modelServed: () => true,
+    });
+    const furniture = served.steps.filter((s) => s.stage === "furniture");
+    expect(furniture.length).toBeGreaterThan(0);
+    let withModel = 0;
+    for (const s of furniture) {
+      if (!served.objects.has(s.id)) continue;
+      withModel++;
+      expect(served.pieces.counts.has(s.id)).toBe(false);
+      expect(served.schedule.timings.has(s.id)).toBe(true); // still grows, from its model
+    }
+    expect(withModel).toBeGreaterThan(0);
+    expect(served.objects.has(SITE_KEY)).toBe(true);
+    const tree = served.steps.find((s) => s.id.startsWith("site:tree"));
+    expect(tree && served.pieces.counts.has(tree.id)).toBe(false);
+    // Room floors are flat: the front reaches them all at once, so no slices flash on them.
     const q = new Quaternion();
     const normal = new Vector3();
-    const along = new Vector3();
-    for (const step of plan.steps) {
-      const r = pieces.ranges.get(step.id)!;
-      expect(r.edge).toBeGreaterThanOrEqual(0.12);
-      expect(r.edge).toBeLessThanOrEqual(0.2);
-      const el = scene.index.elementsById.get(step.id);
-      for (let i = r.offset; i < r.offset + r.count; i++) {
-        expect(pieces.scale[i * 3]!).toBeCloseTo(r.edge * REVEAL.pieces.joint, 5);
-        if (el?.type !== "wall") continue;
-        // On a wall every piece is square to it: its normal is horizontal (faces, ends) or
-        // vertical (top, bottom), and on the faces it runs level, like a brick course.
-        q.fromArray(pieces.quat, i * 4);
-        normal.set(0, 0, 1).applyQuaternion(q);
-        along.set(1, 0, 0).applyQuaternion(q);
-        const flat = Math.abs(normal.z) < 1e-3;
-        expect(flat || Math.abs(Math.abs(normal.z) - 1) < 1e-3).toBe(true);
-        if (flat) expect(Math.abs(along.z)).toBeLessThan(1e-3);
-      }
+    for (let i = 0; i < pieces.count; i++) {
+      q.fromArray(pieces.quat, i * 4);
+      normal.set(0, 0, 1).applyQuaternion(q);
+      if (normal.z < 0.9) continue;
+      const t = schedule.timings.get(keyOf(i))!;
+      expect(pieces.target[i * 3 + 2]!).toBeLessThan(t.topZ); // not on the element's top face
     }
-    const big = pieces.ranges.get(plan.steps.find((s) => s.stage === "slab")!.id)!;
-    const small = pieces.ranges.get(plan.steps.find((s) => s.stage === "furniture")!.id)!;
-    expect(big.edge).toBeGreaterThan(small.edge);
-  });
-
-  it("keeps targets on the element (within one piece of its bounds)", () => {
-    for (const step of plan.steps) {
-      const parts = scene.byElement.get(step.id);
-      if (!parts) continue;
-      const r = pieces.ranges.get(step.id)!;
-      const box = parts
-        .map((d) => d.geometry.boundingBox!.clone().applyMatrix4(d.matrix))
-        .reduce((a, b) => a.union(b))
-        .expandByScalar(r.edge);
-      for (let i = r.offset; i < r.offset + r.count; i++) {
-        expect(box.containsPoint(new Vector3().fromArray(pieces.target, i * 3))).toBe(true);
-      }
-    }
-  });
-
-  it("starts every piece at the base of its own element, directly under its target", () => {
-    for (const step of plan.steps) {
-      const r = pieces.ranges.get(step.id)!;
-      let lowest = Infinity;
-      for (let i = r.offset; i < r.offset + r.count; i++) {
-        const dx = motion.start[i * 3]! - pieces.target[i * 3]!;
-        const dy = motion.start[i * 3 + 1]! - pieces.target[i * 3 + 1]!;
-        expect(Math.hypot(dx, dy)).toBeLessThanOrEqual(0.15);
-        expect(motion.start[i * 3 + 2]!).toBeCloseTo(r.baseZ, 5); // the element's base
-        expect(motion.start[i * 3 + 2]!).toBeLessThanOrEqual(pieces.target[i * 3 + 2]! + 1e-6);
-        lowest = Math.min(lowest, pieces.target[i * 3 + 2]!);
-      }
-      expect(r.baseZ).toBeCloseTo(lowest, 5);
-    }
-    expect(REVEAL.pieces.startJitter).toBeLessThanOrEqual(0.15);
-  });
-
-  it("lands the bottom of an element first, and every piece inside the element's window", () => {
-    const { rise, jitter } = REVEAL.schedule;
-    for (const step of plan.steps) {
-      const r = pieces.ranges.get(step.id)!;
-      const t = plan.schedule.timings.get(step.id)!;
-      const order = Array.from({ length: r.count }, (_, k) => r.offset + k).sort(
-        (a, b) => pieces.target[a * 3 + 2]! - pieces.target[b * 3 + 2]!,
-      );
-      let latestBelow = -Infinity;
-      for (const i of order) {
-        const [depart, arrive, vanish] = motion.time.subarray(i * 3, i * 3 + 3);
-        expect(arrive! - depart!).toBeCloseTo(rise, 5);
-        expect(depart!).toBeGreaterThanOrEqual(t.start - 1e-6);
-        expect(arrive!).toBeLessThanOrEqual(t.landed + 1e-5);
-        expect(vanish!).toBeCloseTo(t.vanish, 5);
-        // A higher piece never lands earlier than a lower one by more than the small jitter.
-        expect(arrive!).toBeGreaterThanOrEqual(latestBelow - jitter - 1e-5);
-        latestBelow = Math.max(latestBelow, arrive!);
-      }
-      if (r.topZ - r.baseZ > 1) {
-        const first = motion.time[order[0]! * 3 + 1]!;
-        const last = motion.time[order[order.length - 1]! * 3 + 1]!;
-        expect(last - first).toBeGreaterThan(jitter); // the top really lands later
-      }
-    }
-  });
-
-  it("gives landed pieces the element's library color", () => {
-    const wall = plan.steps.find((s) => s.stage === "exterior_wall")!;
-    const r = pieces.ranges.get(wall.id)!;
-    const colors = new Set<string>();
-    for (let i = r.offset; i < r.offset + r.count; i++) {
-      colors.add([...pieces.color.subarray(i * 3, i * 3 + 3)].map((c) => c.toFixed(3)).join());
-    }
-    expect(colors.size).toBeGreaterThanOrEqual(2); // facade finish and interior plaster
-    for (const c of pieces.color) expect(c >= 0 && c <= 1).toBe(true);
   });
 });
 
@@ -356,6 +480,8 @@ describe("blueprint", () => {
     expect(blueprintFrame(0, 8, t)).toMatchObject({ progress: 0, sheet: 0 });
     expect(blueprintFrame(t.draw / 2, 8, t).progress).toBeCloseTo(0.5);
     expect(blueprintFrame(t.draw, 8, t)).toMatchObject({ progress: 1, lines: 1, sheet: 1 });
+    expect(t.line).toBe("#4f4ee0"); // thin accent-blue lines
+    expect(t.lineWidth).toBeLessThanOrEqual(0.06);
     expect(blueprintFrame(t.draw + t.settle, 8, t).lines).toBeCloseTo(t.trace);
     expect(blueprintFrame(4, 8, t).lines).toBeCloseTo(t.trace);
     expect(blueprintFrame(8, 8, t)).toMatchObject({ lines: 0, sheet: 0 });
@@ -408,9 +534,10 @@ describe("gate", () => {
     const other = new Mesh(); // ground, lights, helpers: no key
     root.add(wall, model, other);
 
-    const models = new Set<string>();
-    gateScene(root, (key) => key === "chair-1", models);
-    expect(models).toEqual(new Set(["chair-1"]));
+    const tagged = new Map<string, unknown>();
+    gateScene(root, (key) => key === "chair-1", tagged as never);
+    expect([...tagged.keys()]).toEqual(["chair-1"]);
+    expect(tagged.get("chair-1")).toBe(model); // the object the element is grown from
     expect(leg.layers.test(other.layers)).toBe(false); // hidden through its tagged ancestor
     expect(leg.layers.isEnabled(HIDDEN_LAYER)).toBe(true);
     expect(wall.layers.mask).toBe(1);

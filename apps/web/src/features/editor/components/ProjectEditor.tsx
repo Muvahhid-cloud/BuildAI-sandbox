@@ -149,6 +149,12 @@ export function ProjectEditor({
         ? liveFromGeneration(summary.data)
         : null;
 
+  const projectNameRef = useRef<string | null>(null);
+  useEffect(() => {
+    projectNameRef.current = project.data?.name ?? null;
+  }, [project.data?.name]);
+  const versionRef = useRef<Version | null>(null);
+
   /** Shows a stored version: the model, the camera on the whole building, the edit session. */
   const openVersion = useCallback(
     (data: Version, load: boolean) => {
@@ -171,11 +177,6 @@ export function ProjectEditor({
     },
     [projectId],
   );
-  const projectNameRef = useRef<string | null>(null);
-  useEffect(() => {
-    projectNameRef.current = project.data?.name ?? null;
-  }, [project.data?.name]);
-  const versionRef = useRef<Version | null>(null);
 
   // A creation that fails, needs clarification or is left: back to what was open before.
   const restore = useCallback(() => {
@@ -302,232 +303,232 @@ export function ProjectEditor({
   return (
     <ViewerHost>
       <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-line bg-surface px-3 py-1.5">
-        <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
-          <Link
-            href="/projects"
-            className="rounded-md px-1.5 py-1 text-fg-subtle transition-colors hover:bg-neutral-100 hover:text-fg dark:hover:bg-neutral-800"
-          >
-            Projects
-          </Link>
-          <ChevronRight size={14} aria-hidden className="shrink-0 text-fg-subtle" />
-          <h1 className="truncate px-1 font-semibold tracking-tight">{p.name}</h1>
-        </nav>
-        {hasVersions && (
-          <span className="relative inline-flex items-center">
-            <GitBranch
-              size={13}
-              aria-hidden
-              className="pointer-events-none absolute left-2 text-fg-subtle"
-            />
-            <Select
-              aria-label="Version"
-              className="h-7 max-w-[16rem] truncate pl-7 text-xs font-medium"
-              value={versionId ?? ""}
-              onChange={(e) => {
-                if (!confirmLeavingEdits()) return;
-                setChosen(e.target.value);
-                setJustGenerated(null);
-              }}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-line bg-surface px-3 py-1.5">
+          <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
+            <Link
+              href="/projects"
+              className="rounded-md px-1.5 py-1 text-fg-subtle transition-colors hover:bg-neutral-100 hover:text-fg dark:hover:bg-neutral-800"
             >
-              {versions.data?.map((v) => (
-                <option key={v.id} value={v.id}>
-                  v{v.number} · {v.label}
-                  {v.id === p.current_version_id ? " (latest)" : ""}
-                </option>
-              ))}
-            </Select>
-          </span>
-        )}
-        <span className="hidden text-xs text-fg-subtle md:inline">
-          {p.region_code} · {p.currency} · rules {p.rules_profile_id}
-        </span>
-        <div className="ml-auto flex flex-wrap items-center gap-1">
-          {version.data && (
-            <DrawerButton
-              drawer={drawer}
-              value="modify"
-              onToggle={setDrawer}
-              icon={<Wand2 size={14} />}
-            >
-              Modify with AI
-            </DrawerButton>
-          )}
-          {(versions.data?.length ?? 0) > 1 && (
-            <DrawerButton
-              drawer={drawer}
-              value="compare"
-              onToggle={setDrawer}
-              icon={<GitCompareArrows size={14} />}
-            >
-              Compare
-            </DrawerButton>
-          )}
-          <DrawerButton
-            drawer={drawer}
-            value="history"
-            onToggle={setDrawer}
-            icon={<History size={14} />}
-          >
-            History
-          </DrawerButton>
-          {version.data && (
-            <DrawerButton
-              drawer={drawer}
-              value="report"
-              onToggle={setDrawer}
-              icon={<ClipboardList size={14} />}
-            >
-              Report
-              {reportCount(version.data) > 0 && (
-                <Badge tone="warning" className="ml-0.5 px-1.5 py-0">
-                  {reportCount(version.data)}
-                </Badge>
-              )}
-            </DrawerButton>
-          )}
+              Projects
+            </Link>
+            <ChevronRight size={14} aria-hidden className="shrink-0 text-fg-subtle" />
+            <h1 className="truncate px-1 font-semibold tracking-tight">{p.name}</h1>
+          </nav>
           {hasVersions && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setDrawer(drawer === "generate" ? "none" : "generate")}
-              aria-pressed={drawer === "generate"}
-              icon={<Plus size={14} />}
-              className="ml-1"
+            <span className="relative inline-flex items-center">
+              <GitBranch
+                size={13}
+                aria-hidden
+                className="pointer-events-none absolute left-2 text-fg-subtle"
+              />
+              <Select
+                aria-label="Version"
+                className="h-7 max-w-[16rem] truncate pl-7 text-xs font-medium"
+                value={versionId ?? ""}
+                onChange={(e) => {
+                  if (!confirmLeavingEdits()) return;
+                  setChosen(e.target.value);
+                  setJustGenerated(null);
+                }}
+              >
+                {versions.data?.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    v{v.number} · {v.label}
+                    {v.id === p.current_version_id ? " (latest)" : ""}
+                  </option>
+                ))}
+              </Select>
+            </span>
+          )}
+          <span className="hidden text-xs text-fg-subtle md:inline">
+            {p.region_code} · {p.currency} · rules {p.rules_profile_id}
+          </span>
+          <div className="ml-auto flex flex-wrap items-center gap-1">
+            {version.data && (
+              <DrawerButton
+                drawer={drawer}
+                value="modify"
+                onToggle={setDrawer}
+                icon={<Wand2 size={14} />}
+              >
+                Modify with AI
+              </DrawerButton>
+            )}
+            {(versions.data?.length ?? 0) > 1 && (
+              <DrawerButton
+                drawer={drawer}
+                value="compare"
+                onToggle={setDrawer}
+                icon={<GitCompareArrows size={14} />}
+              >
+                Compare
+              </DrawerButton>
+            )}
+            <DrawerButton
+              drawer={drawer}
+              value="history"
+              onToggle={setDrawer}
+              icon={<History size={14} />}
             >
-              New design
-            </Button>
+              History
+            </DrawerButton>
+            {version.data && (
+              <DrawerButton
+                drawer={drawer}
+                value="report"
+                onToggle={setDrawer}
+                icon={<ClipboardList size={14} />}
+              >
+                Report
+                {reportCount(version.data) > 0 && (
+                  <Badge tone="warning" className="ml-0.5 px-1.5 py-0">
+                    {reportCount(version.data)}
+                  </Badge>
+                )}
+              </DrawerButton>
+            )}
+            {hasVersions && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setDrawer(drawer === "generate" ? "none" : "generate")}
+                aria-pressed={drawer === "generate"}
+                icon={<Plus size={14} />}
+                className="ml-1"
+              >
+                New design
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {justGenerated && version.data?.id === justGenerated && !revealing && !live.active && (
+          <GeneratedBanner
+            version={version.data}
+            onReport={() => setDrawer("report")}
+            onDismiss={() => setJustGenerated(null)}
+          />
+        )}
+
+        <div data-drawer-host className="relative flex min-h-0 flex-1 flex-col">
+          {versions.isPending ? (
+            <EditorSkeleton label="Loading versions…" />
+          ) : !hasVersions ? (
+            <StartView
+              live={live.active}
+              onProgress={setLiveGeneration}
+              onFormProgress={setFormJob}
+              projectId={projectId}
+              currency={p.currency}
+              mode={mode}
+              onMode={setMode}
+              generationId={summaryId}
+              onGenerated={onGenerated}
+              onAICompleted={onAICompleted}
+            />
+          ) : live.active ? (
+            <LiveCanvas />
+          ) : version.isError ? (
+            <Centered tone="error">Could not load this version.</Centered>
+          ) : status === "error" ? (
+            <Centered tone="error">
+              <span className="block font-medium">The building model is invalid</span>
+              <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap text-xs">
+                {buildError}
+              </pre>
+            </Centered>
+          ) : !scene || !version.data ? (
+            <EditorSkeleton label="Building the 3D model…" />
+          ) : (
+            <BuildingEditor
+              scene={scene}
+              onEditsSaved={(v) => void onEditsSaved(v)}
+              drawing={{
+                projectName: p.name,
+                versionLabel: drawingVersionLabel(version.data, unsavedCount),
+              }}
+            />
+          )}
+
+          {hasVersions && (showSummary || showStages) && summary.data && !revealing && (
+            <div className="pointer-events-none absolute right-3 top-3 z-[16] flex justify-end lg:right-[19rem] xl:right-[21rem]">
+              <div className="pointer-events-auto">
+                {showSummary ? (
+                  <GenerationSummary
+                    generation={summary.data}
+                    onDismiss={() => setSummaryId(null)}
+                    onOpenReport={() => setDrawer("report")}
+                  />
+                ) : (
+                  <div className="glass w-[min(92vw,360px)] animate-rise-in rounded-2xl p-4 shadow-lg">
+                    <StageList generation={summary.data} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {drawer !== "none" && (
+            <Drawer key={drawer} label={DRAWER_LABEL[drawer]}>
+              {drawer === "generate" ? (
+                <>
+                  <ModeTabs mode={mode} onMode={setMode} />
+                  <div className="min-h-0 flex-1">
+                    {mode === "ai" ? (
+                      <AIGeneratorPanel
+                        projectId={projectId}
+                        currency={p.currency}
+                        onCompleted={onAICompleted}
+                        onProgress={setLiveGeneration}
+                        onClose={() => setDrawer("none")}
+                      />
+                    ) : (
+                      <GenerationPanel
+                        projectId={projectId}
+                        initialSpec={spec}
+                        onGenerated={onGenerated}
+                        onProgress={setFormJob}
+                        onClose={() => setDrawer("none")}
+                      />
+                    )}
+                  </div>
+                </>
+              ) : drawer === "modify" ? (
+                <ModifyPanel
+                  projectId={projectId}
+                  versionNumber={version.data?.number ?? null}
+                  onSaved={(v) => {
+                    // Applied: the elements the preview marked as changed grow again, once.
+                    const ids = [...useHighlightStore.getState().ids];
+                    if (ids.length > 0) queueReveal({ versionId: v.id, ids });
+                    void onEditsSaved(v);
+                  }}
+                  onClose={() => setDrawer("none")}
+                />
+              ) : drawer === "compare" ? (
+                <ComparePanel
+                  projectId={projectId}
+                  versions={versions.data ?? []}
+                  shownVersionId={version.data?.id ?? null}
+                  onClose={() => setDrawer("none")}
+                />
+              ) : drawer === "history" ? (
+                <GenerationHistory
+                  projectId={projectId}
+                  onClose={() => setDrawer("none")}
+                  onOpen={(g) => {
+                    if (!confirmLeavingEdits()) return;
+                    setChosen(g.version_id);
+                    setSummaryId(g.id);
+                    setDrawer("none");
+                  }}
+                />
+              ) : version.data ? (
+                <ReportPanel version={version.data} onClose={() => setDrawer("none")} />
+              ) : null}
+            </Drawer>
           )}
         </div>
-      </div>
-
-      {justGenerated && version.data?.id === justGenerated && !revealing && !live.active && (
-        <GeneratedBanner
-          version={version.data}
-          onReport={() => setDrawer("report")}
-          onDismiss={() => setJustGenerated(null)}
-        />
-      )}
-
-      <div data-drawer-host className="relative flex min-h-0 flex-1 flex-col">
-        {versions.isPending ? (
-          <EditorSkeleton label="Loading versions…" />
-        ) : !hasVersions ? (
-          <StartView
-            live={live.active}
-            onProgress={setLiveGeneration}
-            onFormProgress={setFormJob}
-            projectId={projectId}
-            currency={p.currency}
-            mode={mode}
-            onMode={setMode}
-            generationId={summaryId}
-            onGenerated={onGenerated}
-            onAICompleted={onAICompleted}
-          />
-        ) : live.active ? (
-          <LiveCanvas />
-        ) : version.isError ? (
-          <Centered tone="error">Could not load this version.</Centered>
-        ) : status === "error" ? (
-          <Centered tone="error">
-            <span className="block font-medium">The building model is invalid</span>
-            <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap text-xs">
-              {buildError}
-            </pre>
-          </Centered>
-        ) : !scene || !version.data ? (
-          <EditorSkeleton label="Building the 3D model…" />
-        ) : (
-          <BuildingEditor
-            scene={scene}
-            onEditsSaved={(v) => void onEditsSaved(v)}
-            drawing={{
-              projectName: p.name,
-              versionLabel: drawingVersionLabel(version.data, unsavedCount),
-            }}
-          />
-        )}
-
-        {hasVersions && (showSummary || showStages) && summary.data && !revealing && (
-          <div className="pointer-events-none absolute right-3 top-3 z-[16] flex justify-end lg:right-[19rem] xl:right-[21rem]">
-            <div className="pointer-events-auto">
-              {showSummary ? (
-                <GenerationSummary
-                  generation={summary.data}
-                  onDismiss={() => setSummaryId(null)}
-                  onOpenReport={() => setDrawer("report")}
-                />
-              ) : (
-                <div className="glass w-[min(92vw,360px)] animate-rise-in rounded-2xl p-4 shadow-lg">
-                  <StageList generation={summary.data} />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {drawer !== "none" && (
-          <Drawer key={drawer} label={DRAWER_LABEL[drawer]}>
-            {drawer === "generate" ? (
-              <>
-                <ModeTabs mode={mode} onMode={setMode} />
-                <div className="min-h-0 flex-1">
-                  {mode === "ai" ? (
-                    <AIGeneratorPanel
-                      projectId={projectId}
-                      currency={p.currency}
-                      onCompleted={onAICompleted}
-                      onProgress={setLiveGeneration}
-                      onClose={() => setDrawer("none")}
-                    />
-                  ) : (
-                    <GenerationPanel
-                      projectId={projectId}
-                      initialSpec={spec}
-                      onGenerated={onGenerated}
-                      onProgress={setFormJob}
-                      onClose={() => setDrawer("none")}
-                    />
-                  )}
-                </div>
-              </>
-            ) : drawer === "modify" ? (
-              <ModifyPanel
-                projectId={projectId}
-                versionNumber={version.data?.number ?? null}
-                onSaved={(v) => {
-                  // Applied: the elements the preview marked as changed grow again, once.
-                  const ids = [...useHighlightStore.getState().ids];
-                  if (ids.length > 0) queueReveal({ versionId: v.id, ids });
-                  void onEditsSaved(v);
-                }}
-                onClose={() => setDrawer("none")}
-              />
-            ) : drawer === "compare" ? (
-              <ComparePanel
-                projectId={projectId}
-                versions={versions.data ?? []}
-                shownVersionId={version.data?.id ?? null}
-                onClose={() => setDrawer("none")}
-              />
-            ) : drawer === "history" ? (
-              <GenerationHistory
-                projectId={projectId}
-                onClose={() => setDrawer("none")}
-                onOpen={(g) => {
-                  if (!confirmLeavingEdits()) return;
-                  setChosen(g.version_id);
-                  setSummaryId(g.id);
-                  setDrawer("none");
-                }}
-              />
-            ) : version.data ? (
-              <ReportPanel version={version.data} onClose={() => setDrawer("none")} />
-            ) : null}
-          </Drawer>
-        )}
-      </div>
       </div>
     </ViewerHost>
   );
@@ -669,11 +670,7 @@ function StartView({
           )}
         </div>
       </div>
-      {live ? (
-        <LiveCanvas />
-      ) : (
-        <StartIntro importDemo={importDemo} onGenerated={onGenerated} />
-      )}
+      {live ? <LiveCanvas /> : <StartIntro importDemo={importDemo} onGenerated={onGenerated} />}
     </div>
   );
 }

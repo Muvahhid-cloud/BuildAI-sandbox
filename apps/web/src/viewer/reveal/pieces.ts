@@ -21,6 +21,12 @@ export interface PieceItem {
   parts: readonly PiecePart[];
   /** Relative piece density (1 = full share; less for small details and hidden layers). */
   density?: number;
+  /**
+   * Lay pieces on flat upward faces too. Off by default: the front reaches a floor, a slab top
+   * or a roof deck all at once, so pieces there would only flash (the sides carry them). On for
+   * stairs, whose treads are reached one after the other.
+   */
+  flatTops?: boolean;
 }
 
 export interface PieceConfig {
@@ -73,11 +79,6 @@ export interface PieceTargets {
 const DOWN = -0.5;
 /** Normals with |z| above this are floors, slab tops and flat roofs. */
 const FLAT = 0.9;
-/**
- * A flat face this close to the element's top is reached by the front all at once, at the
- * very end: pieces there would only flash, so it gets none (the element's sides carry them).
- */
-const TOP_FACE = 0.02;
 
 /** Size factor of an item's slices for its surface area. */
 export function pieceScale(area: number, cfg: PieceConfig): number {
@@ -112,8 +113,6 @@ export function samplePieces(
     const size = pieceScale(probe.area, cfg);
     const cell = cfg.length * size * cfg.height * size;
     const { corners, cumulative } = probe.triangles;
-    let top = -Infinity;
-    for (let i = 2; i < corners.length; i += 3) top = Math.max(top, corners[i]!);
     let laid = 0; // area that takes pieces
     for (let i = 0; i < cumulative.length; i++) {
       const area = cumulative[i]! - (i > 0 ? cumulative[i - 1]! : 0);
@@ -124,12 +123,12 @@ export function samplePieces(
       const vy = corners[o + 7]! - corners[o + 1]!;
       if (!(area > 0)) continue;
       const nz = (ux * vy - uy * vx) / (2 * area);
-      if (nz < DOWN || (nz > FLAT && corners[o + 2]! > top - TOP_FACE)) continue;
+      if (nz < DOWN || (nz > FLAT && !item.flatTops)) continue;
       laid += area;
     }
     const cells = laid / cell;
     const share = probe.area > 0 ? laid / probe.area : 0;
-    return { item, area: probe.area, size, share, cells, top, full: cells * (item.density ?? 1) };
+    return { item, area: probe.area, size, share, cells, full: cells * (item.density ?? 1) };
   });
   const full = drafts.reduce((s, d) => s + d.full, 0);
   const budget = Math.max(cfg.maxPieces - cfg.minPerItem * items.length, 0);
@@ -179,7 +178,7 @@ export function samplePieces(
         corners[o + 8]! - corners[o + 2]!,
       );
       n.crossVectors(t, b).normalize();
-      if (n.z < DOWN || (n.z > FLAT && corners[o + 2]! > d.top - TOP_FACE)) continue;
+      if (n.z < DOWN || (n.z > FLAT && !d.item.flatTops)) continue;
       const part = d.item.parts[source[tri]!]!;
       if (Math.abs(n.z) > FLAT) {
         // A flat surface: the long axis runs with the element (its own x axis in the plane).

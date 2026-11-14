@@ -70,9 +70,9 @@ export const REVEAL = {
     maxDuration: 10,
     secondsPerElement: 0.02,
     /** An element grows bottom to top in height × growPerMeter seconds, within [min, max]. */
-    growPerMeter: 0.42,
+    growPerMeter: 0.6,
     minGrow: 0.8,
-    maxGrow: 1.7,
+    maxGrow: 2.2,
     /** Relative time between the start of an element of each stage and the next element. */
     stageWeight: {
       slab: 3,
@@ -101,7 +101,7 @@ export const REVEAL = {
     interior_wall: 0.8,
     opening: 0.5,
     stair: 0.8,
-    roof: 0.85,
+    roof: 0.45,
     canopy: 0.8,
     balcony: 0.7,
     furniture: 0.5,

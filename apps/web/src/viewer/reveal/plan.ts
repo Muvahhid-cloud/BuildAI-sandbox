@@ -78,6 +78,7 @@ export function buildRevealPlan(scene: SceneGraph, options: RevealPlanOptions): 
     items.set(id, {
       key: id,
       density: el ? REVEAL.stageDensity[stageOf(el)] : 1,
+      flatTops: el?.type === "stair",
       parts: parts.map((d) => ({ geometry: d.geometry, matrix: d.matrix, materials: d.materials })),
     });
   }

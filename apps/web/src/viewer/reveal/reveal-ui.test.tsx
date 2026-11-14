@@ -1,9 +1,11 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import {
   BackSide,
+  EqualStencilFunc,
   Group,
   type Material,
   Mesh,
+  type MeshBasicMaterial,
   MeshStandardMaterial,
   Raycaster,
   Vector3,
@@ -204,8 +206,12 @@ describe("growing stand-ins (growth.ts)", () => {
   it("closes the cut: a back-face section in the material's colour, never pickable", () => {
     const growth = createGrowth(parts);
     const meshes = growth.object.children as Mesh[];
-    expect(meshes.length).toBe(parts.length * 2);
-    const cap = meshes[1]!;
+    expect(meshes.length).toBe(parts.length * 3); // body, mask, section
+    const mask = meshes[1]!.material as MeshBasicMaterial;
+    expect(mask.colorWrite).toBe(false);
+    expect(mask.depthWrite).toBe(false);
+    expect(mask.stencilWrite).toBe(true);
+    const cap = meshes[2]!;
     const capMaterial = (Array.isArray(cap.material) ? cap.material[0] : cap.material) as
       MeshStandardMaterial | undefined;
     expect(capMaterial!.side).toBe(BackSide);
@@ -213,6 +219,16 @@ describe("growing stand-ins (growth.ts)", () => {
       materialHex(parts[0]!.materials[0]!).toLowerCase(),
     );
     expect(cap.castShadow).toBe(false);
+    // The section is drawn only on its own element's mask, after everything opaque.
+    expect(capMaterial!.stencilRef).toBe(mask.stencilRef);
+    expect(capMaterial!.stencilFunc).toBe(EqualStencilFunc);
+    expect(cap.renderOrder).toBeGreaterThan(meshes[1]!.renderOrder);
+    expect(meshes[1]!.renderOrder).toBeGreaterThan(meshes[0]!.renderOrder);
+    const other = createGrowth(parts);
+    expect(((other.object.children[1] as Mesh).material as MeshBasicMaterial).stencilRef).not.toBe(
+      mask.stencilRef,
+    );
+    other.dispose();
     for (const mesh of meshes) {
       expect(mesh.userData).toEqual({}); // no elementId: the real mesh keeps the mapping
       const hits: unknown[] = [];

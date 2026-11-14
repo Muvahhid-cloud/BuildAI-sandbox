@@ -23,7 +23,7 @@ export function PostEffects() {
   }, [effects, invalidate]);
   if (!effects) return null;
   return (
-    <EffectComposer multisampling={0}>
+    <EffectComposer multisampling={0} stencilBuffer /* cut surfaces of the build (§25) */>
       <N8AO
         halfRes
         quality="medium"

@@ -5,17 +5,20 @@
 //
 // - The stand-in uses copies of the element's real materials (same textures, roughness, glass)
 //   with one local clipping plane, also applied to its shadow, so the shadow grows with it.
-// - The cut is closed: the element's back faces are drawn as the cut surface itself — shaded as
-//   a horizontal face in the material's colour, with the depth of the cut plane (gl_FragDepth)
-//   — so a wall is never hollow or see-through while it grows, and ambient occlusion sees a
+// - The cut is closed: where the element's back faces can be seen (only through the cut — a
+//   stencil mask records exactly those pixels), the cut surface itself is drawn: shaded as a
+//   horizontal face in the material's colour, with the depth of the cut plane (gl_FragDepth).
+//   So a wall is never hollow or see-through while it grows, and ambient occlusion sees a
 //   solid top.
 // - A faint line of the material's own tone, brightened, runs along the growing edge.
 //
 // Nothing here is pickable and nothing carries an elementId.
 import {
+  AlwaysStencilFunc,
   BackSide,
   Color,
   DoubleSide,
+  EqualStencilFunc,
   Group,
   type Material,
   Mesh,
@@ -23,7 +26,9 @@ import {
   MeshStandardMaterial,
   type Object3D,
   Plane,
+  ReplaceStencilOp,
   Vector3,
+  ZeroStencilOp,
 } from "three";
 
 import type { RenderDescriptor } from "@/engine/builders/types";
@@ -56,10 +61,39 @@ interface Cut {
   plane: Plane;
   height: { value: number };
   edge: { value: number };
+  /** Stencil value of this element's cut (1..255): its section is drawn only on its mask. */
+  ref: number;
 }
 
+let nextRef = 0;
+
 function createCut(): Cut {
-  return { plane: new Plane(new Vector3(0, -1, 0), 0), height: { value: 0 }, edge: { value: 0 } };
+  nextRef = (nextRef % 255) + 1;
+  return {
+    plane: new Plane(new Vector3(0, -1, 0), 0),
+    height: { value: 0 },
+    edge: { value: 0 },
+    ref: nextRef,
+  };
+}
+
+/** Drawn after every opaque mesh: first the masks of the cuts, then the cut surfaces. */
+const MASK_ORDER = 10;
+const CAP_ORDER = 11;
+
+/**
+ * The mask of a cut: the pixels where a back face of the element is visible. A back face of a
+ * closed solid can only be seen through its open cut, so these are exactly the pixels of the
+ * section. Writes neither colour nor depth.
+ */
+function maskMaterial(cut: Cut): MeshBasicMaterial {
+  const mask = new MeshBasicMaterial({ side: BackSide, colorWrite: false, depthWrite: false });
+  mask.clippingPlanes = [cut.plane];
+  mask.stencilWrite = true;
+  mask.stencilRef = cut.ref;
+  mask.stencilFunc = AlwaysStencilFunc;
+  mask.stencilZPass = ReplaceStencilOp;
+  return mask;
 }
 
 // Height of a fragment below the cut, in view space (the model root only rotates Z-up to Y-up).
@@ -103,9 +137,9 @@ function growMaterial(source: Material, cut: Cut, doubleSided: boolean): Materia
 }
 
 /**
- * The cut surface of a solid: drawn on the element's back faces, but placed (depth) and lit
- * (normal) as the horizontal section where the view ray crosses the cut plane. Any ray that
- * sees a back face entered through the cut, so the section is exact for closed meshes.
+ * The cut surface of a solid: drawn on the element's back faces, inside the element's mask,
+ * but placed (depth) and lit (normal) as the horizontal section where the view ray crosses the
+ * cut plane. The mask is cleared where the section is drawn.
  */
 function capMaterial(color: string, cut: Cut): MeshStandardMaterial {
   const cap = new MeshStandardMaterial({
@@ -115,6 +149,10 @@ function capMaterial(color: string, cut: Cut): MeshStandardMaterial {
     side: BackSide,
   });
   cap.clippingPlanes = [cut.plane];
+  cap.stencilWrite = true;
+  cap.stencilRef = cut.ref;
+  cap.stencilFunc = EqualStencilFunc;
+  cap.stencilZPass = ZeroStencilOp;
   cap.onBeforeCompile = (shader) => {
     shader.uniforms.uCutY = cut.height;
     shader.fragmentShader = shader.fragmentShader
@@ -190,7 +228,17 @@ export function createGrowth(parts: readonly RenderDescriptor[]): Growth {
       return cap;
     });
     if (caps.every((c) => c === NO_CAP)) continue;
+    const mask = maskMaterial(cut);
+    owned.push(mask);
+    const masked = new Mesh(d.geometry, mask);
+    masked.matrixAutoUpdate = false;
+    masked.matrix.copy(d.matrix);
+    masked.renderOrder = MASK_ORDER;
+    masked.castShadow = false;
+    masked.raycast = NO_RAYCAST;
+    group.add(masked);
     const section = new Mesh(d.geometry, caps.length === 1 ? caps[0] : caps);
+    section.renderOrder = CAP_ORDER;
     section.matrixAutoUpdate = false;
     section.matrix.copy(d.matrix);
     section.castShadow = false;

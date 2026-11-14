@@ -2,7 +2,7 @@
 
 Status: **Accepted (v0.4)** · PostgreSQL 16 · SQLAlchemy 2.x (typed, async via `asyncpg`) · Alembic
 
-Implemented tables (Alembic `0001`–`0003`): `users`, `refresh_tokens`, `projects`, `project_versions`, `jobs`, `ai_generations`, `ai_runs`. The rest of this document is the target design; sections say where the implementation differs.
+Implemented tables (Alembic `0001`–`0004`): `users`, `refresh_tokens`, `projects`, `project_versions`, `jobs`, `ai_generations`, `ai_runs`. The rest of this document is the target design; sections say where the implementation differs.
 
 ## 1. Principles
 
@@ -91,12 +91,12 @@ No `updated_at` — immutable. `spec`/`model` are large; list queries defer them
 Per (project, user) uncommitted working state. Not implemented: since Phase 3.6 D2 the plan-editing session (base version + operation list) lives in the client and is replayed by `/edits/preview`; saved edits become `project_versions` rows with `source = manual` and their `operations`.
 | id | project_id | user_id | base_version_id | model jsonb | spec jsonb | operations jsonb (+ inverse stack) | updated_at | unique(project_id, user_id) |
 
-### jobs (implemented, `0002`)
-| id | project_id (cascade, index; + (project_id, created_at)) | user_id (cascade) | kind (`generate`; later `modify_plan`/`analyze`/`report`) | status (`queued`/`running`/`succeeded`/`failed`) | stage varchar (`queued` → `layout` → `checking` → `saving` → `done`) | progress float (completed stages / total — no invented percentages) | input jsonb (spec, seed, label, spec warnings) | result jsonb (version id/number, summary) | error jsonb (`{code, message, details}`) | created_at, started_at, finished_at |
+### jobs (implemented, `0002`; preview columns `0004`)
+| id | project_id (cascade, index; + (project_id, created_at)) | user_id (cascade) | kind (`generate`; later `modify_plan`/`analyze`/`report`) | status (`queued`/`running`/`succeeded`/`failed`) | stage varchar (`queued` → `layout` → `checking` → `saving` → `done`) | progress float (completed stages / total — no invented percentages) | input jsonb (spec, seed, label, spec warnings) | result jsonb (version id/number, summary) | error jsonb (`{code, message, details}`) | preview_model jsonb null + preview_model_hash varchar(64) null (see `ai_generations`; `GET /jobs/{id}/preview`) | created_at, started_at, finished_at |
 
 At most one active (`queued`/`running`) generation per project — spec-form job or AI generation (409 `GENERATION_IN_PROGRESS`). Jobs run in-process (ADR-010); on startup jobs left active by a previous process are marked failed (`JOB_INTERRUPTED`).
 
-### ai_generations (implemented, `0003`)
+### ai_generations (implemented, `0003`; live-creation columns `0004`)
 The natural-language generation history (docs/ai-pipeline.md §6). One row per `POST /ai/generate-building`; polled by the client.
 
 | column | type | notes |
@@ -114,6 +114,9 @@ The natural-language generation history (docs/ai-pipeline.md §6). One row per `
 | spec | jsonb null | accepted `BuildingSpecification` snapshot (includes assumptions) |
 | warnings | jsonb, default `[]` | issues shown to the user (AI + spec + layout deviations + rules findings) |
 | clarification_questions | jsonb, default `[]` | when status is `needs_clarification` |
+| interim_facts | jsonb, default `[]` | `[{key, value}]` read from the AI's answer while it streams (ai-pipeline.md §6.1), updated at most every 0.5 s; interim, display only; replaced by the validated specification's facts |
+| preview_model | jsonb null | the laid-out BuildingModel from the end of the layout stage until the generation ends — exactly the JSON the version then stores; **derived, temporary**: cleared (NULL) on completion, failure and interruption. Deferred column: loaded only by `GET /ai/generations/{id}/preview` |
+| preview_model_hash | varchar(64) null | its `model_hash`; set and cleared together with `preview_model`; what the poll returns |
 | error | jsonb null | `{code, message, details}` (details = issues with JSON pointers) |
 | version_id | uuid FK project_versions null (set null) | the version created |
 | seed, rules_profile, engine_version | | reproducibility (spec + seed + profile + engine ⇒ same model) |
@@ -194,5 +197,6 @@ v1 (generation) ── v2 (kitchen wider) ── v4 (skylight)       ← project
 ## 7. Migrations & seeds
 
 - Alembic autogenerate is a starting point only — every migration is reviewed by hand.
+- `0004` (2026-11-13) adds `ai_generations.interim_facts`, and `preview_model` + `preview_model_hash` on `ai_generations` and `jobs`; the downgrade drops them.
 - Seeds (`pnpm seed`): material library, rules profiles (`generic-residential@1`), default cost catalog (`kz-almaty-demo`, KZT, demo rates), demo user + demo project (dev only).
 - JSONB document migrations (schema_version upgrades) live in code (`building/migrations`), not Alembic.

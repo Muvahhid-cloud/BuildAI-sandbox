@@ -436,16 +436,23 @@ describe("pieces", () => {
     expect(served.objects.has(SITE_KEY)).toBe(true);
     const tree = served.steps.find((s) => s.id.startsWith("site:tree"));
     expect(tree && served.pieces.counts.has(tree.id)).toBe(false);
-    // Room floors are flat: the front reaches them all at once, so no slices flash on them.
+    // Floors, slab tops and roof decks are reached by the front all at once: no slices
+    // flash on them. Only stair treads (reached one after the other) carry flat pieces.
+    const stairs = new Set(plan.steps.filter((s) => s.stage === "stair").map((s) => s.id));
     const q = new Quaternion();
     const normal = new Vector3();
+    let onTreads = 0;
     for (let i = 0; i < pieces.count; i++) {
       q.fromArray(pieces.quat, i * 4);
       normal.set(0, 0, 1).applyQuaternion(q);
       if (normal.z < 0.9) continue;
-      const t = schedule.timings.get(keyOf(i))!;
-      expect(pieces.target[i * 3 + 2]!).toBeLessThan(t.topZ); // not on the element's top face
+      expect(stairs.has(keyOf(i))).toBe(true);
+      onTreads++;
     }
+    expect(onTreads).toBeGreaterThan(0);
+    const floors = plan.steps.filter((s) => s.stage === "floor");
+    expect(floors.length).toBeGreaterThan(0);
+    for (const floor of floors) expect(pieces.counts.has(floor.id)).toBe(false);
   });
 });
 

@@ -27,17 +27,23 @@ prompt ──▶ AIProvider (mock | anthropic | openrouter) ──▶ Specificat
 class AIProvider(ABC):
     name: str; model: str
     async def complete_structured(self, request: StructuredRequest) -> StructuredResult  # the one primitive
+    async def stream_structured(self, request, on_text) -> StructuredResult            # same call, text as it arrives
     # built on top, from the versioned prompt modules (identical for every provider):
-    async def generate_building_specification(prompt, *, options, context, max_tokens)
+    async def generate_building_specification(prompt, *, options, context, max_tokens, on_text=None)
     async def repair_building_specification(prompt, *, options, context, repair, max_tokens)
 ```
+
+`stream_structured` is the **same single call** with the answer's text passed to `on_text`
+while it is produced (the pieces, joined, are the raw output); the returned result is what gets
+validated — the text seen on the way is only ever used for interim display (§6.1). Providers
+that cannot stream keep the base default, which delivers the whole answer in one piece.
 
 `StructuredRequest` carries the system prompt, messages, the JSON Schema of the expected object and the prompt version; `StructuredResult` returns the parsed object (or `None`), the raw output, model, tokens, latency and stop reason. Providers raise only `AIProviderError` subclasses (`AI_UNAVAILABLE`, `AI_TIMEOUT`, `AI_NOT_CONFIGURED`), never vendor exceptions, and never validate or trust their own output.
 
 | Provider | File | Purpose |
 |---|---|---|
-| `MockAIProvider` | `providers/mock.py` + `mock_interpreter.py` | **Development, tests, CI, offline.** Deterministic rule/regex interpreter: area, storeys, bedroom/bathroom counts, family size, garage cars, balcony (and its floor), terrace, study/WC/laundry/storage, open kitchen, style/interior style, windows, roof, facade, budget (KZT/USD/EUR, "300,000,000 KZT", "$250k"), city → region code, unsupported items (pool, sauna, basement…), prompt-injection phrases. Records every default as an assumption; asks for clarification when nothing describes the house or the request is out of scope (> 3 storeys, area outside 20–2000 m²). Refused when `ENVIRONMENT=production`. |
-| `AnthropicProvider` | `providers/anthropic.py` | **First real provider.** One Messages API call via the official `anthropic` SDK (the only file importing it — enforced by import-linter). The answer is constrained with **structured outputs** (`output_config.format = json_schema`), which works on every current Claude model (forced `tool_choice` is rejected by newer models). Numeric/length constraints unsupported by structured outputs are moved into field descriptions and enforced by Pydantic afterwards. The static system prompt carries a cache breakpoint. SDK errors map to `AI_TIMEOUT` / `AI_UNAVAILABLE`; `refusal`/`max_tokens` stops yield "no object" (→ repair). **Schema-size fallback** (same shared mechanism as OpenRouter, `providers/json_schema.py`): a `BadRequestError` whose message says the compiled grammar/schema is too large switches the provider — for this and every later call — to `prompt_schema` mode (schema in the system prompt via `prompt_schema_system`, no `output_config.format`; `effort` kept). Any other error never triggers it. |
+| `MockAIProvider` | `providers/mock.py` + `mock_interpreter.py` | **Development, tests, CI, offline.** Deterministic rule/regex interpreter: area, storeys, bedroom/bathroom counts, family size, garage cars, balcony (and its floor), terrace, study/WC/laundry/storage, open kitchen, style/interior style, windows, roof, facade, budget (KZT/USD/EUR, "300,000,000 KZT", "$250k"), city → region code, unsupported items (pool, sauna, basement…), prompt-injection phrases. Records every default as an assumption; asks for clarification when nothing describes the house or the request is out of scope (> 3 storeys, area outside 20–2000 m²). Refused when `ENVIRONMENT=production`. **Streaming:** the serialized answer in deterministic pieces of `MOCK_STREAM_CHUNK_CHARS` characters; `AI_MOCK_STREAM_DELAY_MS` (default 0) pauses between pieces so the live facts can be watched in development. |
+| `AnthropicProvider` | `providers/anthropic.py` | **First real provider.** One Messages API call via the official `anthropic` SDK (the only file importing it — enforced by import-linter). The answer is constrained with **structured outputs** (`output_config.format = json_schema`), which works on every current Claude model (forced `tool_choice` is rejected by newer models). Numeric/length constraints unsupported by structured outputs are moved into field descriptions and enforced by Pydantic afterwards. The static system prompt carries a cache breakpoint. SDK errors map to `AI_TIMEOUT` / `AI_UNAVAILABLE`; `refusal`/`max_tokens` stops yield "no object" (→ repair). **Streaming:** `messages.stream(...)` with identical parameters, `text_stream` → `on_text`, `get_final_message()` → the same parsing; the schema-size rejection happens before any text, so the fallback is unchanged. **Schema-size fallback** (same shared mechanism as OpenRouter, `providers/json_schema.py`): a `BadRequestError` whose message says the compiled grammar/schema is too large switches the provider — for this and every later call — to `prompt_schema` mode (schema in the system prompt via `prompt_schema_system`, no `output_config.format`; `effort` kept). Any other error never triggers it. |
 | `OpenRouterProvider` | `providers/openrouter.py` | **OpenAI-compatible gateway** (OpenRouter, e.g. `anthropic/claude-opus-5.5`). One `POST /chat/completions` over plain `httpx` (no vendor SDK). Structured outputs via `response_format = {type: json_schema, strict: true}` with the same transformed `SpecificationDraft` schema (`providers/json_schema.py`, shared with the Anthropic adapter); `provider.require_parameters = true` so OpenRouter never routes to an endpoint that would drop the schema. The system prompt carries a `cache_control` breakpoint (honoured by Anthropic upstreams). **Schema-size fallback:** Claude's structured outputs compile the schema into a grammar, and the full `SpecificationDraft` schema (≈50 optional properties, 23 unions) is rejected with "compiled grammar is too large" (400, before generation, not billed — observed live 2026-09-29 on every Claude upstream). On that specific rejection the provider switches — for this and every later call — to `prompt_schema` mode: the full JSON Schema is appended to the system prompt (`prompts.shared.schema_in_prompt_block`, versioned `schema-in-prompt@1`; the generation/repair prompts are unchanged) and no grammar is requested. Validation is identical in both modes; `metadata.output_mode` reports which was used. The answer is parsed with `json.loads` only — prose, fenced JSON, refusals (`message.refusal`, `content_filter`) and `length` cut-offs yield "no object" (→ one repair, then `AI_INVALID_OUTPUT`). HTTP errors map to `AI_UNAVAILABLE` (400/401/402/403/404/429/5xx, errors inside a 200 body or a choice, unexpected body) or `AI_TIMEOUT` (client timeout, 408); 408/429/5xx/connection errors are retried `AI_MAX_RETRIES` times (Retry-After honoured, ≤ 10 s), timeouts are not. Error details are redacted (key never included) and truncated. Usage (`prompt_tokens`, `completion_tokens`, `cost` in USD credits, cached/reasoning tokens, upstream provider, generation id) is returned; the returned `model` is recorded on `ai_runs`. |
 
 Selection: `get_ai_provider()` (`providers/__init__.py`) from settings; `use_ai_provider()` overrides it in tests.
@@ -58,6 +64,7 @@ Selection: `get_ai_provider()` (`providers/__init__.py`) from settings; `use_ai_
 | `AI_MAX_PROMPT_CHARS` | 4000 | Also capped by the request schema |
 | `AI_GENERATIONS_PER_HOUR` | 30 | Per user (429 `AI_RATE_LIMITED`) |
 | `AI_LOG_PROMPTS` | false | Otherwise only prompt length + sha256 prefix are logged |
+| `AI_MOCK_STREAM_DELAY_MS` | 0 | Mock only: pause per streamed piece (e.g. 40) to watch "Understood so far" in development |
 
 The API refuses to start with `AI_PROVIDER=anthropic` or `openrouter` and no key/model.
 
@@ -96,7 +103,7 @@ Changing prompt wording or structure = bump `PROMPT_VERSION` (stored on every ge
 
 ## 5. Interpreter: validation and repair (`ai/interpreter.py`)
 
-1. `provider.generate_building_specification(...)` (stage `interpreting`).
+1. `provider.generate_building_specification(..., on_text)` (stage `interpreting`). With `on_text` the first answer is streamed (same call); the repair call is not streamed.
 2. Validate (stage `validating`): JSON object? → `SpecificationDraft` (Pydantic; issues `AI_SCHEMA_INVALID` with JSON pointers such as `/specification/rooms/0/type`) → for a specification, `validate_spec` callback = `rules.spec_checks.check_spec` (tier 2, against the project's rules profile) + `check_options`.
 3. Blocking errors and `AI_MAX_REPAIRS` left → `repair_building_specification` with the issues (stage `repairing`) → validate again.
 4. Still invalid → `InterpretationError`: `AI_INVALID_OUTPUT` (no usable object) or `SPEC_INVALID` (schema/rules errors). **Invalid output is never accepted.**
@@ -109,7 +116,9 @@ Every provider call becomes an `AttemptRecord` (task, provider, model, prompt ve
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `/api/v1/ai/generate-building` | `{project_id?, prompt, options}` → 202 generation record. Auth required; ownership checked (404); prompt 3–4000 chars; 409 if a generation/job is running for the project; 429 over the hourly limit; 503 if the provider is not configured. Without `project_id` a new project is created and named after the interpreted spec. |
-| GET | `/api/v1/ai/generations/{id}` | Poll: real stage, status, spec, assumptions, warnings, summary, requested-vs-delivered checks, version id/number, error |
+| GET | `/api/v1/ai/generations/{id}` | Poll: real stage, status, spec, assumptions, warnings, summary, requested-vs-delivered checks, version id/number, error, `interim_facts`, `preview_model_hash` |
+| GET | `/api/v1/ai/generations/{id}/preview` | `{model, model_hash}`: the laid-out model while checking/saving still run (§6.1); 404 before the layout and once the generation has ended |
+| GET | `/api/v1/jobs/{id}/preview` | The same for a spec-form generation job |
 | GET | `/api/v1/projects/{id}/generations` | History (newest first, summaries only) |
 
 `BuildingGenerationService` (background task on the in-process job runner, ADR-010) records its **real stage** on the `ai_generations` row: `queued → interpreting → validating [→ repairing → validating] → layout → checking → saving → done`. After interpretation it calls `generation.pipeline.layout_and_save` — the same step the Phase 2 spec form uses: layout engine in a worker thread (deterministic: spec + seed + rules profile + engine version ⇒ same model), final `validate_model` (errors → `MODEL_INVALID`), rules findings, new version (`source = "ai_generation"`, `prompt`, spec snapshot, seed, rules profile, engine version, report with `generation` provenance: generation id, type, provider, model, prompt version). The service contains no layout logic.
@@ -127,6 +136,51 @@ Statuses: `completed` · `needs_clarification` (no version) · `failed` with a d
 
 Deviations are never hidden: the completed record lists all warnings (AI conflicts/unsupported/repair changes, spec warnings, layout deviations, rules findings) and `checks` (floors, floor area within the engine's 5 % threshold, bedrooms, bathrooms, WCs, balconies, garage, terrace: requested → delivered).
 
+### 6.1 Live creation: interim facts and the preview model
+
+The client shows the creation in one continuous screen (3d-engine.md §25). Two things make
+that possible without inventing anything; neither changes what is accepted or stored.
+
+**Interim facts** (`ai/interim.py`). While the first answer streams, the orchestrator's
+`on_text` accumulates the text and — at most every `INTERIM_FACTS_INTERVAL_S` = 0.5 s — reads
+the facts that are already complete:
+
+- `parse_partial_json` is a tolerant reader of the unfinished JSON: a value that may still
+  continue (an open string, a number at the end of the text, a cut-off literal, an unfinished
+  array element) is left out, so a half-written `28` is never shown for `280` and a
+  half-written room is not a room yet. It never raises.
+- `spec_facts_for_display` picks simple facts from the (partial, untrusted) specification
+  object in the order its keys appear: `storeys`, `floor_area_m2`, `style`, `roof`,
+  `footprint_shape`, `garage_cars`, `balconies`, `terrace` and `room:<type>` counts. Values
+  outside the specification's own ranges or not shaped like an enum word are ignored.
+- `merge_facts` keeps every fact at the position where it first appeared, so the list on
+  screen only grows or updates in place.
+
+They are stored on `ai_generations.interim_facts` and returned as `interim_facts`. The UI
+labels them "Understood so far". They are **interim and display only**: never used for
+geometry, never validated as a specification, never sent to the layout engine. When the answer
+is complete it goes through the normal validation; once a specification is accepted the facts
+are replaced by the same reading of that validated specification. No extra AI call is made.
+
+**Preview model.** `generation.pipeline.layout_and_save(..., on_layout)` calls `on_layout`
+as soon as the layout engine has returned, before the final model validation, the rules check
+and saving, with the model serialized exactly as `VersionService.create` stores it
+(`model.model_dump(mode="json")`) and its `model_hash`. The AI orchestrator and the spec-form
+job store it on their row (`preview_model`, `preview_model_hash`; deferred column, read only by
+the preview endpoint). The simplest robust option was chosen: a nullable JSONB column on
+`ai_generations` and `jobs` (one reversible Alembic revision, `0004`) rather than a separate
+result store — the row is already what the client polls, and it survives nothing it should not
+(cleared when the generation ends).
+
+- The preview is byte-identical to the model of the version that is then created (same
+  object, same serialization; tests compare the canonical JSON and the hash). The client
+  recognises the saved version by `model_hash` and does not reload anything.
+- It is cleared when the generation completes, fails or is interrupted: afterwards the
+  version holds the model (or there is none).
+- A later stage can still fail (`MODEL_INVALID`, a database error): the generation is `failed`
+  with its real code, no version exists, and the client — which may already be building the
+  house — stops, fades it out and shows that error.
+
 ## 7. Context and tools (preparation for Phase 5)
 
 - `ai/context.py` — `GenerationContext` (used now) and `ProjectContext` (summary, current spec, rooms with short refs `R1…`, selected element digest, version, budget, region/currency/rules). Pure functions; never the full model.
@@ -141,6 +195,7 @@ Deviations are never hidden: the completed record lists all warnings (AI conflic
 ## 9. Testing
 
 - All automated tests use `MockAIProvider` or a scripted test double; CI never calls a paid API (`tests/conftest.py` forces `AI_PROVIDER=mock`).
+- Live creation (`tests/ai/test_live_creation.py`, `tests/test_job_preview.py`, streaming cases in `test_anthropic_provider.py`): the mock stream is the same answer in deterministic pieces; a provider without streaming delivers one piece; only the first call is streamed and the whole answer is still validated and repaired; the partial-JSON reader on cut-off inputs and on every prefix of a real answer (a fact is never a cut-off value, counts only grow); untrusted values are ignored; facts are recorded while the answer streams, in a stable order, throttled, and replaced by the validated specification's; the preview is offered during `saving`, private, identical to the saved model (JSON and hash) and cleared afterwards; a failure after the layout keeps the real error and creates no version; the same for the spec-form job.
 - Unit: prompt construction and injection quoting, mock interpretation (demo prompt, defaults, clarification, conflicts, unsupported, budget/region, form fields), interpreter (valid, non-JSON, unsupported room type, invalid dimensions, missing fields, extra geometry fields, rules errors, repair changes, provider errors, form-field mismatch), Anthropic adapter against a fake SDK client (request shape, parsing, refusal/truncation, error mapping, schema transformation, schema-size fallback: switch, persistence, strict parsing, non-matching errors, interpreter/repair path, no key in logs), provider selection and settings guards, context/tools, requirement checks.
 - Integration (real API + PostgreSQL): NL → mock → spec → layout → model → version for the demo prompt and ten other prompts; history; clarification; injection; infeasible requirements; AI outage; repair; permanent invalid output; auth; ownership; validation; rate limit; concurrency; interrupted generations; determinism (same prompt + seed ⇒ same `model_hash`).
 - OpenRouter adapter against `httpx.MockTransport` (`tests/ai/test_openrouter_provider.py`): request shape, parsing, usage/cost, refusal/truncation/prose, every HTTP status class, timeout, network error, retries, unexpected bodies, errors in 200 bodies, key redaction, end-to-end through `interpret`.
@@ -154,6 +209,8 @@ Deviations are never hidden: the completed record lists all warnings (AI conflic
 - The mock interpreter understands common English phrasings only; it is a development tool, not a language model.
 - No prompt eval suite yet (the roadmap's ~50-prompt eval is deferred); the mock prompts are covered by parametrized tests.
 - Generation runs in-process (ADR-010): a restart fails running generations (`JOB_INTERRUPTED`).
+- The OpenRouter provider does not stream yet (it keeps the base default): with it the facts appear together when the answer arrives, not one by one. The repair call is never streamed; facts shown during a repair are those of the first answer.
+- The preview model is offered only while checking and saving run (usually well under a second); a client that misses it builds the stored version instead.
 - Rate limiting is per user per hour in the database; there is no token budget/spend tracking (no prices in code).
 - Refining an existing design in natural language: see §11 (Phase 5).
 

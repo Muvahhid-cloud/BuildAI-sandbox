@@ -36,6 +36,8 @@ export function BuildingViewer({ scene }: { scene: SceneGraph | null }) {
       gl={{
         antialias: true,
         preserveDrawingBuffer: false,
+        // The cut surfaces of growing elements are masked with the stencil buffer (§25).
+        stencil: true,
       }}
       onCreated={({ gl }) => {
         // ACES Filmic (also applied by the post-processing ToneMapping effect when enabled).
